@@ -22,7 +22,9 @@
       "version": "5"
     },
     {
-      "arcao/Syslog": "2"
+      "owner": "arcao",
+      "name": "Syslog",
+      "version": "2"
     }
   ],
   "frameworks": "arduino",
