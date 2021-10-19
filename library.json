@@ -1,0 +1,30 @@
+{
+  "name": "EspSImpleControlFramework",
+  "version": "0.0.1",
+  "description": "Framework to implement simple control blocks for ESP8266/ESP32 using Arduino framework",
+  "keywords": "esp8266, esp32, arduino, framework, control",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/gvoigtlaender/EspSimpleControlFramework.git"
+  },
+  "authors":
+  [
+    {
+      "name": "Georg Voigtländer",
+      "email": "gvoigtlaender@googlemail.com",
+      "url": ""
+    },
+  ],
+  "license": "GPL-3.0 License",
+  "homepage": "",
+  "dependencies": {
+    {
+        "owner": "bblanchon",
+        "name": "ArduinoJson",
+        "version": "5"
+    },
+  },
+  "frameworks": "arduino",
+  "platforms": ["espressif32", "espressif8266"]
+}
