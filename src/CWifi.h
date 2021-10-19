@@ -13,12 +13,14 @@ using std::string;
 
 class CWifi : public CControl {
 public:
-  CWifi(string sSsid = "", string sPassword = "", string sStaticIp = "");
+  CWifi(const char *szAppName, string sSsid = "", string sPassword = "",
+        string sStaticIp = "");
 
   bool setup() override;
 
   void control(bool bForce /*= false*/) override;
 
+  string m_sAppName;
   string m_sSsid;
   string m_sPassword;
   string m_sStaticIp;

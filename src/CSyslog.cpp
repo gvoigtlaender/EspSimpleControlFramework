@@ -9,7 +9,8 @@ void OnServerIpChanged(void *pObject, CConfigKeyBase *pKey) {
   static_cast<CSyslog *>(pObject)->OnServerIpChanged();
 }
 
-CSyslog::CSyslog() : CControl("CSyslog"), m_sDeviceName(APPNAME) {
+CSyslog::CSyslog(onst char *szAppName, const char *szShortName)
+    : CControl("CSyslog"), m_sDeviceName(szAppName), m_sShortName(szShortName) {
   m_pCfgServer = new CConfigKey<string>("Syslog", "ServerIp", "");
   m_pCfgServer->SetOnChangedCallback(::OnServerIpChanged, this);
 }
@@ -42,11 +43,11 @@ void CSyslog::control(bool bForce /*= false*/) {
 
     if (!m_pCfgServer->m_pTValue->m_Value.empty()) {
       _log(I, "connecting to %s, host=%s, appname=%s",
-           m_pCfgServer->m_pTValue->m_Value.c_str(), SHORTNAME,
+           m_pCfgServer->m_pTValue->m_Value.c_str(), m_sShortName.c_str(),
            m_sDeviceName.c_str());
       CControl::ms_pSyslog =
           new Syslog(udpClient, m_pCfgServer->m_pTValue->m_Value.c_str(), 514,
-                     SHORTNAME, m_sDeviceName.c_str(), LOG_KERN);
+                     m_sShortName.c_str(), m_sDeviceName.c_str(), LOG_KERN);
     }
     this->m_nState = eDone;
     this->m_bCycleDone = true;
@@ -64,5 +65,5 @@ void CSyslog::OnServerIpChanged() {
   }
   CControl::ms_pSyslog =
       new Syslog(udpClient, m_pCfgServer->m_pTValue->m_Value.c_str(), 514,
-                 SHORTNAME, m_sDeviceName.c_str(), LOG_KERN);
+                 m_sShortName.c_str(), m_sDeviceName.c_str(), LOG_KERN);
 }

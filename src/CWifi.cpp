@@ -5,10 +5,10 @@
 #include <CDisplay.h>
 #endif
 
-CWifi::CWifi(string sSsid /*= ""*/, string sPassword /*= ""*/,
-             string sStaticIp /*= ""*/)
-    : CControl("CWifi"), m_sSsid(sSsid), m_sPassword(sPassword),
-      m_sStaticIp(sStaticIp) {
+CWifi::CWifi(const char *szAppName, string sSsid /*= ""*/,
+             string sPassword /*= ""*/, string sStaticIp /*= ""*/)
+    : CControl("CWifi"), m_sAppName(szAppName), m_sSsid(sSsid),
+      m_sPassword(sPassword), m_sStaticIp(sStaticIp) {
   m_pWifiSsid = new CConfigKey<std::string>("Wifi", "Ssid", m_sSsid);
   m_pWifiPassword =
       new CConfigKey<std::string>("Wifi", "Password", m_sPassword);
@@ -57,7 +57,7 @@ bool CWifi::setup() {
       }
     }
 
-    WiFi.softAP(APPNAME);
+    WiFi.softAP(m_sAppName.c_str());
 
     IPAddress myIP = WiFi.softAPIP();
     _log(I, "AP IP address: %s", myIP.toString().c_str());
