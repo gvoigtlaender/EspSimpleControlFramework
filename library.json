@@ -1,5 +1,5 @@
 {
-  "name": "EspSImpleControlFramework",
+  "name": "EspSimpleControlFramework",
   "version": "0.0.1",
   "description": "Framework to implement simple control blocks for ESP8266/ESP32 using Arduino framework",
   "keywords": "esp8266, esp32, arduino, framework, control",
