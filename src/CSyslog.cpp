@@ -9,7 +9,7 @@ void OnServerIpChanged(void *pObject, CConfigKeyBase *pKey) {
   static_cast<CSyslog *>(pObject)->OnServerIpChanged();
 }
 
-CSyslog::CSyslog(onst char *szAppName, const char *szShortName)
+CSyslog::CSyslog(const char *szAppName, const char *szShortName)
     : CControl("CSyslog"), m_sDeviceName(szAppName), m_sShortName(szShortName) {
   m_pCfgServer = new CConfigKey<string>("Syslog", "ServerIp", "");
   m_pCfgServer->SetOnChangedCallback(::OnServerIpChanged, this);
