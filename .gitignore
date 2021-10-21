@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# test files
+/platformio.ini
+main.cpp
