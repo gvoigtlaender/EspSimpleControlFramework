@@ -12,7 +12,8 @@ class CLed : public CControl {
 public:
   CLed(uint8_t nLedPin)
       : CControl("CLed"), m_nLedPin(nLedPin), m_eControlState(eStart),
-        m_eBlinkState(eBlinkStart), m_uiBlinkCnt(0), m_uiBlinkMillis(0) {
+        m_eBlinkState(eBlinkStart), m_uiBlinkCnt(0), m_uiBlinkMillis(0),
+        m_bCurrentState(false) {
     assert(ms_pInstance == NULL);
     ms_pInstance = this;
   }
@@ -38,8 +39,14 @@ public:
   uint8 m_uiBlinkCnt;
   uint64 m_uiBlinkMillis;
 
-  enum E_BLINKTASK { ON = 0, OFF, BLINK_1, BLINK_2, BLINK_3 };
+  enum E_BLINKTASK { ON = 0, OFF, TOGGLE, BLINK_1, BLINK_2, BLINK_3 };
   list<E_BLINKTASK> lBlinkTasks;
+
+  void digitalWrite(bool bOn) {
+    m_bCurrentState = bOn;
+    ::digitalWrite(m_nLedPin, (bOn == true) ? HIGH : LOW);
+  }
+  bool m_bCurrentState;
 
   static CLed *ms_pInstance;
   static void AddBlinkTask(E_BLINKTASK eTask) {

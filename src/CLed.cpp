@@ -6,7 +6,7 @@ bool CLed::setup() {
   CControl::setup();
 
   pinMode(m_nLedPin, OUTPUT);
-  digitalWrite(m_nLedPin, LOW);
+  digitalWrite(false);
   return true;
 }
 void CLed::control(bool bForce /*= false*/) {
@@ -27,12 +27,19 @@ void CLed::control(bool bForce /*= false*/) {
 
     eTask = lBlinkTasks.front();
     lBlinkTasks.pop_front();
-    if (eTask == ON)
-      digitalWrite(m_nLedPin, HIGH);
-    else if (eTask == OFF)
-      digitalWrite(m_nLedPin, LOW);
-    else
-      m_eControlState = (E_LEDSTATES)(eB1 + eTask);
+    if (eTask == ON) {
+      _log(D, "ON");
+      digitalWrite(true);
+    } else if (eTask == OFF) {
+      _log(D, "ON");
+      digitalWrite(false);
+    } else if (eTask == TOGGLE) {
+      _log(D, "ON");
+      digitalWrite(!m_bCurrentState);
+    } else {
+      _log(D, "BLINK_%d", (int)(eTask - BLINK_1 + 1));
+      m_eControlState = (E_LEDSTATES)(eB1 + eTask - BLINK_1);
+    }
     break;
 
   case eB1:
@@ -69,7 +76,7 @@ _E_STMRESULT CLed::LedBlink(int nOnTimeMs, int nOffTimeMs, uint8 uiCnt) {
       m_eBlinkState = eBlinkStart;
       return STM_DONE;
     }
-    digitalWrite(m_nLedPin, HIGH);
+    digitalWrite(true);
     m_uiBlinkMillis = millis() + nOnTimeMs;
     m_eBlinkState = eBlinkOn;
     break;
@@ -77,7 +84,7 @@ _E_STMRESULT CLed::LedBlink(int nOnTimeMs, int nOffTimeMs, uint8 uiCnt) {
   case eBlinkOn:
     if (m_uiBlinkMillis > millis())
       break;
-    digitalWrite(m_nLedPin, LOW);
+    digitalWrite(false);
     m_uiBlinkMillis = millis() + nOffTimeMs;
     m_eBlinkState = eBlinkOff;
     break;
