@@ -1,5 +1,5 @@
-#include <CSyslog.h>
-#include <CWifi.h>
+#include "CSyslog.h"
+#include "CWifi.h"
 
 #include <Syslog.h>
 #include <WiFiUdp.h>

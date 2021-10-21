@@ -1,6 +1,5 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#include <CWifi.h>
-#include <config.h>
+#include "CWifi.h"
 #if USE_DISPLAY == 1
 #include <CDisplay.h>
 #endif

@@ -1,5 +1,5 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#include <CControl.h>
+#include "CControl.h"
 
 // static
 std::vector<CControl *> CControl::ms_Instances;

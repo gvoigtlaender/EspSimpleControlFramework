@@ -8,8 +8,8 @@ using std::string;
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
-#include <CConfigValue.h>
-#include <CControl.h>
+#include "CConfigValue.h"
+#include "CControl.h"
 
 class CWifi : public CControl {
 public:

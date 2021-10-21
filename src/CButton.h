@@ -2,8 +2,8 @@
 #ifndef SRC_CBUTTON_H_
 #define SRC_CBUTTON_H_
 
+#include "CControl.h"
 #include <Arduino.h>
-#include <CControl.h>
 
 class CButton : public CControl {
 public:

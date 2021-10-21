@@ -1,5 +1,4 @@
-#include <CButton.h>
-#include <config.h>
+#include "CButton.h"
 
 bool CButton::setup() {
   CControl::setup();

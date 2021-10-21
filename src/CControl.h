@@ -2,7 +2,6 @@
 #ifndef SRC_CCONTROL_H_
 #define SRC_CCONTROL_H_
 #include <Arduino.h>
-#include <config.h>
 #include <string>
 #include <vector>
 

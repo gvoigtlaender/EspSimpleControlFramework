@@ -1,5 +1,5 @@
-#include <CConfigValue.h>
-#include <CControl.h>
+#include "CConfigValue.h"
+#include "CControl.h"
 #include <string>
 using std::string;
 

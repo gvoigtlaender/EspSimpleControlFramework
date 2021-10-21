@@ -8,13 +8,13 @@ using std::string;
 #include <list>
 using std::list;
 
+#include "CConfigValue.h"
 #include <Arduino.h>
-#include <CConfigValue.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-#include <CControl.h>
-#include <CWifi.h>
+#include "CControl.h"
+#include "CWifi.h"
 
 class CMqttValue {
 public:
