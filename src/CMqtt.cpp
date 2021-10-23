@@ -51,6 +51,9 @@ CMqtt::CMqtt(string sServerIp /* = "" */, string sClientName /* = "" */)
   ProcessPending();
 
   m_pCfgMqttServer = new CConfigKey<string>("Mqtt", "ServerIp", "");
+  m_pCfgMqttUser = new CConfigKey<string>("Mqtt", "User", "");
+  m_pCfgMqttPasswd = new CConfigKey<string>("Mqtt", "Passwd", "");
+  m_pCfgMqttPasswd->m_pValue->m_sInputType = "password";
   // m_pCfgMqttClient = new CConfigKey<string>("Mqtt", "ClientName", "esp");
 }
 
@@ -117,7 +120,9 @@ void CMqtt::control(bool bForce /*= false*/) {
 
   case eSetup:
 
-    m_pMqttClient->connect(this->m_sClientName.c_str(), "pi3", "pi3");
+    m_pMqttClient->connect(this->m_sClientName.c_str(),
+                           m_pCfgMqttUser->m_pTValue->m_Value.c_str(),
+                           m_pCfgMqttPasswd->m_pTValue->m_Value.c_str());
     _log(I, "connecting");
     this->m_nState = eConnect;
 

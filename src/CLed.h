@@ -4,6 +4,7 @@
 
 #include "CBase.h"
 #include "CControl.h"
+#include "CMqtt.h"
 #include <Arduino.h>
 #include <list>
 using std::list;
@@ -13,7 +14,8 @@ public:
   CLed(uint8_t nLedPin)
       : CControl("CLed"), m_nLedPin(nLedPin), m_eControlState(eStart),
         m_eBlinkState(eBlinkStart), m_uiBlinkCnt(0), m_uiBlinkMillis(0),
-        m_bCurrentState(false) {
+        m_bCurrentState(false), m_pMqtt_CurrentTask(NULL),
+        m_pMqtt_NoOfTasks(NULL), m_pMqtt_LedState(NULL) {
     assert(ms_pInstance == NULL);
     ms_pInstance = this;
   }
@@ -45,8 +47,14 @@ public:
   void digitalWrite(bool bOn) {
     m_bCurrentState = bOn;
     ::digitalWrite(m_nLedPin, (bOn == true) ? HIGH : LOW);
+    if (m_pMqtt_LedState != NULL)
+      m_pMqtt_LedState->setValue(std::to_string(bOn));
   }
   bool m_bCurrentState;
+
+  CMqttValue *m_pMqtt_CurrentTask;
+  CMqttValue *m_pMqtt_NoOfTasks;
+  CMqttValue *m_pMqtt_LedState;
 
   static CLed *ms_pInstance;
   static void AddBlinkTask(E_BLINKTASK eTask) {

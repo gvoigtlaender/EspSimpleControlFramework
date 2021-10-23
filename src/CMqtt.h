@@ -44,7 +44,7 @@ public:
   void control(bool bForce /*= false*/) override;
 
   void publish();
-  void publish_value(CMqttValue* pValue);
+  void publish_value(CMqttValue *pValue);
 
 protected:
   string m_sServerIp;
@@ -53,10 +53,11 @@ protected:
   PubSubClient *m_pMqttClient;
   static list<CMqttValue *> ms_Values;
   bool m_bValuesComplete;
-  static CMqtt* ms_pMqtt;
+  static CMqtt *ms_pMqtt;
 
   CConfigKey<std::string> *m_pCfgMqttServer;
-  // CConfigKey<std::string> *m_pCfgMqttClient;
+  CConfigKey<std::string> *m_pCfgMqttUser;
+  CConfigKey<std::string> *m_pCfgMqttPasswd;
 };
 
 #endif // SRC_CMQTT_H_

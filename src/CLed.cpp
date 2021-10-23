@@ -5,8 +5,13 @@ CLed *CLed::ms_pInstance = NULL;
 bool CLed::setup() {
   CControl::setup();
 
+  m_pMqtt_CurrentTask = CreateMqttValue("CurrentTask", "");
+  m_pMqtt_NoOfTasks = CreateMqttValue("NoOfTasks", "0");
+  m_pMqtt_LedState = CreateMqttValue("LedState", "false");
+
   pinMode(m_nLedPin, OUTPUT);
   digitalWrite(false);
+
   return true;
 }
 void CLed::control(bool bForce /*= false*/) {
@@ -22,11 +27,15 @@ void CLed::control(bool bForce /*= false*/) {
     break;
 
   case eCheck:
+    m_pMqtt_NoOfTasks->setValue(std::to_string(lBlinkTasks.size()));
+    m_pMqtt_CurrentTask->setValue("-");
     if (lBlinkTasks.empty())
       break;
 
     eTask = lBlinkTasks.front();
     lBlinkTasks.pop_front();
+    m_pMqtt_CurrentTask->setValue(std::to_string(eTask));
+
     if (eTask == ON) {
       _log(D, "ON");
       digitalWrite(true);
