@@ -18,6 +18,7 @@ public:
 
   enum _E_BUTTONSTATE {
     eNone = 0,
+    ePressed,
     eClick,
     eDoubleClick,
     eLongClick,
@@ -33,7 +34,8 @@ public:
   };
 
   _E_BUTTONSTATE getBttonState() { return m_eButtonState; }
-  void setButtonState(_E_BUTTONSTATE eState) { m_eButtonState = eState; }
+  void setButtonState(_E_BUTTONSTATE eState);
+  const char *getButtonStateString(_E_BUTTONSTATE eState);
 
 protected:
   uint8_t m_nPin;
@@ -43,6 +45,7 @@ protected:
   _E_STATE m_eStateButtonControl;
   uint64 m_uiMillisButtonControl;
   uint64 m_uiMillisClick;
+  CMqttValue *m_pMqtt_ButtonState;
 };
 
 #endif // SRC_CCONTROLBUTTON_H_

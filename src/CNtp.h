@@ -6,6 +6,7 @@
 #include "CControl.h"
 #include <Arduino.h>
 #include <CBase.h>
+#include <CMqtt.h>
 #include <list>
 #include <string>
 using std::string;
@@ -27,5 +28,9 @@ public:
 
   CConfigKey<string> *m_pCfgServer;
   CConfigKey<string> *m_pCfgTimeZone;
+
+  CMqttValue *m_pMqtt_Time;
+  time_t m_RawTime;
+  struct tm *m_pTimeInfo;
 };
 #endif // SRC_CNTP_H_

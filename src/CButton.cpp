@@ -1,9 +1,12 @@
 #include "CButton.h"
+#include "CMqtt.h"
 
 bool CButton::setup() {
   CControl::setup();
 
   pinMode(m_nPin, m_nMode);
+  m_pMqtt_ButtonState =
+      CreateMqttValue("ButtonState", getButtonStateString(m_eButtonState));
   return true;
 }
 void CButton::control(bool bForce /*= false*/) {
@@ -29,6 +32,7 @@ void CButton::control(bool bForce /*= false*/) {
       break;
 
     _log(CControl::D, "BUTTON H");
+    setButtonState(ePressed);
     m_uiMillisButtonControl = millis();
     m_eStateButtonControl = eWaitForLow;
     break;
@@ -47,17 +51,17 @@ void CButton::control(bool bForce /*= false*/) {
 
     if (m_uiMillisClick >= cnVeryLongClick) {
       _log(CControl::I, "BUTTON VLC");
-      m_eButtonState = eVeryLongClick;
+      setButtonState(eVeryLongClick);
       m_eStateButtonControl = eWaitForHigh;
       break;
     }
     if (m_uiMillisClick >= cnLongClick) {
       _log(CControl::I, "BUTTON LC");
-      m_eButtonState = eLongClick;
+      setButtonState(eLongClick);
       m_eStateButtonControl = eWaitForHigh;
       break;
     }
-
+    setButtonState(eNone);
     _log(CControl::D, "BUTTON W4H2");
     m_eStateButtonControl = eWaitForHigh2;
     m_uiMillisButtonControl = millis();
@@ -68,12 +72,13 @@ void CButton::control(bool bForce /*= false*/) {
       _log(CControl::D, "BUTTON H2");
       m_uiMillisButtonControl = millis();
       m_eStateButtonControl = eWaitForLow2;
+      setButtonState(ePressed);
       break;
     }
 
     if ((millis() - m_uiMillisButtonControl) > cnDoubleClickDelayMax) {
       _log(CControl::I, "BUTTON Click");
-      m_eButtonState = eClick;
+      setButtonState(eClick);
       m_eStateButtonControl = eWaitForHigh;
       break;
     }
@@ -83,6 +88,7 @@ void CButton::control(bool bForce /*= false*/) {
     if (bPressed)
       break;
 
+    setButtonState(eNone);
     m_uiMillisClick = millis() - m_uiMillisButtonControl;
     _log(CControl::D, "BUTTON L2 %lu", m_uiMillisClick);
     if (m_uiMillisClick < cnFilterMs) {
@@ -91,8 +97,32 @@ void CButton::control(bool bForce /*= false*/) {
       break;
     }
     _log(CControl::I, "BUTTON DoubleClick");
-    m_eButtonState = eDoubleClick;
+    setButtonState(eDoubleClick);
     m_eStateButtonControl = eWaitForHigh;
     break;
+  }
+}
+void CButton::setButtonState(_E_BUTTONSTATE eState) {
+  m_eButtonState = eState;
+  m_pMqtt_ButtonState->setValue(getButtonStateString(eState));
+}
+
+const char *CButton::getButtonStateString(_E_BUTTONSTATE eState) {
+  switch (eState) {
+  case eNone:
+    return "none";
+  case ePressed:
+    return "pressed";
+  case eClick:
+    return "click";
+  case eDoubleClick:
+    return "doubleclick";
+  case eLongClick:
+    return "longclick";
+  case eVeryLongClick:
+    return "verylongclick";
+
+  default:
+    return "---";
   }
 }

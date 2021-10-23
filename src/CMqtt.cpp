@@ -5,8 +5,27 @@
 #include <CDisplay.h>
 #endif
 
-CMqttValue::CMqttValue(string sPath) : m_sPath(sPath), m_sValue("") {
+// static
+CMqtt *CMqtt::ms_pMqtt = NULL;
+
+CMqttValue::CMqttValue(string sPath, string sValue /*= ""*/)
+    : m_sPath(sPath), m_sValue(sValue), m_pControl(NULL), m_bPublished(false) {
   CMqtt::ms_Values.push_back(this);
+}
+
+void CMqttValue::setValue(string sValue) {
+  if (m_sValue == sValue)
+    return;
+  m_sValue = sValue;
+  m_bPublished = false;
+  if (m_pControl != NULL)
+    m_pControl->_log(CControl::I, "Mqtt: %s = %s", m_sPath.c_str(),
+                     m_sValue.c_str());
+  else
+    CControl::Log(CControl::I, "Mqtt: %s = %s", m_sPath.c_str(),
+                  m_sValue.c_str());
+  if (CMqtt::ms_pMqtt != NULL && CMqtt::ms_pMqtt->m_pMqttClient->connected())
+    CMqtt::ms_pMqtt->publish_value(this);
 }
 
 String macToStr(const uint8_t *mac) {
@@ -25,6 +44,7 @@ list<CMqttValue *> CMqtt::ms_Values;
 CMqtt::CMqtt(string sServerIp /* = "" */, string sClientName /* = "" */)
     : CControl("CMqtt"), m_sServerIp(sServerIp), m_sClientName(sClientName),
       m_WifiClient(), m_pMqttClient(NULL), m_bValuesComplete(false) {
+  ms_pMqtt = this;
   m_pMqttClient = new PubSubClient(m_WifiClient);
   m_pMqttClient->setServer(m_sServerIp.c_str(), 1883);
   ValuePending();
@@ -97,7 +117,7 @@ void CMqtt::control(bool bForce /*= false*/) {
 
   case eSetup:
 
-    m_pMqttClient->connect(this->m_sClientName.c_str());
+    m_pMqttClient->connect(this->m_sClientName.c_str(), "pi3", "pi3");
     _log(I, "connecting");
     this->m_nState = eConnect;
 
@@ -110,7 +130,7 @@ void CMqtt::control(bool bForce /*= false*/) {
 #endif
       ValueDone();
       this->m_nState = eWaitForPublish;
-      // _log(".");
+      _log(I, "WaitForPublish");
       break;
     }
 
@@ -119,31 +139,42 @@ void CMqtt::control(bool bForce /*= false*/) {
   case eWaitForPublish:
     if (CControl::ms_ulValuesPending == 0)
       this->m_nState = ePublish;
-    // _log(".");
+    _log(I, "Publish");
     break;
 
   case ePublish:
     m_pMqttClient->loop();
-    {
-      list<CMqttValue *>::iterator it;
-      for (it = ms_Values.begin(); it != ms_Values.end(); it++) {
-        char szKey[128];
-        snprintf(szKey, sizeof(szKey), "%s/%s", m_sClientName.c_str(),
-                 (*it)->m_sPath.c_str());
-        _log(I, "publish %s = %s", szKey, (*it)->m_sValue.c_str());
-        m_pMqttClient->publish(szKey, (*it)->m_sValue.c_str(), true);
-        m_pMqttClient->disconnect();
-#if USE_DISPLAY == 1
-        if (m_pDisplayLine)
-          m_pDisplayLine->Line("Mqtt published");
-#endif
-      }
-    }
+    publish();
     ProcessDone();
     this->m_nState = eDone;
     break;
 
   case eDone:
+    m_pMqttClient->loop();
+    publish();
     break;
   }
+}
+
+void CMqtt::publish() {
+  list<CMqttValue *>::iterator it;
+  for (it = ms_Values.begin(); it != ms_Values.end(); it++) {
+    CMqttValue *pValue = *it;
+    publish_value(pValue);
+  }
+  // m_pMqttClient->disconnect();
+#if USE_DISPLAY == 1
+  if (m_pDisplayLine)
+    m_pDisplayLine->Line("Mqtt published");
+#endif
+}
+void CMqtt::publish_value(CMqttValue *pValue) {
+  if (pValue->m_bPublished)
+    return;
+  pValue->m_bPublished = true;
+  char szKey[128];
+  snprintf(szKey, sizeof(szKey), "%s/%s", m_sClientName.c_str(),
+           pValue->m_sPath.c_str());
+  _log(I, "publish %s = %s", szKey, pValue->m_sValue.c_str());
+  m_pMqttClient->publish(szKey, pValue->m_sValue.c_str(), true);
 }

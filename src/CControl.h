@@ -11,6 +11,8 @@ class CDisplayLine;
 
 #include <Syslog.h>
 
+class CMqttValue;
+
 class CControl {
 public:
   enum E_LOGTYPE {
@@ -129,6 +131,8 @@ public:
     ms_ulProcessPending--;
   }
 
+  CMqttValue *CreateMqttValue(std::string sName, std::string sValue = "");
+
 #if USE_DISPLAY == 1
   void SetDisplayLine(CDisplayLine *pLine) { m_pDisplayLine = pLine; }
 #endif
@@ -145,6 +149,7 @@ protected:
   static int ms_ulValuesPending;
   static int ms_ulProcessPending;
   static bool ms_bNetworkConnected;
+  static bool ms_bTimeUpdated;
 
 public:
   static std::vector<CControl *> ms_Instances;

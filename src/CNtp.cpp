@@ -9,6 +9,8 @@ CNtp::CNtp() : CControl("CNtp"), m_sTimeZone(""), m_sServer("") {
   m_pCfgServer = new CConfigKey<string>("NTP", "Server", "pool.ntp.org");
   m_pCfgTimeZone =
       new CConfigKey<string>("NTP", "TimeZone", "CET-1CEST,M3.5.0,M10.5.0/3");
+
+  m_pMqtt_Time = CreateMqttValue("Time");
 }
 
 bool CNtp::setup() {
@@ -44,13 +46,12 @@ void CNtp::control(bool bForce /*= false*/) {
     this->m_nState = eWaitForFirstUpdate;
 
   case eWaitForFirstUpdate: {
-    time_t rawtime;
-    struct tm *timeinfo;
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    if (timeinfo->tm_year + 1900 <= 1970)
+    time(&m_RawTime);
+    m_pTimeInfo = localtime(&m_RawTime);
+    if (m_pTimeInfo->tm_year + 1900 <= 1970)
       break;
   }
+    ms_bTimeUpdated = true;
     printLocalTime();
     _log(I, "First time update done");
     this->m_nState = eDone;
@@ -70,15 +71,15 @@ void CNtp::UpdateTime() {
 }
 
 void CNtp::printLocalTime() {
-  time_t rawtime;
-  struct tm *timeinfo;
-  time(&rawtime);
-  timeinfo = localtime(&rawtime);
-  _log(I, asctime(timeinfo));
-  long lHours = timeinfo->tm_hour;
-  long lMinutes = lHours * 60 + timeinfo->tm_min;
-  long lSeconds = lMinutes * 60 + timeinfo->tm_sec;
+  time(&m_RawTime);
+  m_pTimeInfo = localtime(&m_RawTime);
+  string sTime = asctime(m_pTimeInfo);
+  _log(I, sTime.c_str());
+  m_pMqtt_Time->setValue(sTime);
+  long lHours = m_pTimeInfo->tm_hour;
+  long lMinutes = lHours * 60 + m_pTimeInfo->tm_min;
+  long lSeconds = lMinutes * 60 + m_pTimeInfo->tm_sec;
   _log(I, "Minutes Today: h:%ld m:%ld s:%ld", lHours, lMinutes, lSeconds);
-  _log(I, "Year=%d", timeinfo->tm_year);
+  _log(I, "Year=%d", m_pTimeInfo->tm_year);
   delay(1000);
 }
