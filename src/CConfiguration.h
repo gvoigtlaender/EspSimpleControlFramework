@@ -51,11 +51,26 @@ public:
         std::unique_ptr<char[]> buf(new char[size]);
 
         configFile.readBytes(buf.get(), size);
+        configFile.close();
+#if ARDUINOJSON_VERSION_MAJOR == 5
         DynamicJsonBuffer jsonBuffer;
         JsonObject &json = jsonBuffer.parseObject(buf.get());
         json.printTo(Serial);
         Serial.println("");
         if (json.success()) {
+#else
+        StaticJsonDocument<1024> doc;
+        DeserializationError error = deserializeJson(doc, buf.get());
+        if (error) {
+          CControl::Log(CControl::I,
+                        "deserializeJson() fail, failed to load json config");
+          return;
+        }
+        JsonObject json = doc.as<JsonObject>();
+        serializeJson(json, Serial);
+        Serial.println("");
+        if (!json.isNull()) {
+#endif
           CControl::Log(CControl::I, "json.success() success, parsed json");
 
           CConfigKeyBase::SectionsMap::iterator sections;
@@ -75,7 +90,11 @@ public:
               continue;
             }
 
+#if ARDUINOJSON_VERSION_MAJOR == 5
             JsonObject &sec = json[pszSec];
+#else
+            JsonObject sec = json[pszSec];
+#endif
             for (keys = sections->second.begin();
                  keys != sections->second.end(); keys++) {
               pszKey = keys->first.c_str();
@@ -111,23 +130,32 @@ public:
 
   void save() {
     CControl::Log(CControl::I, "saving config");
+#if ARDUINOJSON_VERSION_MAJOR == 5
     DynamicJsonBuffer jsonBuffer;
     JsonObject &json = jsonBuffer.createObject();
+#else
+    DynamicJsonDocument doc(1024);
+    JsonObject json = doc.as<JsonObject>();
+#endif
 
     CConfigKeyBase::SectionsMap::iterator sections;
     CConfigKeyBase::KeyMap::iterator keys;
 
     for (sections = CConfigKeyBase::ms_Vars.begin();
          sections != CConfigKeyBase::ms_Vars.end(); sections++) {
+#if ARDUINOJSON_VERSION_MAJOR == 5
       JsonObject &sec = json.createNestedObject(sections->first.c_str());
+#else
+      JsonObject sec = json.createNestedObject(sections->first.c_str());
+#endif
       for (keys = sections->second.begin(); keys != sections->second.end();
            keys++) {
         std::string &sVal = keys->second->ToString();
         CControl::Log(CControl::I, "saving section %s key %s value %s",
                       sections->first.c_str(), keys->first.c_str(),
                       sVal.c_str());
-        // sec[keys->first.c_str()] = sVal.c_str();
-        sec.set(keys->first.c_str(), sVal.c_str());
+        sec[keys->first.c_str()] = sVal.c_str();
+        // sec.set(keys->first.c_str(), sVal.c_str());
       }
     }
 
@@ -136,9 +164,15 @@ public:
       CControl::Log(CControl::I, "failed to open config file for writing");
     }
 
+#if ARDUINOJSON_VERSION_MAJOR == 5
     json.printTo(Serial);
     Serial.println("");
     json.printTo(configFile);
+#else
+    serializeJson(json, Serial);
+    Serial.println("");
+    serializeJson(json, configFile);
+#endif
     configFile.close();
   }
 
