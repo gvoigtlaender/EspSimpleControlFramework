@@ -11,6 +11,9 @@ CMqtt *CMqtt::ms_pMqtt = NULL;
 CMqttValue::CMqttValue(string sPath, string sValue /*= ""*/)
     : m_sPath(sPath), m_sValue(sValue), m_pControl(NULL), m_bPublished(false) {
   CMqtt::ms_Values.push_back(this);
+#if defined DEBUG
+  Serial.printf("CMqttValue(%s, %s)\n", sPath.c_str(), sValue.c_str());
+#endif
 }
 
 void CMqttValue::setValue(string sValue) {
@@ -24,7 +27,8 @@ void CMqttValue::setValue(string sValue) {
   else
     CControl::Log(CControl::D, "Mqtt: %s = %s", m_sPath.c_str(),
                   m_sValue.c_str());
-  if (CMqtt::ms_pMqtt != NULL && CMqtt::ms_pMqtt->m_pMqttClient->connected())
+  if (CControl::ms_bNetworkConnected && CMqtt::ms_pMqtt != NULL &&
+      CMqtt::ms_pMqtt->m_pMqttClient->connected())
     CMqtt::ms_pMqtt->publish_value(this);
 }
 
