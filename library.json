@@ -19,7 +19,7 @@
     {
       "owner": "bblanchon",
       "name": "ArduinoJson",
-      "version": "^6.18.5"
+      "version": "5"
     },
     {
       "owner": "arcao",
