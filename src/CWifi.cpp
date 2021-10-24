@@ -8,7 +8,7 @@ CWifi::CWifi(const char *szAppName, string sSsid /*= ""*/,
              string sPassword /*= ""*/, string sStaticIp /*= ""*/)
     : CControl("CWifi"), m_sAppName(szAppName), m_sSsid(sSsid),
       m_sPassword(sPassword), m_sStaticIp(sStaticIp) {
-  m_pWifiSsid = new CConfigKey<std::string>("Wifi", "Ssid", m_sSsid);
+  m_pWifiSsid = CreateConfigKey<std::string>("Wifi", "Ssid", m_sSsid);
   m_pWifiPassword =
       new CConfigKey<std::string>("Wifi", "Password", m_sPassword);
   m_pWifiPassword->m_pValue->m_sInputType = "password";
