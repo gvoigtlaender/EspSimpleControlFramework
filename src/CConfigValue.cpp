@@ -1,5 +1,6 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
 #include "CConfigValue.h"
+#include "CMqtt.h"
 #include <Arduino.h>
 
 template <> std::string to_string<int>(const int &n) {
@@ -52,6 +53,8 @@ template <> void CConfigKey<std::string>::FromString(const char *pszVal) {
     static_cast<CConfigValue<std::string> *>(m_pValue)->m_Value = pszVal;
     if (m_pOnChangedCb != NULL)
       (m_pOnChangedCb)(m_pOnChangedObject, this);
+    if (m_pMqttValue != NULL)
+      m_pMqttValue->setValue(sString);
   }
 }
 
@@ -61,6 +64,8 @@ void CConfigKeyTimeString::FromString(const char *pszVal) {
     static_cast<CConfigValue<std::string> *>(m_pValue)->m_Value = pszVal;
     if (m_pOnChangedCb != NULL)
       (m_pOnChangedCb)(m_pOnChangedObject, this);
+    if (m_pMqttValue != NULL)
+      m_pMqttValue->setValue(sString);
   }
   m_lSeconds = StringHhMmToSeconds(pszVal);
 #if defined DEBUG
@@ -104,6 +109,8 @@ template <> void CConfigKey<int>::FromString(const char *pszVal) {
     static_cast<CConfigValue<int> *>(m_pValue)->m_Value = nVal;
     if (m_pOnChangedCb != NULL)
       (m_pOnChangedCb)(m_pOnChangedObject, this);
+    if (m_pMqttValue != NULL)
+      m_pMqttValue->setValue(pszVal);
   }
 #if defined DEBUG
   Serial.printf("\t\t%s->FromString(%s) => %d\n", this->m_sKey.c_str(), pszVal,
@@ -143,6 +150,8 @@ template <> void CConfigKey<int16_t>::FromString(const char *pszVal) {
     static_cast<CConfigValue<int16_t> *>(m_pValue)->m_Value = nVal;
     if (m_pOnChangedCb != NULL)
       (m_pOnChangedCb)(m_pOnChangedObject, this);
+    if (m_pMqttValue != NULL)
+      m_pMqttValue->setValue(pszVal);
   }
 #if defined DEBUG
   Serial.printf("\t\t%s %s => %d\n", this->m_sKey.c_str(), pszVal,

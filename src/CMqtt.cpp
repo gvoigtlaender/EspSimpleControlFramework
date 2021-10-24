@@ -19,10 +19,10 @@ void CMqttValue::setValue(string sValue) {
   m_sValue = sValue;
   m_bPublished = false;
   if (m_pControl != NULL)
-    m_pControl->_log(CControl::I, "Mqtt: %s = %s", m_sPath.c_str(),
+    m_pControl->_log(CControl::D, "Mqtt: %s = %s", m_sPath.c_str(),
                      m_sValue.c_str());
   else
-    CControl::Log(CControl::I, "Mqtt: %s = %s", m_sPath.c_str(),
+    CControl::Log(CControl::D, "Mqtt: %s = %s", m_sPath.c_str(),
                   m_sValue.c_str());
   if (CMqtt::ms_pMqtt != NULL && CMqtt::ms_pMqtt->m_pMqttClient->connected())
     CMqtt::ms_pMqtt->publish_value(this);

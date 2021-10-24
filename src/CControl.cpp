@@ -27,3 +27,75 @@ CMqttValue *CControl::CreateMqttValue(std::string sName,
        pValue->m_sValue.c_str());
   return pValue;
 }
+
+template <typename T>
+CConfigKey<T> *CControl::CreateConfigKey(const char *pszSection,
+                                         const char *pszKey, T def) {
+  CConfigKey<T> *pKey = new CConfigKey<T>(pszSection, pszKey, def);
+  pKey->m_pMqttValue = new CMqttValue(
+      m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
+          std::string("/") + std::string(pszKey),
+      "");
+  return pKey;
+}
+
+template <>
+CConfigKey<std::string> *
+CControl::CreateConfigKey<std::string>(const char *pszSection,
+                                       const char *pszKey, std::string def) {
+  CConfigKey<std::string> *pKey =
+      new CConfigKey<std::string>(pszSection, pszKey, def);
+  pKey->m_pMqttValue = new CMqttValue(
+      m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
+          std::string("/") + std::string(pszKey),
+      "");
+  return pKey;
+}
+
+template <>
+CConfigKey<int> *CControl::CreateConfigKey<int>(const char *pszSection,
+                                                const char *pszKey, int def) {
+  CConfigKey<int> *pKey = new CConfigKey<int>(pszSection, pszKey, def);
+  pKey->m_pMqttValue = new CMqttValue(
+      m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
+          std::string("/") + std::string(pszKey),
+      "");
+  return pKey;
+}
+
+template <>
+CConfigKey<int16_t> *CControl::CreateConfigKey<int16_t>(const char *pszSection,
+                                                        const char *pszKey,
+                                                        int16_t def) {
+  CConfigKey<int16_t> *pKey = new CConfigKey<int16_t>(pszSection, pszKey, def);
+  pKey->m_pMqttValue = new CMqttValue(
+      m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
+          std::string("/") + std::string(pszKey),
+      "");
+  return pKey;
+}
+
+CConfigKeyTimeString *CControl::CreateConfigKeyTimeString(
+    const char *pszSection, const char *pszKey, std::string def,
+    CConfigKeyTimeString::E_Type type /*= CConfigKeyTimeString::HHMM*/) {
+  CConfigKeyTimeString *pKey =
+      new CConfigKeyTimeString(pszSection, pszKey, def, type);
+  pKey->m_pMqttValue = new CMqttValue(
+      m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
+          std::string("/") + std::string(pszKey),
+      "");
+  return pKey;
+}
+
+CConfigKeyIntSlider *CControl::CreateConfigKeyIntSlider(const char *pszSection,
+                                                        const char *pszKey,
+                                                        int def, int nMin,
+                                                        int nMax) {
+  CConfigKeyIntSlider *pKey =
+      new CConfigKeyIntSlider(pszSection, pszKey, def, nMin, nMax);
+  pKey->m_pMqttValue = new CMqttValue(
+      m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
+          std::string("/") + std::string(pszKey),
+      "");
+  return pKey;
+}

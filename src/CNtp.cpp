@@ -6,7 +6,7 @@ uint32_t sntp_update_delay_MS_rfc_not_less_than_15000() {
   return 12 * 60 * 60 * 1000UL; // 12 hours
 }
 CNtp::CNtp() : CControl("CNtp"), m_sTimeZone(""), m_sServer("") {
-  m_pCfgServer = new CConfigKey<string>("NTP", "Server", "pool.ntp.org");
+  m_pCfgServer = CreateConfigKey<string>("NTP", "Server", "pool.ntp.org");
   m_pCfgTimeZone =
       new CConfigKey<string>("NTP", "TimeZone", "CET-1CEST,M3.5.0,M10.5.0/3");
 
@@ -74,6 +74,8 @@ void CNtp::printLocalTime() {
   time(&m_RawTime);
   m_pTimeInfo = localtime(&m_RawTime);
   string sTime = asctime(m_pTimeInfo);
+  if (sTime[sTime.length() - 1] == '\n')
+    sTime.erase(sTime.length() - 1);
   _log(I, sTime.c_str());
   m_pMqtt_Time->setValue(sTime);
   long lHours = m_pTimeInfo->tm_hour;

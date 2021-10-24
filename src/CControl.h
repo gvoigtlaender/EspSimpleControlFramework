@@ -9,9 +9,8 @@
 class CDisplayLine;
 #endif
 
+#include "CConfigValue.h"
 #include <Syslog.h>
-
-class CMqttValue;
 
 class CControl {
 public:
@@ -132,6 +131,17 @@ public:
   }
 
   CMqttValue *CreateMqttValue(std::string sName, std::string sValue = "");
+
+  template <typename T>
+  CConfigKey<T> *CreateConfigKey(const char *pszSection, const char *pszKey,
+                                 T def);
+  CConfigKeyTimeString *CreateConfigKeyTimeString(
+      const char *pszSection, const char *pszKey, std::string def,
+      CConfigKeyTimeString::E_Type type = CConfigKeyTimeString::HHMM);
+
+  CConfigKeyIntSlider *CreateConfigKeyIntSlider(const char *pszSection,
+                                                const char *pszKey, int def,
+                                                int nMin, int nMax);
 
 #if USE_DISPLAY == 1
   void SetDisplayLine(CDisplayLine *pLine) { m_pDisplayLine = pLine; }
