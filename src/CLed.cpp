@@ -72,7 +72,7 @@ void CLed::control(bool bForce /*= false*/) {
   }
 }
 
-_E_STMRESULT CLed::LedBlink(int nOnTimeMs, int nOffTimeMs, uint8 uiCnt) {
+_E_STMRESULT CLed::LedBlink(int nOnTimeMs, int nOffTimeMs, uint8_t uiCnt) {
 
   switch (m_eBlinkState) {
   case eBlinkStart:

@@ -7,7 +7,9 @@
 #include "CMqtt.h"
 #include <Arduino.h>
 #include <list>
+#include <string>
 using std::list;
+using std::string;
 
 class CLed : public CControl {
 public:
@@ -29,7 +31,7 @@ public:
   E_LEDSTATES m_eControlState = eStart;
 
   //! blink cycle
-  _E_STMRESULT LedBlink(int nOnTimeMs, int nOffTimeMs, uint8 uiCnt);
+  _E_STMRESULT LedBlink(int nOnTimeMs, int nOffTimeMs, uint8_t uiCnt);
   enum E_BLINKSTATE {
     eBlinkStart = 0,
     eBlinkCheck,
@@ -38,8 +40,8 @@ public:
     eBlinkOff
   };
   E_BLINKSTATE m_eBlinkState;
-  uint8 m_uiBlinkCnt;
-  uint64 m_uiBlinkMillis;
+  uint8_t m_uiBlinkCnt;
+  uint64_t m_uiBlinkMillis;
 
   enum E_BLINKTASK { ON = 0, OFF, TOGGLE, BLINK_1, BLINK_2, BLINK_3 };
   list<E_BLINKTASK> lBlinkTasks;
