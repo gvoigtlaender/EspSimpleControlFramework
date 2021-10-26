@@ -10,7 +10,13 @@ using std::list;
 
 #include "CConfigValue.h"
 #include <Arduino.h>
+#if defined(ESP8266)
 #include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#else
+#error EspSimpleControlFramework requires ESP8266 or ESP32 platform
+#endif
 #include <PubSubClient.h>
 
 #include "CControl.h"
