@@ -43,8 +43,8 @@ protected:
   int m_nDigitalReadRef;
   _E_BUTTONSTATE m_eButtonState;
   _E_STATE m_eStateButtonControl;
-  uint64 m_uiMillisButtonControl;
-  uint64 m_uiMillisClick;
+  uint64_t m_uiMillisButtonControl;
+  uint64_t m_uiMillisClick;
   CMqttValue *m_pMqtt_ButtonState;
 };
 

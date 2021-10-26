@@ -22,7 +22,11 @@ bool CNtp::setup() {
   }
   _log(I, "configTime(%s, %s, pool.ntp.org)", m_sTimeZone.c_str(),
        m_sServer.c_str());
+#if defined(ESP8266)
   configTime(m_sTimeZone.c_str(), m_sServer.c_str(), "pool.ntp.org");
+#elif defined(ESP32)
+  configTzTime(m_sTimeZone.c_str(), m_sServer.c_str(), "pool.ntp.org");
+#endif
   return true;
 }
 //! task control
@@ -65,7 +69,11 @@ void CNtp::control(bool bForce /*= false*/) {
 void CNtp::UpdateTime() {
   _log(I, "UpdateTime");
   if (!m_sServer.empty()) {
+#if defined(ESP8266)
     configTime(m_sTimeZone.c_str(), m_sServer.c_str(), "pool.ntp.org");
+#elif defined(ESP32)
+    configTzTime(m_sTimeZone.c_str(), m_sServer.c_str(), "pool.ntp.org");
+#endif
   }
   printLocalTime();
 }
