@@ -50,7 +50,7 @@ public:
     m_bCurrentState = bOn;
     ::digitalWrite(m_nLedPin, (bOn == true) ? HIGH : LOW);
     if (m_pMqtt_LedState != NULL)
-      m_pMqtt_LedState->setValue(std::to_string(bOn));
+      m_pMqtt_LedState->setValue(to_string(bOn));
   }
   bool m_bCurrentState;
 

@@ -27,14 +27,14 @@ void CLed::control(bool bForce /*= false*/) {
     break;
 
   case eCheck:
-    m_pMqtt_NoOfTasks->setValue(std::to_string(lBlinkTasks.size()));
+    m_pMqtt_NoOfTasks->setValue(to_string(lBlinkTasks.size()));
     m_pMqtt_CurrentTask->setValue("-");
     if (lBlinkTasks.empty())
       break;
 
     eTask = lBlinkTasks.front();
     lBlinkTasks.pop_front();
-    m_pMqtt_CurrentTask->setValue(std::to_string(eTask));
+    m_pMqtt_CurrentTask->setValue(to_string(eTask));
 
     if (eTask == ON) {
       _log(D, "ON");
