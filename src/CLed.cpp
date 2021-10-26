@@ -19,7 +19,8 @@ void CLed::control(bool bForce /*= false*/) {
 
   E_BLINKTASK eTask;
 
-  const int ciShortBlink = 150;
+  const int ciShortBlink = 25;
+  const int ciOffTime = 250;
 
   switch (m_eControlState) {
   case eStart:
@@ -52,17 +53,17 @@ void CLed::control(bool bForce /*= false*/) {
     break;
 
   case eB1:
-    if (LedBlink(ciShortBlink, ciShortBlink, 1) == STM_BUSY)
+    if (LedBlink(ciShortBlink, ciOffTime, 1) == STM_BUSY)
       break;
     m_eControlState = eCheck;
     break;
   case eB2:
-    if (LedBlink(ciShortBlink, ciShortBlink, 2) == STM_BUSY)
+    if (LedBlink(ciShortBlink, ciOffTime, 2) == STM_BUSY)
       break;
     m_eControlState = eCheck;
     break;
   case eB3:
-    if (LedBlink(ciShortBlink, ciShortBlink, 3) == STM_BUSY)
+    if (LedBlink(ciShortBlink, ciOffTime, 3) == STM_BUSY)
       break;
     m_eControlState = eCheck;
     break;
