@@ -112,7 +112,7 @@ void CMqtt::control(bool bForce /*= false*/) {
 
   case eWaitForWifi:
     // wait for WiFi
-    if (!CControl::ms_bNetworkConnected) {
+    if (!CControl::ms_bNetworkConnected && !m_sServerIp.empty()) {
       break;
     }
 
@@ -127,12 +127,12 @@ void CMqtt::control(bool bForce /*= false*/) {
     break;
 
   case eSetup:
-
-    m_pMqttClient->connect(this->m_sClientName.c_str(),
-                           m_pCfgMqttUser->m_pTValue->m_Value.c_str(),
-                           m_pCfgMqttPasswd->m_pTValue->m_Value.c_str());
-    _log2(I, "connecting");
-    this->m_nState = eConnect;
+    if (m_pMqttClient->connect(this->m_sClientName.c_str(),
+                               m_pCfgMqttUser->m_pTValue->m_Value.c_str(),
+                               m_pCfgMqttPasswd->m_pTValue->m_Value.c_str())) {
+      this->m_nState = eConnect;
+    }
+    break;
 
   case eConnect:
     if (m_pMqttClient->connected()) {
