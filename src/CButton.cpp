@@ -22,7 +22,7 @@ void CButton::control(bool bForce /*= false*/) {
   switch (m_eStateButtonControl) {
   case eInit:
     if (!bPressed) {
-      _log(CControl::D, "BUTTON W4H");
+      _log2(CControl::D, "BUTTON W4H");
       m_eStateButtonControl = eWaitForHigh;
     }
     break;
@@ -31,7 +31,7 @@ void CButton::control(bool bForce /*= false*/) {
     if (!bPressed)
       break;
 
-    _log(CControl::D, "BUTTON H");
+    _log2(CControl::D, "BUTTON H");
     setButtonState(ePressed);
     m_uiMillisButtonControl = millis();
     m_eStateButtonControl = eWaitForLow;
@@ -44,32 +44,32 @@ void CButton::control(bool bForce /*= false*/) {
     m_uiMillisClick = millis() - m_uiMillisButtonControl;
     _log(CControl::D, "BUTTON L %lu", m_uiMillisClick);
     if (m_uiMillisClick < cnFilterMs) {
-      CControl::Log(CControl::D, "BUTTON skip");
+      _log2(CControl::D, "BUTTON skip");
       m_eStateButtonControl = eWaitForHigh;
       break;
     }
 
     if (m_uiMillisClick >= cnVeryLongClick) {
-      _log(CControl::I, "BUTTON VLC");
+      _log2(CControl::I, "BUTTON VLC");
       setButtonState(eVeryLongClick);
       m_eStateButtonControl = eWaitForHigh;
       break;
     }
     if (m_uiMillisClick >= cnLongClick) {
-      _log(CControl::I, "BUTTON LC");
+      _log2(CControl::I, "BUTTON LC");
       setButtonState(eLongClick);
       m_eStateButtonControl = eWaitForHigh;
       break;
     }
     setButtonState(eNone);
-    _log(CControl::D, "BUTTON W4H2");
+    _log2(CControl::D, "BUTTON W4H2");
     m_eStateButtonControl = eWaitForHigh2;
     m_uiMillisButtonControl = millis();
     break;
 
   case eWaitForHigh2:
     if (bPressed) {
-      _log(CControl::D, "BUTTON H2");
+      _log2(CControl::D, "BUTTON H2");
       m_uiMillisButtonControl = millis();
       m_eStateButtonControl = eWaitForLow2;
       setButtonState(ePressed);
@@ -77,7 +77,7 @@ void CButton::control(bool bForce /*= false*/) {
     }
 
     if ((millis() - m_uiMillisButtonControl) > cnDoubleClickDelayMax) {
-      _log(CControl::I, "BUTTON Click");
+      _log2(CControl::I, "BUTTON Click");
       setButtonState(eClick);
       m_eStateButtonControl = eWaitForHigh;
       break;
@@ -92,11 +92,11 @@ void CButton::control(bool bForce /*= false*/) {
     m_uiMillisClick = millis() - m_uiMillisButtonControl;
     _log(CControl::D, "BUTTON L2 %lu", m_uiMillisClick);
     if (m_uiMillisClick < cnFilterMs) {
-      _log(CControl::D, "BUTTON skip 2");
+      _log2(CControl::D, "BUTTON skip 2");
       m_eStateButtonControl = eWaitForHigh2;
       break;
     }
-    _log(CControl::I, "BUTTON DoubleClick");
+    _log2(CControl::I, "BUTTON DoubleClick");
     setButtonState(eDoubleClick);
     m_eStateButtonControl = eWaitForHigh;
     break;

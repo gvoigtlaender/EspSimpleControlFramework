@@ -19,7 +19,8 @@ template <typename T> std::string to_string(const T &n) {
 class CConfigValueBase {
 public:
   CConfigValueBase()
-      : m_sSection_Key(""), m_sInputType("text"), m_sInputHtmlCode("") {}
+      : m_sSection_Key(std::to_string(ms_uiUniqeId++)), m_sInputType("text"),
+        m_sInputHtmlCode("") {}
 
   virtual std::string GetFormEntry() = 0;
   virtual void Reset() = 0;
@@ -27,6 +28,7 @@ public:
   std::string m_sSection_Key;
   std::string m_sInputType;
   std::string m_sInputHtmlCode;
+  static uint8_t ms_uiUniqeId;
 };
 
 template <typename T> class CConfigValue : public CConfigValueBase {
@@ -119,13 +121,15 @@ public:
   CConfigKey(std::string szSection, std::string szKey, T def)
       : CConfigKeyBase(szSection, szKey) {
     m_pTValue = new CConfigValue<T>(def);
-    m_pTValue->m_sSection_Key = m_sSection + "_" + m_sKey;
+    // m_pTValue->m_sSection_Key = std::to_string(m_pTValue->ms_uiUniqeId++); //
+    // m_sSection + "_" + m_sKey;
     m_pValue = m_pTValue;
   }
   CConfigKey(const char *pszSection, const char *pszKey, T def)
       : CConfigKeyBase(pszSection, pszKey) {
     m_pTValue = new CConfigValue<T>(def);
-    m_pTValue->m_sSection_Key = m_sSection + "_" + m_sKey;
+    // m_pTValue->m_sSection_Key = std::to_string(m_pTValue->ms_uiUniqeId++); //
+    // m_sSection + "_" + m_sKey;
     m_pValue = m_pTValue;
   }
   std::string &ToString() override { return m_sValue; }

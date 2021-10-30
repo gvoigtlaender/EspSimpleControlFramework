@@ -49,17 +49,19 @@ public:
     if (type == D)
       return;
 #endif
-    char czDebBuf[2048] = {0};
+    static char czDebBuf[200] = {0};
     va_list arg_ptr;
 
     va_start(arg_ptr, pcMessage);
-    vsprintf(czDebBuf, pcMessage, arg_ptr);
+    vsnprintf(czDebBuf, sizeof(czDebBuf), pcMessage, arg_ptr);
     va_end(arg_ptr);
 
-    Serial.printf("%08lu: \t%c: %s\n", millis(), GetLogTypeChar(type),
+    Serial.printf("%08lu: \tSYSTEM\t%c: %s\n", millis(), GetLogTypeChar(type),
                   czDebBuf);
     if (ms_pSyslog != NULL) {
-      ms_pSyslog->logf(GetLogTypeMsk(type), "SYSTEM %s", czDebBuf);
+      char szTmp[255];
+      snprintf(szTmp, sizeof(szTmp), "SYSTEM %s", czDebBuf);
+      ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
     }
     // delay(0);
   }
@@ -69,18 +71,35 @@ public:
     if (type == D)
       return;
 #endif
-    char czDebBuf[2048] = {0};
+    static char czDebBuf[200] = {0};
     va_list arg_ptr;
 
     va_start(arg_ptr, pcMessage);
-    vsprintf(czDebBuf, pcMessage, arg_ptr);
+    vsnprintf(czDebBuf, sizeof(czDebBuf), pcMessage, arg_ptr);
     va_end(arg_ptr);
 
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_sInstanceName.c_str(),
                   GetLogTypeChar(type), czDebBuf);
     if (ms_pSyslog != NULL) {
-      ms_pSyslog->logf(GetLogTypeMsk(type), "%s %s", m_sInstanceName.c_str(),
-                       czDebBuf);
+      char szTmp[255];
+      snprintf(szTmp, sizeof(szTmp), "%s %s", m_sInstanceName.c_str(),
+               czDebBuf);
+      ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
+    }
+    delay(0);
+  }
+  void _log2(E_LOGTYPE type, const char *pcMessage) {
+#if !defined DEBUG
+    if (type == D)
+      return;
+#endif
+    Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_sInstanceName.c_str(),
+                  GetLogTypeChar(type), pcMessage);
+    if (ms_pSyslog != NULL) {
+      char szTmp[255];
+      snprintf(szTmp, sizeof(szTmp), "%s %s", m_sInstanceName.c_str(),
+               pcMessage);
+      ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
     }
     delay(0);
   }
@@ -148,7 +167,7 @@ public:
 #endif
 
 protected:
-  int m_nState;
+  int8_t m_nState;
   uint32_t m_uiTime;
   uint32_t m_uiProcessTime;
   std::string m_sInstanceName;
@@ -156,8 +175,8 @@ protected:
   CDisplayLine *m_pDisplayLine;
 #endif
   bool m_bCycleDone;
-  static int ms_ulValuesPending;
-  static int ms_ulProcessPending;
+  static int8_t ms_ulValuesPending;
+  static int8_t ms_ulProcessPending;
   static bool ms_bNetworkConnected;
   static bool ms_bTimeUpdated;
 

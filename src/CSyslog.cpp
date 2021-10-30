@@ -28,7 +28,7 @@ void CSyslog::control(bool bForce /*= false*/) {
 
   switch (this->m_nState) {
   case eStart:
-    _log(I, "W4Wifi");
+    _log2(I, "W4Wifi");
 #if USE_DISPLAY == 1
     if (m_pDisplayLine)
       m_pDisplayLine->Line("Mqtt w4wifi");
@@ -58,9 +58,9 @@ void CSyslog::control(bool bForce /*= false*/) {
 }
 
 void CSyslog::OnServerIpChanged() {
-  _log(I, "OnServerIpChanged");
+  _log2(I, "OnServerIpChanged");
   if (CControl::ms_pSyslog) {
-    _log(I, "Disconnect");
+    _log2(I, "Disconnect");
     delete CControl::ms_pSyslog;
   }
   CControl::ms_pSyslog =

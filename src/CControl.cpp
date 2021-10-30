@@ -5,9 +5,9 @@
 // static
 std::vector<CControl *> CControl::ms_Instances;
 // static
-int CControl::ms_ulValuesPending = 0;
+int8_t CControl::ms_ulValuesPending = 0;
 // static
-int CControl::ms_ulProcessPending = 0;
+int8_t CControl::ms_ulProcessPending = 0;
 // static
 bool CControl::ms_bNetworkConnected = false;
 // static
@@ -18,6 +18,8 @@ bool CControl::ms_bUsbChargingActive = false;
 
 // static
 Syslog *CControl::ms_pSyslog = NULL;
+
+#define MQTT_IN_CCONFIGKEY 1
 
 CMqttValue *CControl::CreateMqttValue(std::string sName,
                                       std::string sValue /*= ""*/) {
@@ -32,10 +34,12 @@ template <typename T>
 CConfigKey<T> *CControl::CreateConfigKey(const char *pszSection,
                                          const char *pszKey, T def) {
   CConfigKey<T> *pKey = new CConfigKey<T>(pszSection, pszKey, def);
+#if MQTT_IN_CCONFIGKEY
   pKey->m_pMqttValue = new CMqttValue(
       m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
           std::string("/") + std::string(pszKey),
       "");
+#endif
   return pKey;
 }
 
@@ -45,10 +49,12 @@ CControl::CreateConfigKey<std::string>(const char *pszSection,
                                        const char *pszKey, std::string def) {
   CConfigKey<std::string> *pKey =
       new CConfigKey<std::string>(pszSection, pszKey, def);
+#if MQTT_IN_CCONFIGKEY
   pKey->m_pMqttValue = new CMqttValue(
       m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
           std::string("/") + std::string(pszKey),
       "");
+#endif
   return pKey;
 }
 
@@ -56,10 +62,12 @@ template <>
 CConfigKey<int> *CControl::CreateConfigKey<int>(const char *pszSection,
                                                 const char *pszKey, int def) {
   CConfigKey<int> *pKey = new CConfigKey<int>(pszSection, pszKey, def);
+#if MQTT_IN_CCONFIGKEY
   pKey->m_pMqttValue = new CMqttValue(
       m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
           std::string("/") + std::string(pszKey),
       "");
+#endif
   return pKey;
 }
 
@@ -68,10 +76,12 @@ CConfigKey<int16_t> *CControl::CreateConfigKey<int16_t>(const char *pszSection,
                                                         const char *pszKey,
                                                         int16_t def) {
   CConfigKey<int16_t> *pKey = new CConfigKey<int16_t>(pszSection, pszKey, def);
+#if MQTT_IN_CCONFIGKEY
   pKey->m_pMqttValue = new CMqttValue(
       m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
           std::string("/") + std::string(pszKey),
       "");
+#endif
   return pKey;
 }
 
@@ -80,10 +90,12 @@ CConfigKeyTimeString *CControl::CreateConfigKeyTimeString(
     CConfigKeyTimeString::E_Type type /*= CConfigKeyTimeString::HHMM*/) {
   CConfigKeyTimeString *pKey =
       new CConfigKeyTimeString(pszSection, pszKey, def, type);
+#if MQTT_IN_CCONFIGKEY
   pKey->m_pMqttValue = new CMqttValue(
       m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
           std::string("/") + std::string(pszKey),
       "");
+#endif
   return pKey;
 }
 
@@ -93,9 +105,11 @@ CConfigKeyIntSlider *CControl::CreateConfigKeyIntSlider(const char *pszSection,
                                                         int nMax) {
   CConfigKeyIntSlider *pKey =
       new CConfigKeyIntSlider(pszSection, pszKey, def, nMin, nMax);
+#if MQTT_IN_CCONFIGKEY
   pKey->m_pMqttValue = new CMqttValue(
       m_sInstanceName + std::string("/Cfg/") + std::string(pszSection) +
           std::string("/") + std::string(pszKey),
       "");
+#endif
   return pKey;
 }

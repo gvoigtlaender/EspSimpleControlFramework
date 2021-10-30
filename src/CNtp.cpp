@@ -17,7 +17,7 @@ bool CNtp::setup() {
   m_sTimeZone = m_pCfgTimeZone->m_pTValue->m_Value;
   m_sServer = m_pCfgServer->m_pTValue->m_Value;
   if (m_sServer.empty()) {
-    _log(E, "skip setup, Server not configured");
+    _log2(E, "skip setup, Server not configured");
     return false;
   }
   _log(I, "configTime(%s, %s, pool.ntp.org)", m_sTimeZone.c_str(),
@@ -35,7 +35,7 @@ void CNtp::control(bool bForce /*= false*/) {
 
   switch (this->m_nState) {
   case eStart:
-    _log(I, "W4Wifi");
+    _log2(I, "W4Wifi");
     this->m_nState = eWaitForWifi;
 
   case eWaitForWifi:
@@ -46,7 +46,7 @@ void CNtp::control(bool bForce /*= false*/) {
 
     printLocalTime();
     UpdateTime();
-    _log(I, "Wait for first time update");
+    _log2(I, "Wait for first time update");
     this->m_nState = eWaitForFirstUpdate;
 
   case eWaitForFirstUpdate: {
@@ -57,7 +57,7 @@ void CNtp::control(bool bForce /*= false*/) {
   }
     ms_bTimeUpdated = true;
     printLocalTime();
-    _log(I, "First time update done");
+    _log2(I, "First time update done");
     this->m_nState = eDone;
 
   case eDone:
@@ -67,7 +67,7 @@ void CNtp::control(bool bForce /*= false*/) {
 }
 
 void CNtp::UpdateTime() {
-  _log(I, "UpdateTime");
+  _log2(I, "UpdateTime");
   if (!m_sServer.empty()) {
 #if defined(ESP8266)
     configTime(m_sTimeZone.c_str(), m_sServer.c_str(), "pool.ntp.org");
@@ -84,7 +84,7 @@ void CNtp::printLocalTime() {
   string sTime = asctime(m_pTimeInfo);
   if (sTime[sTime.length() - 1] == '\n')
     sTime.erase(sTime.length() - 1);
-  _log(I, sTime.c_str());
+  _log2(I, sTime.c_str());
   m_pMqtt_Time->setValue(sTime);
   long lHours = m_pTimeInfo->tm_hour;
   long lMinutes = lHours * 60 + m_pTimeInfo->tm_min;

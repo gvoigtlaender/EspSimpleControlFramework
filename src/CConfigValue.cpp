@@ -3,6 +3,9 @@
 #include "CMqtt.h"
 #include <Arduino.h>
 
+// static
+uint8_t CConfigValueBase::ms_uiUniqeId = 0;
+
 template <> std::string to_string<int>(const int &n) {
   char buffer[33];
   itoa(n, buffer, 10);

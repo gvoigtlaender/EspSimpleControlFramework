@@ -21,12 +21,16 @@ void CMqttValue::setValue(string sValue) {
     return;
   m_sValue = sValue;
   m_bPublished = false;
+  // return;
+
+#if defined DEBUG
   if (m_pControl != NULL)
     m_pControl->_log(CControl::D, "Mqtt: %s = %s", m_sPath.c_str(),
                      m_sValue.c_str());
   else
     CControl::Log(CControl::D, "Mqtt: %s = %s", m_sPath.c_str(),
                   m_sValue.c_str());
+#endif
   if (CControl::ms_bNetworkConnected && CMqtt::ms_pMqtt != NULL &&
       CMqtt::ms_pMqtt->m_pMqttClient->connected())
     CMqtt::ms_pMqtt->publish_value(this);
@@ -99,7 +103,7 @@ void CMqtt::control(bool bForce /*= false*/) {
 
   switch (this->m_nState) {
   case eStart:
-    _log(I, "W4Wifi");
+    _log2(I, "W4Wifi");
 #if USE_DISPLAY == 1
     if (m_pDisplayLine)
       m_pDisplayLine->Line("Mqtt w4wifi");
@@ -127,19 +131,19 @@ void CMqtt::control(bool bForce /*= false*/) {
     m_pMqttClient->connect(this->m_sClientName.c_str(),
                            m_pCfgMqttUser->m_pTValue->m_Value.c_str(),
                            m_pCfgMqttPasswd->m_pTValue->m_Value.c_str());
-    _log(I, "connecting");
+    _log2(I, "connecting");
     this->m_nState = eConnect;
 
   case eConnect:
     if (m_pMqttClient->connected()) {
-      _log(I, "connected");
+      _log2(I, "connected");
 #if USE_DISPLAY == 1
       if (m_pDisplayLine)
         m_pDisplayLine->Line("Mqtt " + m_sClientName);
 #endif
       ValueDone();
       this->m_nState = eWaitForPublish;
-      _log(I, "WaitForPublish");
+      _log2(I, "WaitForPublish");
       break;
     }
 
@@ -148,7 +152,7 @@ void CMqtt::control(bool bForce /*= false*/) {
   case eWaitForPublish:
     if (CControl::ms_ulValuesPending == 0)
       this->m_nState = ePublish;
-    _log(I, "Publish");
+    _log2(I, "Publish");
     break;
 
   case ePublish:
@@ -180,10 +184,18 @@ void CMqtt::publish() {
 void CMqtt::publish_value(CMqttValue *pValue) {
   if (pValue->m_bPublished)
     return;
+  // return;
   pValue->m_bPublished = true;
-  char szKey[128];
+  static char szKey[512];
   snprintf(szKey, sizeof(szKey), "%s/%s", m_sClientName.c_str(),
            pValue->m_sPath.c_str());
-  _log(I, "publish %s = %s", szKey, pValue->m_sValue.c_str());
-  m_pMqttClient->publish(szKey, pValue->m_sValue.c_str(), true);
+  static char szValue[512];
+  snprintf(szValue, sizeof(szValue), "%s", pValue->m_sValue.c_str());
+  _log(I, "publish %s = %s", szKey, szValue);
+  try {
+    m_pMqttClient->publish(szKey, szValue, true);
+  } catch (...) {
+    _log2(E, "publish exception");
+  }
+  _log(I, "publish %s done", szKey);
 }

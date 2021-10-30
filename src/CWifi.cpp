@@ -33,12 +33,12 @@ bool CWifi::setup() {
     delay(100);
 
     int n = WiFi.scanNetworks();
-    CControl::Log(CControl::I, "scan done");
+    _log2(CControl::I, "scan done");
     if (n == 0) {
-      CControl::Log(CControl::I, "no networks found");
+      _log2(CControl::I, "no networks found");
     } else {
       Serial.print(n);
-      CControl::Log(CControl::I, " networks found");
+      _log2(CControl::I, " networks found");
       for (int i = 0; i < n; ++i) {
         // Print SSID and RSSI for each network found
         Serial.print(i + 1);
@@ -47,8 +47,8 @@ bool CWifi::setup() {
         Serial.print(" (");
         Serial.print(WiFi.RSSI(i));
         Serial.print(")");
-        CControl::Log(CControl::I,
-                      (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*");
+        _log2(CControl::I,
+              (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*");
 
         std::string ssid = WiFi.SSID(i).c_str();
         m_pWifiSsid->m_pTValue->m_Choice.push_back(ssid);
@@ -82,7 +82,7 @@ bool CWifi::setup() {
     m_pDisplayLine->Line("Wifi Connecting");
 #endif
 
-  _log(I, "Connecting");
+  _log2(I, "Connecting");
   return true;
 }
 
@@ -100,7 +100,7 @@ void CWifi::control(bool bForce /*= false*/) {
     CWifi::m_uiProcessTime = millis();
     // We start by connecting to a WiFi network
 
-    _log(I, "W4Connected");
+    _log2(I, "W4Connected");
 
     this->m_nState = 1;
     break;
@@ -133,33 +133,33 @@ void CWifi::control(bool bForce /*= false*/) {
       return;
 
     case WL_NO_SHIELD:
-      _log(I, "WL_NO_SHIELD");
+      _log2(I, "WL_NO_SHIELD");
       break;
     case WL_IDLE_STATUS:
-      _log(I, "WL_IDLE_STATUS");
+      _log2(I, "WL_IDLE_STATUS");
       break;
     case WL_SCAN_COMPLETED:
-      _log(I, "WL_SCAN_COMPLETED");
+      _log2(I, "WL_SCAN_COMPLETED");
       break;
     case WL_WRONG_PASSWORD:
-      _log(I, "WL_WRONG_PASSWORD");
+      _log2(I, "WL_WRONG_PASSWORD");
       break;
     case WL_DISCONNECTED:
-      _log(I, "WL_DISCONNECTED");
+      _log2(I, "WL_DISCONNECTED");
       break;
     case WL_NO_SSID_AVAIL:
-      _log(I, "WL_NO_SSID_AVAIL");
+      _log2(I, "WL_NO_SSID_AVAIL");
       break;
     case WL_CONNECT_FAILED:
-      _log(I, "WL_CONNECT_FAILED");
+      _log2(I, "WL_CONNECT_FAILED");
       break;
     case WL_CONNECTION_LOST:
-      _log(I, "WL_CONNECTION_LOST");
+      _log2(I, "WL_CONNECTION_LOST");
       break;
     }
     CControl::ms_bNetworkConnected = false;
     WiFi.reconnect();
-    _log(I, "W4Connected");
+    _log2(I, "W4Connected");
     this->m_nState = 1;
     break;
   }
