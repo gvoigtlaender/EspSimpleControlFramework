@@ -180,10 +180,9 @@ public:
   std::string m_sHtmlTitle;
   std::string m_sHtmlHead;
 
-  std::string GetHtmlForm() {
-    std::string sContent;
+  std::string GetHtmlForm(string &sContent) {
 
-    sContent += "<!DOCTYPE HTML>\n";
+    sContent = "<!DOCTYPE HTML>\n";
 
     sContent += "<html>\n";
     sContent += "<head>\n";
@@ -273,7 +272,7 @@ public:
     return sContent;
   }
 
-  void handleArgs(ESP8266WebServer *server) {
+  void handleArgs(ESP8266WebServer *server, string &sContent) {
     int args = server->args();
 
     CControl::Log(CControl::I, "handleSubmit Args %d", args);
@@ -347,8 +346,8 @@ public:
       }
     }
 
-    std::string content = this->GetHtmlForm();
-    server->send(200, "text/html", content.c_str());
+    this->GetHtmlForm(sContent);
+    server->send(200, "text/html", sContent.c_str());
   }
 };
 #endif // SRC_CCONFIGURATION_H_
