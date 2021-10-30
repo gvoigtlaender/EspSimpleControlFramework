@@ -6,7 +6,6 @@ bool CLed::setup() {
   CControl::setup();
 
   m_pMqtt_CurrentTask = CreateMqttValue("CurrentTask", "");
-  m_pMqtt_NoOfTasks = CreateMqttValue("NoOfTasks", "0");
   m_pMqtt_LedState = CreateMqttValue("LedState", "false");
 
   pinMode(m_nLedPin, OUTPUT);
@@ -17,8 +16,6 @@ bool CLed::setup() {
 void CLed::control(bool bForce /*= false*/) {
   CControl::control(bForce);
 
-  E_BLINKTASK eTask;
-
   const int ciShortBlink = 25;
   const int ciOffTime = 250;
 
@@ -28,28 +25,47 @@ void CLed::control(bool bForce /*= false*/) {
     break;
 
   case eCheck:
-    m_pMqtt_NoOfTasks->setValue(to_string(lBlinkTasks.size()));
     m_pMqtt_CurrentTask->setValue("-");
-    if (lBlinkTasks.empty())
+    if (m_eBlinkTask == NONE)
       break;
 
-    eTask = lBlinkTasks.front();
-    lBlinkTasks.pop_front();
-    m_pMqtt_CurrentTask->setValue(to_string(eTask));
+    m_pMqtt_CurrentTask->setValue(to_string(m_eBlinkTask));
 
-    if (eTask == ON) {
-      _log(D, "ON");
+    switch (m_eBlinkTask) {
+    case NONE:
+      break;
+    case ON:
+      _log2(D, "ON");
       digitalWrite(true);
-    } else if (eTask == OFF) {
-      _log(D, "ON");
+      break;
+
+    case OFF:
+      _log2(D, "OFF");
       digitalWrite(false);
-    } else if (eTask == TOGGLE) {
-      _log(D, "ON");
+      break;
+
+    case TOGGLE:
+      _log2(D, "TOGGLE");
       digitalWrite(!m_bCurrentState);
-    } else {
-      _log(D, "BLINK_%d", (int)(eTask - BLINK_1 + 1));
-      m_eControlState = (E_LEDSTATES)(eB1 + eTask - BLINK_1);
+      break;
+
+    case BLINK_1:
+      _log2(D, "BLINK_1");
+      m_eControlState = eB1;
+      break;
+    case BLINK_2:
+      _log2(D, "BLINK_2");
+      m_eControlState = eB2;
+      break;
+    case BLINK_3:
+      _log2(D, "BLINK_3");
+      m_eControlState = eB3;
+      break;
+
+    default:
+      break;
     }
+    m_eBlinkTask = NONE;
     break;
 
   case eB1:
