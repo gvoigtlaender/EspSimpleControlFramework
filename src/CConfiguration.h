@@ -180,77 +180,67 @@ public:
   std::string m_sHtmlTitle;
   std::string m_sHtmlHead;
 
-  std::string GetHtmlForm() {
-    std::string sContent;
+  bool GetHtmlForm(std::string &sContent) {
+    CControl::Log(CControl::I, "GetHtmlForm");
 
-    sContent += "<!DOCTYPE HTML>\n";
-
-    sContent += "<html>\n";
-    sContent += "<head>\n";
+    sContent = "<!DOCTYPE HTML>\n"
+               "<html>\n"
+               "<head>\n";
     if (!m_sHtmlHead.empty())
       sContent += m_sHtmlHead;
-    sContent += "<title>" + m_sHtmlTitle + "</title>\n";
-    sContent += "</head>\n";
-    sContent += "<body>\n";
+    sContent += "<title>" + m_sHtmlTitle +
+                "</title>\n"
+                "</head>\n"
+                "<body>\n"
+                "<div "
+                "style='text-align:left;display:inline-block;color:#eaeaea;min-"
+                "width:340px;"
+                "'><div style='text-align:center;color:#eaeaea;'>\n";
     sContent +=
-        "<div "
-        "style='text-align:left;display:inline-block;color:#eaeaea;min-width:"
-        "340px;'><div style='text-align:center;color:#eaeaea;'>\n";
-    sContent += "<h1>" + m_sHtmlTitle + "</h1>\n";
-    sContent +=
+        "<h1>" + m_sHtmlTitle +
+        "</h1>\n"
         "<div id=but3d style=\"display: block;\"></div><p><form id=but3 "
         "style=\"display: block;\" action='../' "
-        "method='get'><button>Main</button></form>";
-    sContent += "<FORM action =\"/configure\" method=\"post\">\n";
+        "method='get'><button>Main</button></form>"
+        "<FORM action =\"/configure\" method=\"post\">\n";
 
     CConfigKeyBase::SectionsMap::iterator sections;
     CConfigKeyBase::KeyMap::iterator keys;
 
     CConfigKeyBase::SectionsList::iterator sec_list;
 
-    // for ( sec_list=CConfigKeyBase::ms_VarEntries.begin();
-    // sec_list!=CConfigKeyBase::ms_VarEntries.end(); sec_list++ ) {
+    // CControl::Log(CControl::I, "GetHtmlForm: %d", __LINE__);
     for (unsigned int i = 0; i < CConfigKeyBase::ms_SectionList.size(); i++) {
-      // string sSection = sec_list->first;
       std::string sSection = CConfigKeyBase::ms_SectionList[i];
-      // sContent += "<h2>" + sSection + "</h2>\n";
 
       if (sSection == string("0"))
         continue;
-      sContent += "<fieldset>\n";
-      sContent += "<legend>" + sSection + "</legend>\n";
+      sContent += "<fieldset>\n<legend>" + sSection + "</legend>\n";
 
       for (unsigned int n = 0;
            n < CConfigKeyBase::ms_VarEntries[sSection].size(); n++) {
         CConfigKeyBase *pEntry = CConfigKeyBase::ms_VarEntries[sSection][n];
-        // CControl::Log(CControl::I, "1 add %s.%s ",
-        // pEntry->m_sSection.c_str(), pEntry->m_sKey.c_str());
         sContent += pEntry->m_sKey + ": " + pEntry->m_pValue->GetFormEntry();
-        // CControl::Log(CControl::I, "done\n");
       }
-      /*
-      sContent += "<input type=\"submit\" name=\"action\" value=\"reset " +
-                  sSection +
-                  "\" class='button "
-                  "bred' onsubmit='return "
-                  "confirm(\"Confirm Reset " +
-                  sSection + "\");'>\n";
-      */
-      sContent += "</fieldset>\n";
-      sContent += "<p>\n";
+      sContent += "</fieldset>\n<p>\n";
     }
 
     sContent += "<P>\n";
-    sContent += "<INPUT type=\"submit\" name=\"action\" value=\"save\">\n";
-    sContent += "<input type=\"submit\" name=\"action\" value=\"reset\">\n";
-    sContent += "<input type=\"submit\" name=\"action\" value=\"reboot\">\n";
-    sContent += "<input type=\"submit\" name=\"action\" value=\"reload\">\n";
-    sContent += "</FORM>\n";
-    sContent += "</div></div>\n";
-    sContent += "</body>\n";
-    sContent += "</html>\n";
+    sContent += "<input type=\"submit\" name=\"a\" value=\"save\">\n";
+    sContent += "<input type=\"submit\" name=\"a\" value=\"reset\">\n";
+    sContent += "<input type=\"submit\" name=\"a\" value=\"reboot\">\n";
+    // sContent += "<input type=\"submit\" name=\"a\" value=\"reload\">\n";
+    sContent += "</FORM>\n"
+                "</div></div>\n"
+                "</body>\n"
+                "</html>\n";
 
-    return sContent;
+    CControl::Log(
+        CControl::I,
+        "GetHtmlForm: %d, system_get_free_heap_size=%lu, sContent.length=%u",
+        __LINE__, system_get_free_heap_size(), sContent.length());
+    delay(1);
+    return true;
   }
 
   std::string GetHtmlReboot() {
@@ -273,7 +263,7 @@ public:
     return sContent;
   }
 
-  void handleArgs(ESP8266WebServer *server) {
+  void handleArgs(ESP8266WebServer *server, string &sContent) {
     int args = server->args();
 
     CControl::Log(CControl::I, "handleSubmit Args %d", args);
@@ -283,8 +273,8 @@ public:
                     server->argName(n).c_str(), server->arg(n).c_str());
     }
 
-    if (server->hasArg("action")) {
-      std::string sAction = server->arg("action").c_str();
+    if (server->hasArg("a")) {
+      std::string sAction = server->arg("a").c_str();
       CControl::Log(CControl::I, "action=%s", sAction.c_str());
       bool bRebooting = false;
 
@@ -347,8 +337,8 @@ public:
       }
     }
 
-    std::string content = this->GetHtmlForm();
-    server->send(200, "text/html", content.c_str());
+    this->GetHtmlForm(sContent);
+    server->send(200, "text/html", sContent.c_str());
   }
 };
 #endif // SRC_CCONFIGURATION_H_
