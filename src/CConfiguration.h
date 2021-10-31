@@ -16,9 +16,11 @@
 class CConfiguration {
 public:
   CConfiguration(const char *szConfigFile, const char *szTitle,
-                 const char *szHtmlHead)
+                 const char *szHtmlHead, char *szhtml_content_buffer,
+                 size_t szhtml_content_buffer_size)
       : m_sConfigFile(szConfigFile), m_sHtmlTitle(szTitle),
-        m_sHtmlHead(szHtmlHead) {
+        m_sHtmlHead(szHtmlHead), m_szhtml_content_buffer(szhtml_content_buffer),
+        m_szhtml_content_buffer_size(szhtml_content_buffer_size) {
     if (LittleFS.begin()) {
       CControl::Log(CControl::I,
                     "LittleFS.begin() success, mounted file system");
@@ -180,27 +182,46 @@ public:
   std::string m_sHtmlTitle;
   std::string m_sHtmlHead;
 
-  std::string GetHtmlForm(string &sContent) {
+  char *m_szhtml_content_buffer;
+  size_t m_szhtml_content_buffer_size;
 
-    sContent = "<!DOCTYPE HTML>\n";
+  bool GetHtmlForm() {
 
-    sContent += "<html>\n";
-    sContent += "<head>\n";
+    snprintf(m_szhtml_content_buffer, m_szhtml_content_buffer_size,
+             "<!DOCTYPE HTML>\n");
+
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<html>\n<head>\n");
     if (!m_sHtmlHead.empty())
-      sContent += m_sHtmlHead;
-    sContent += "<title>" + m_sHtmlTitle + "</title>\n";
-    sContent += "</head>\n";
-    sContent += "<body>\n";
-    sContent +=
-        "<div "
-        "style='text-align:left;display:inline-block;color:#eaeaea;min-width:"
-        "340px;'><div style='text-align:center;color:#eaeaea;'>\n";
-    sContent += "<h1>" + m_sHtmlTitle + "</h1>\n";
-    sContent +=
-        "<div id=but3d style=\"display: block;\"></div><p><form id=but3 "
-        "style=\"display: block;\" action='../' "
-        "method='get'><button>Main</button></form>";
-    sContent += "<FORM action =\"/configure\" method=\"post\">\n";
+      snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+               m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+               m_sHtmlHead.c_str());
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<title>%s</title>\n", m_sHtmlTitle.c_str());
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "</head>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<body>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<div "
+             "style='text-align:left;display:inline-block;color:#eaeaea;min-"
+             "width:340px;'><div style='text-align:center;color:#eaeaea;'>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<h1>%s</h1>\n", m_sHtmlTitle.c_str());
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<div id=but3d style=\"display: block;\"></div><p><form id=but3 "
+             "style=\"display: block;\" action='../' "
+             "method='get'><button>Main</button></form>");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<FORM action =\"/configure\" method=\"post\">\n");
 
     CConfigKeyBase::SectionsMap::iterator sections;
     CConfigKeyBase::KeyMap::iterator keys;
@@ -216,15 +237,22 @@ public:
 
       if (sSection == string("0"))
         continue;
-      sContent += "<fieldset>\n";
-      sContent += "<legend>" + sSection + "</legend>\n";
+      snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+               m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+               "<fieldset>\n");
+      snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+               m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+               "<legend>%s</legend>\n", sSection.c_str());
 
       for (unsigned int n = 0;
            n < CConfigKeyBase::ms_VarEntries[sSection].size(); n++) {
         CConfigKeyBase *pEntry = CConfigKeyBase::ms_VarEntries[sSection][n];
         // CControl::Log(CControl::I, "1 add %s.%s ",
         // pEntry->m_sSection.c_str(), pEntry->m_sKey.c_str());
-        sContent += pEntry->m_sKey + ": " + pEntry->m_pValue->GetFormEntry();
+        snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+                 m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+                 "%s: %s", pEntry->m_sKey.c_str(),
+                 pEntry->m_pValue->GetFormEntry().c_str());
         // CControl::Log(CControl::I, "done\n");
       }
       /*
@@ -235,44 +263,90 @@ public:
                   "confirm(\"Confirm Reset " +
                   sSection + "\");'>\n";
       */
-      sContent += "</fieldset>\n";
-      sContent += "<p>\n";
+      snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+               m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+               "</fieldset>\n");
+      snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+               m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+               "<p>\n");
     }
 
-    sContent += "<P>\n";
-    sContent += "<INPUT type=\"submit\" name=\"action\" value=\"save\">\n";
-    sContent += "<input type=\"submit\" name=\"action\" value=\"reset\">\n";
-    sContent += "<input type=\"submit\" name=\"action\" value=\"reboot\">\n";
-    sContent += "<input type=\"submit\" name=\"action\" value=\"reload\">\n";
-    sContent += "</FORM>\n";
-    sContent += "</div></div>\n";
-    sContent += "</body>\n";
-    sContent += "</html>\n";
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<P>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<INPUT type=\"submit\" name=\"action\" value=\"save\">\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<input type=\"submit\" name=\"action\" value=\"reset\">\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<input type=\"submit\" name=\"action\" value=\"reboot\">\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<input type=\"submit\" name=\"action\" value=\"reload\">\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "</FORM>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "</div></div>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "</body>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "</html>\n");
 
-    return sContent;
+    return true;
   }
 
-  std::string GetHtmlReboot() {
-    std::string sContent;
-    sContent += "<!DOCTYPE HTML>\n";
-    sContent += "<html>\n";
-    sContent += "<head>\n";
+  bool GetHtmlReboot() {
+    snprintf(m_szhtml_content_buffer, m_szhtml_content_buffer_size,
+             "<!DOCTYPE HTML>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<html>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<head>\n");
     if (!m_sHtmlHead.empty())
-      sContent += m_sHtmlHead;
-    sContent += "<title>" + m_sHtmlTitle + "</title>\n";
-    sContent += "<style>\n";
-    sContent += "\"body { background-color: #808080; font-family: Arial, "
-                "Helvetica, Sans-Serif; Color: #000000; }\"\n";
-    sContent += "</style>\n";
-    sContent += "</head>\n";
-    sContent += "<body>\n";
-    sContent += "<h1>ESP8266 Rebooting....</h1>\n";
-    sContent += "</body>\n";
-    sContent += "</html>\n";
-    return sContent;
+      snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+               m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+               m_sHtmlHead.c_str());
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<title>%s</title>\n", m_sHtmlTitle.c_str());
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<style>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "\"body { background-color: #808080; font-family: Arial, "
+             "Helvetica, Sans-Serif; Color: #000000; }\"\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "</style>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "</head>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<body>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "<h1>ESP8266 Rebooting....</h1>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "</body>\n");
+    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+             "</html>\n");
+    return true;
   }
 
-  void handleArgs(ESP8266WebServer *server, string &sContent) {
+  void handleArgs(ESP8266WebServer *server) {
     int args = server->args();
 
     CControl::Log(CControl::I, "handleSubmit Args %d", args);
@@ -336,8 +410,8 @@ public:
       }
     ActionDone:
       if (bRebooting) {
-        std::string sContent = this->GetHtmlReboot();
-        server->send(200, "text/html", sContent.c_str());
+        this->GetHtmlReboot();
+        server->send(200, "text/html", m_szhtml_content_buffer);
 
         delay(1000);
         ESP.restart();
@@ -346,8 +420,8 @@ public:
       }
     }
 
-    this->GetHtmlForm(sContent);
-    server->send(200, "text/html", sContent.c_str());
+    this->GetHtmlForm();
+    server->send(200, "text/html", m_szhtml_content_buffer);
   }
 };
 #endif // SRC_CCONFIGURATION_H_

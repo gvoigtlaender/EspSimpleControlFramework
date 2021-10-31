@@ -59,7 +59,7 @@ public:
     Serial.printf("%08lu: \tSYSTEM\t%c: %s\n", millis(), GetLogTypeChar(type),
                   czDebBuf);
     if (ms_pSyslog != NULL) {
-      char szTmp[255];
+      static char szTmp[255];
       snprintf(szTmp, sizeof(szTmp), "SYSTEM %s", czDebBuf);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
     }
@@ -81,7 +81,7 @@ public:
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_sInstanceName.c_str(),
                   GetLogTypeChar(type), czDebBuf);
     if (ms_pSyslog != NULL) {
-      char szTmp[255];
+      static char szTmp[255];
       snprintf(szTmp, sizeof(szTmp), "%s %s", m_sInstanceName.c_str(),
                czDebBuf);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
