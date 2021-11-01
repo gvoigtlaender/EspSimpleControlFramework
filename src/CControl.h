@@ -96,7 +96,7 @@ public:
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_sInstanceName.c_str(),
                   GetLogTypeChar(type), pcMessage);
     if (ms_pSyslog != NULL) {
-      char szTmp[255];
+      static char szTmp[2048];
       snprintf(szTmp, sizeof(szTmp), "%s %s", m_sInstanceName.c_str(),
                pcMessage);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);

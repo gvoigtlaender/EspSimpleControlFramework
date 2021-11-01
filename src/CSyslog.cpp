@@ -58,6 +58,8 @@ void CSyslog::control(bool bForce /*= false*/) {
 }
 
 void CSyslog::OnServerIpChanged() {
+  if (!CControl::ms_bNetworkConnected)
+    return;
   _log2(I, "OnServerIpChanged");
   if (CControl::ms_pSyslog) {
     _log2(I, "Disconnect");

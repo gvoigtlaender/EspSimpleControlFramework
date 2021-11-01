@@ -12,7 +12,7 @@ CMqttValue::CMqttValue(string sPath, string sValue /*= ""*/)
     : m_sPath(sPath), m_sValue(sValue), m_pControl(NULL), m_bPublished(false) {
   CMqtt::ms_Values.push_back(this);
 #if defined DEBUG
-  Serial.printf("CMqttValue(%s, %s)\n", sPath.c_str(), sValue.c_str());
+//  Serial.printf("CMqttValue(%s, %s)\n", sPath.c_str(), sValue.c_str());
 #endif
 }
 
@@ -24,15 +24,19 @@ void CMqttValue::setValue(string sValue) {
   // return;
 
 #if defined DEBUG
-  if (m_pControl != NULL)
-    m_pControl->_log(CControl::D, "Mqtt: %s = %s", m_sPath.c_str(),
-                     m_sValue.c_str());
-  else
+/*
+  if (m_pControl != NULL) {
+    static char szLog[1024];
+    snprintf(szLog, sizeof(szLog), "Mqtt: %s = %s", m_sPath.c_str(),
+             m_sValue.c_str());
+    m_pControl->_log2(CControl::D, szLog);
+  } else {
     CControl::Log(CControl::D, "Mqtt: %s = %s", m_sPath.c_str(),
                   m_sValue.c_str());
+  }
+*/
 #endif
-  if (CControl::ms_bNetworkConnected && CMqtt::ms_pMqtt != NULL &&
-      CMqtt::ms_pMqtt->m_pMqttClient->connected())
+  if (CMqtt::ms_pMqtt != NULL && CMqtt::ms_pMqtt->m_bConnected)
     CMqtt::ms_pMqtt->publish_value(this);
 }
 
@@ -51,7 +55,8 @@ list<CMqttValue *> CMqtt::ms_Values;
 
 CMqtt::CMqtt(string sServerIp /* = "" */, string sClientName /* = "" */)
     : CControl("CMqtt"), m_sServerIp(sServerIp), m_sClientName(sClientName),
-      m_WifiClient(), m_pMqttClient(NULL), m_bValuesComplete(false) {
+      m_WifiClient(), m_pMqttClient(NULL), m_bValuesComplete(false),
+      m_bConnected(false) {
   ms_pMqtt = this;
   m_pMqttClient = new PubSubClient(m_WifiClient);
   m_pMqttClient->setServer(m_sServerIp.c_str(), 1883);
@@ -137,6 +142,7 @@ void CMqtt::control(bool bForce /*= false*/) {
   case eConnect:
     if (m_pMqttClient->connected()) {
       _log2(I, "connected");
+      m_bConnected = true;
 #if USE_DISPLAY == 1
       if (m_pDisplayLine)
         m_pDisplayLine->Line("Mqtt " + m_sClientName);
@@ -182,16 +188,18 @@ void CMqtt::publish() {
 #endif
 }
 void CMqtt::publish_value(CMqttValue *pValue) {
-  if (pValue->m_bPublished)
+  if (pValue->m_bPublished || !m_bConnected)
     return;
   // return;
   pValue->m_bPublished = true;
-  static char szKey[512];
+  static char szKey[128];
   snprintf(szKey, sizeof(szKey), "%s/%s", m_sClientName.c_str(),
            pValue->m_sPath.c_str());
-  static char szValue[512];
+  static char szValue[64];
   snprintf(szValue, sizeof(szValue), "%s", pValue->m_sValue.c_str());
-  _log(I, "publish %s = %s", szKey, szValue);
+  static char szLog[512];
+  snprintf(szLog, sizeof(szLog), "publish %s = %s", szKey, szValue);
+  _log2(I, szLog);
   try {
     m_pMqttClient->publish(szKey, szValue, true);
   } catch (...) {
