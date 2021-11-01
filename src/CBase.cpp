@@ -6,6 +6,7 @@ double dmap(double x, double in_min, double in_max, double out_min,
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+/*
 std::string to_string(size_t n) {
 #if defined(ESP8266)
   return std::to_string(n);
@@ -15,3 +16,4 @@ std::string to_string(size_t n) {
   return std::string(szTmp);
 #endif
 }
+*/

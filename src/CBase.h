@@ -11,6 +11,6 @@ enum _E_STMRESULT {
 double dmap(double x, double in_min, double in_max, double out_min,
             double out_max);
 
-std::string to_string(size_t n);
+// std::string to_string(size_t n);
 
 #endif // _SRC__CBASE_H_
