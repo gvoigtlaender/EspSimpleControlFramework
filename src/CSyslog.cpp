@@ -45,9 +45,11 @@ void CSyslog::control(bool bForce /*= false*/) {
       _log(I, "connecting to %s, host=%s, appname=%s",
            m_pCfgServer->m_pTValue->m_Value.c_str(), m_sShortName.c_str(),
            m_sDeviceName.c_str());
+      IPAddress oIP;
+      oIP.fromString(m_pCfgServer->m_pTValue->m_Value.c_str());
       CControl::ms_pSyslog =
-          new Syslog(udpClient, m_pCfgServer->m_pTValue->m_Value.c_str(), 514,
-                     m_sShortName.c_str(), m_sDeviceName.c_str(), LOG_KERN);
+          new Syslog(udpClient, oIP, 514, m_sShortName.c_str(),
+                     m_sDeviceName.c_str(), LOG_KERN);
     }
     this->m_nState = eDone;
     this->m_bCycleDone = true;
@@ -65,7 +67,8 @@ void CSyslog::OnServerIpChanged() {
     _log2(I, "Disconnect");
     delete CControl::ms_pSyslog;
   }
-  CControl::ms_pSyslog =
-      new Syslog(udpClient, m_pCfgServer->m_pTValue->m_Value.c_str(), 514,
-                 m_sShortName.c_str(), m_sDeviceName.c_str(), LOG_KERN);
+  IPAddress oIP;
+  oIP.fromString(m_pCfgServer->m_pTValue->m_Value.c_str());
+  CControl::ms_pSyslog = new Syslog(udpClient, oIP, 514, m_sShortName.c_str(),
+                                    m_sDeviceName.c_str(), LOG_KERN);
 }
