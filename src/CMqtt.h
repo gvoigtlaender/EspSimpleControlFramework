@@ -61,6 +61,7 @@ protected:
   bool m_bValuesComplete;
   static CMqtt *ms_pMqtt;
   bool m_bConnected;
+  bool m_bConfigValid;
 
   CConfigKey<std::string> *m_pCfgMqttServer;
   CConfigKey<std::string> *m_pCfgMqttUser;

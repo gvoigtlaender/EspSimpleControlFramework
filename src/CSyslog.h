@@ -12,4 +12,5 @@ public:
   CConfigKey<std::string> *m_pCfgServer;
   string m_sDeviceName;
   string m_sShortName;
+  bool m_bConfigValid;
 };

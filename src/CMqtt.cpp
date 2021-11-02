@@ -56,7 +56,7 @@ list<CMqttValue *> CMqtt::ms_Values;
 CMqtt::CMqtt(string sServerIp /* = "" */, string sClientName /* = "" */)
     : CControl("CMqtt"), m_sServerIp(sServerIp), m_sClientName(sClientName),
       m_WifiClient(), m_pMqttClient(NULL), m_bValuesComplete(false),
-      m_bConnected(false) {
+      m_bConnected(false), m_bConfigValid(false) {
   ms_pMqtt = this;
   m_pMqttClient = new PubSubClient(m_WifiClient);
   m_pMqttClient->setServer(m_sServerIp.c_str(), 1883);
@@ -72,8 +72,11 @@ CMqtt::CMqtt(string sServerIp /* = "" */, string sClientName /* = "" */)
 
 bool CMqtt::setup() {
   m_sServerIp = m_pCfgMqttServer->m_pTValue->m_Value;
-  m_pMqttClient->setServer(m_sServerIp.c_str(), 1883);
-
+  IPAddress oIP;
+  if (oIP.fromString(m_sServerIp.c_str())) {
+    m_bConfigValid = true;
+    m_pMqttClient->setServer(oIP, 1883);
+  }
   // m_sClientName = m_pCfgMqttClient->m_pTValue->m_Value;
   // Generate client name based on MAC address and last 8 bits of msec cnt
   if (this->m_sClientName.empty()) {
@@ -103,11 +106,17 @@ void CMqtt::control(bool bForce /*= false*/) {
     eConnect,
     eWaitForPublish,
     ePublish,
-    eDone
+    eDone,
+    eError,
   };
 
   switch (this->m_nState) {
   case eStart:
+    if (!m_bConfigValid) {
+      _log2(E, "Cfg invalid");
+      this->m_nState = eError;
+      break;
+    }
     _log2(I, "W4Wifi");
 #if USE_DISPLAY == 1
     if (m_pDisplayLine)
@@ -172,6 +181,9 @@ void CMqtt::control(bool bForce /*= false*/) {
     m_pMqttClient->loop();
     publish();
     break;
+
+  case eError:
+    break;
   }
 }
 
@@ -188,22 +200,24 @@ void CMqtt::publish() {
 #endif
 }
 void CMqtt::publish_value(CMqttValue *pValue) {
-  if (pValue->m_bPublished || !m_bConnected)
+  if (pValue->m_bPublished || !m_bConnected || !m_bConfigValid)
     return;
   // return;
   pValue->m_bPublished = true;
-  static char szKey[128];
+  char szKey[128];
   snprintf(szKey, sizeof(szKey), "%s/%s", m_sClientName.c_str(),
            pValue->m_sPath.c_str());
-  static char szValue[64];
+  char szValue[64];
   snprintf(szValue, sizeof(szValue), "%s", pValue->m_sValue.c_str());
-  static char szLog[512];
+  /*
+  static char szLog[200];
   snprintf(szLog, sizeof(szLog), "publish %s = %s", szKey, szValue);
   _log2(I, szLog);
+  */
   try {
-    m_pMqttClient->publish(szKey, szValue, true);
+    // m_pMqttClient->publish(szKey, szValue, true);
   } catch (...) {
     _log2(E, "publish exception");
   }
-  _log(I, "publish %s done", szKey);
+  // _log(I, "publish %s done", szKey);
 }

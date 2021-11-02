@@ -10,7 +10,8 @@ void OnServerIpChanged(void *pObject, CConfigKeyBase *pKey) {
 }
 
 CSyslog::CSyslog(const char *szAppName, const char *szShortName)
-    : CControl("CSyslog"), m_sDeviceName(szAppName), m_sShortName(szShortName) {
+    : CControl("CSyslog"), m_sDeviceName(szAppName), m_sShortName(szShortName),
+      m_bConfigValid(false) {
   m_pCfgServer = CreateConfigKey<string>("Syslog", "ServerIp", "");
   m_pCfgServer->SetOnChangedCallback(::OnServerIpChanged, this);
 }
@@ -46,10 +47,14 @@ void CSyslog::control(bool bForce /*= false*/) {
            m_pCfgServer->m_pTValue->m_Value.c_str(), m_sShortName.c_str(),
            m_sDeviceName.c_str());
       IPAddress oIP;
-      oIP.fromString(m_pCfgServer->m_pTValue->m_Value.c_str());
-      CControl::ms_pSyslog =
-          new Syslog(udpClient, oIP, 514, m_sShortName.c_str(),
-                     m_sDeviceName.c_str(), LOG_KERN);
+      if (oIP.fromString(m_pCfgServer->m_pTValue->m_Value.c_str())) {
+        m_bConfigValid = true;
+        CControl::ms_pSyslog =
+            new Syslog(udpClient, oIP, 514, m_sShortName.c_str(),
+                       m_sDeviceName.c_str(), LOG_KERN);
+      } else {
+        m_bConfigValid = false;
+      }
     }
     this->m_nState = eDone;
     this->m_bCycleDone = true;
@@ -68,7 +73,11 @@ void CSyslog::OnServerIpChanged() {
     delete CControl::ms_pSyslog;
   }
   IPAddress oIP;
-  oIP.fromString(m_pCfgServer->m_pTValue->m_Value.c_str());
-  CControl::ms_pSyslog = new Syslog(udpClient, oIP, 514, m_sShortName.c_str(),
-                                    m_sDeviceName.c_str(), LOG_KERN);
+  if (oIP.fromString(m_pCfgServer->m_pTValue->m_Value.c_str())) {
+    m_bConfigValid = true;
+    CControl::ms_pSyslog = new Syslog(udpClient, oIP, 514, m_sShortName.c_str(),
+                                      m_sDeviceName.c_str(), LOG_KERN);
+  } else {
+    m_bConfigValid = false;
+  }
 }
