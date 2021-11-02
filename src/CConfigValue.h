@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-class CMqttValue;
-
 template <typename T> std::string to_string(const T &n) {
   std::ostringstream stm;
   stm << n;
@@ -69,8 +67,7 @@ class CConfigKeyBase {
 public:
   CConfigKeyBase(std::string szSection, std::string szKey)
       : m_sSection(szSection), m_sKey(szKey), m_pValue(NULL),
-        m_sValue("undefined"), m_pOnChangedCb(NULL), m_pOnChangedObject(NULL),
-        m_pMqttValue(NULL) {
+        m_sValue("undefined"), m_pOnChangedCb(NULL), m_pOnChangedObject(NULL) {
     if (CConfigKeyBase::ms_Vars.find(m_sSection) ==
         CConfigKeyBase::ms_Vars.end())
       ms_SectionList.push_back(m_sSection);
@@ -79,8 +76,7 @@ public:
   }
   CConfigKeyBase(const char *pszSection, const char *pszKey)
       : m_sSection(pszSection), m_sKey(pszKey), m_pValue(NULL),
-        m_sValue("undefined"), m_pOnChangedCb(NULL), m_pOnChangedObject(NULL),
-        m_pMqttValue(NULL) {
+        m_sValue("undefined"), m_pOnChangedCb(NULL), m_pOnChangedObject(NULL) {
     if (CConfigKeyBase::ms_Vars.find(m_sSection) ==
         CConfigKeyBase::ms_Vars.end())
       ms_SectionList.push_back(m_sSection);
@@ -113,7 +109,6 @@ public:
 protected:
   OnChangedCb m_pOnChangedCb;
   void *m_pOnChangedObject;
-  CMqttValue *m_pMqttValue;
 };
 
 template <typename T> class CConfigKey : public CConfigKeyBase {

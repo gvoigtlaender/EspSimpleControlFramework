@@ -12,6 +12,7 @@ class CDisplayLine;
 #include "CConfigValue.h"
 #include <Syslog.h>
 
+class CMqttValue;
 class CControl {
 public:
   enum E_LOGTYPE {
@@ -49,7 +50,7 @@ public:
     if (type == D)
       return;
 #endif
-    static char czDebBuf[200] = {0};
+    char czDebBuf[200] = {0};
     va_list arg_ptr;
 
     va_start(arg_ptr, pcMessage);
@@ -59,7 +60,7 @@ public:
     Serial.printf("%08lu: \tSYSTEM\t%c: %s\n", millis(), GetLogTypeChar(type),
                   czDebBuf);
     if (ms_pSyslog != NULL) {
-      static char szTmp[255];
+      char szTmp[255];
       snprintf(szTmp, sizeof(szTmp), "SYSTEM %s", czDebBuf);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
     }
@@ -71,7 +72,7 @@ public:
     if (type == D)
       return;
 #endif
-    static char czDebBuf[200] = {0};
+    char czDebBuf[200] = {0};
     va_list arg_ptr;
 
     va_start(arg_ptr, pcMessage);
@@ -81,7 +82,7 @@ public:
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_sInstanceName.c_str(),
                   GetLogTypeChar(type), czDebBuf);
     if (ms_pSyslog != NULL) {
-      static char szTmp[255];
+      char szTmp[255];
       snprintf(szTmp, sizeof(szTmp), "%s %s", m_sInstanceName.c_str(),
                czDebBuf);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
@@ -96,7 +97,7 @@ public:
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_sInstanceName.c_str(),
                   GetLogTypeChar(type), pcMessage);
     if (ms_pSyslog != NULL) {
-      static char szTmp[2048];
+      char szTmp[255];
       snprintf(szTmp, sizeof(szTmp), "%s %s", m_sInstanceName.c_str(),
                pcMessage);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
