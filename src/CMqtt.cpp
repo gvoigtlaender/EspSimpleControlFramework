@@ -209,13 +209,13 @@ void CMqtt::publish_value(CMqttValue *pValue) {
            pValue->m_sPath.c_str());
   char szValue[64];
   snprintf(szValue, sizeof(szValue), "%s", pValue->m_sValue.c_str());
-  /*
+
   static char szLog[200];
   snprintf(szLog, sizeof(szLog), "publish %s = %s", szKey, szValue);
   _log2(I, szLog);
-  */
+
   try {
-    // m_pMqttClient->publish(szKey, szValue, true);
+    m_pMqttClient->publish(szKey, szValue, true);
   } catch (...) {
     _log2(E, "publish exception");
   }
