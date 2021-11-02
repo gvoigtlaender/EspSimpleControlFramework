@@ -90,6 +90,6 @@ void CNtp::printLocalTime() {
   long lMinutes = lHours * 60 + m_pTimeInfo->tm_min;
   long lSeconds = lMinutes * 60 + m_pTimeInfo->tm_sec;
   _log(I, "Minutes Today: h:%ld m:%ld s:%ld", lHours, lMinutes, lSeconds);
-  _log(I, "Year=%d", m_pTimeInfo->tm_year);
+  _log(I, "Year=%d", m_pTimeInfo->tm_year + 1900);
   delay(1000);
 }

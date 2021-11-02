@@ -210,7 +210,7 @@ void CMqtt::publish_value(CMqttValue *pValue) {
   char szValue[64];
   snprintf(szValue, sizeof(szValue), "%s", pValue->m_sValue.c_str());
 
-  static char szLog[200];
+  static char szLog[220];
   snprintf(szLog, sizeof(szLog), "publish %s = %s", szKey, szValue);
   _log2(I, szLog);
 

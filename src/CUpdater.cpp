@@ -13,12 +13,13 @@ CUpdater::CUpdater(ESP8266WebServer *pServer, string sPath,
       sIndexPage(""), _updaterError("") {
 
   sIndexPage = "<!DOCTYPE html>\n"
+               "<html>\n"
                "<head>\n";
 
-  if (!sTitle.empty())
-    sIndexPage += "<title>" + sTitle + "</title>\n";
   if (!sHtmlHeader.empty())
     sIndexPage += sHtmlHeader;
+  if (!sTitle.empty())
+    sIndexPage += "<title>" + sTitle + "</title>\n";
   sIndexPage +=
       "</head>\n"
       "<body>\n"
@@ -26,6 +27,10 @@ CUpdater::CUpdater(ESP8266WebServer *pServer, string sPath,
       "style='text-align:left;display:inline-block;color:#eaeaea;min-width:"
       "340px;'>\n"
       "<div style='text-align:center;color:#eaeaea;'>\n"
+      "<h1>" +
+      sTitle +
+      "</h1>\n"
+      "<div id=but3d style=\"display: block;\"></div><p>"
       "<form id=but3d "
       "style=\"display: block;\" action='../' "
       "method='get'>\n<button>Main</button>\n</form>\n";

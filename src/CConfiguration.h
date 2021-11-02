@@ -206,11 +206,12 @@ public:
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
              "<body>\n");
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<div "
-             "style='text-align:left;display:inline-block;color:#eaeaea;min-"
-             "width:340px;'><div style='text-align:center;color:#eaeaea;'>\n");
+    snprintf(
+        m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
+        m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
+        "<div "
+        "style='text-align:left;display:inline-block;color:#eaeaea;min-"
+        "width:340px;'>\n<div style='text-align:center;color:#eaeaea;'>\n");
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
              "<h1>%s</h1>\n", m_sHtmlTitle.c_str());
