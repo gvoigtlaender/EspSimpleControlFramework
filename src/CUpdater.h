@@ -9,8 +9,12 @@ public:
   CUpdater(ESP8266WebServer *pServer, string sPath, string sTitle = "",
            string sHtmlHeader = "");
   void _setUpdaterError();
+
+  void getHtmlPage();
+
   ESP8266WebServer *m_pServer;
   string m_sPath;
+  string m_sTitle;
   string m_sHtmlHeader;
   string sIndexPage;
   String _updaterError;
