@@ -47,9 +47,7 @@ public:
                     "LittleFS.exist() sucess, reading config file");
       File configFile = LittleFS.open(m_sConfigFile.c_str(), "r");
       if (configFile) {
-        // CControl::Log(CControl::I, "opened config file");
         size_t size = configFile.size();
-        // Allocate a buffer to store contents of the file.
         std::unique_ptr<char[]> buf(new char[size]);
 
         configFile.readBytes(buf.get(), size);
@@ -61,7 +59,7 @@ public:
         Serial.println("");
         if (json.success()) {
 #else
-        StaticJsonDocument<1024> doc;
+        DynamicJsonDocument doc(1000);
         DeserializationError error = deserializeJson(doc, buf.get());
         if (error) {
           CControl::Log(CControl::I,
@@ -107,12 +105,8 @@ public:
                               pszKey);
                 continue;
               }
-
-              // CControl::Log(CControl::I, "loading Section %s Key %s:",
-              // pszSec, pszKey);
               pszVal = sec[pszKey];
               keys->second->FromString(pszVal);
-              // CControl::Log(CControl::I, "value %s\n", pszVal);
               CControl::Log(CControl::I, "loading section %s key %s value %s",
                             sections->first.c_str(), keys->first.c_str(),
                             pszVal);
@@ -132,50 +126,63 @@ public:
 
   void save() {
     CControl::Log(CControl::I, "saving config");
+
 #if ARDUINOJSON_VERSION_MAJOR == 5
     DynamicJsonBuffer jsonBuffer;
     JsonObject &json = jsonBuffer.createObject();
 #else
-    DynamicJsonDocument doc(1024);
-    JsonObject json = doc.as<JsonObject>();
+    DynamicJsonDocument doc(1000);
 #endif
 
-    CConfigKeyBase::SectionsMap::iterator sections;
-    CConfigKeyBase::KeyMap::iterator keys;
-
-    for (sections = CConfigKeyBase::ms_Vars.begin();
-         sections != CConfigKeyBase::ms_Vars.end(); sections++) {
+    for (CConfigKeyBase::SectionsMap::iterator sections =
+             CConfigKeyBase::ms_Vars.begin();
+         sections != CConfigKeyBase::ms_Vars.end(); ++sections) {
+      string sSection = sections->first;
 #if ARDUINOJSON_VERSION_MAJOR == 5
       JsonObject &sec = json.createNestedObject(sections->first.c_str());
 #else
-      JsonObject sec = json.createNestedObject(sections->first.c_str());
+      JsonObject sec = doc.createNestedObject(sections->first.c_str());
+      if (sec.isNull()) {
+        CControl::Log(CControl::E, "Create section %s failed",
+                      sSection.c_str());
+        return;
+      }
 #endif
-      for (keys = sections->second.begin(); keys != sections->second.end();
-           keys++) {
+      for (CConfigKeyBase::KeyMap::iterator keys = sections->second.begin();
+           keys != sections->second.end(); ++keys) {
+        std::string sKey = keys->first;
         std::string &sVal = keys->second->ToString();
         CControl::Log(CControl::I, "saving section %s key %s value %s",
-                      sections->first.c_str(), keys->first.c_str(),
-                      sVal.c_str());
+                      sSection.c_str(), sKey.c_str(), sVal.c_str());
+#if ARDUINOJSON_VERSION_MAJOR == 5
         sec[keys->first.c_str()] = sVal.c_str();
-        // sec.set(keys->first.c_str(), sVal.c_str());
+#else
+        sec[sKey] = sVal;
+#endif
+        delay(10);
       }
-    }
-
-    File configFile = LittleFS.open("/config.json", "w");
-    if (!configFile) {
-      CControl::Log(CControl::I, "failed to open config file for writing");
     }
 
 #if ARDUINOJSON_VERSION_MAJOR == 5
     json.printTo(Serial);
     Serial.println("");
+    File configFile = LittleFS.open("/config.json", "w");
+    if (!configFile) {
+      CControl::Log(CControl::I, "failed to open config file for writing");
+    }
     json.printTo(configFile);
-#else
-    serializeJson(json, Serial);
-    Serial.println("");
-    serializeJson(json, configFile);
-#endif
     configFile.close();
+#else
+    serializeJson(doc, Serial);
+    Serial.println("");
+
+    File configFile = LittleFS.open("/config.json", "w");
+    if (!configFile) {
+      CControl::Log(CControl::I, "failed to open config file for writing");
+    }
+    serializeJson(doc, configFile);
+    configFile.close();
+#endif
   }
 
   std::string m_sConfigFile;

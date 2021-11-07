@@ -3,6 +3,7 @@
 include
 main.cpp
 config.h
+/Data/*
 
 # build objects
 .pio
