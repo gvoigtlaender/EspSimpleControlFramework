@@ -16,7 +16,7 @@ bool CLed::setup() {
 void CLed::control(bool bForce /*= false*/) {
   CControl::control(bForce);
 
-  const int ciShortBlink = 25;
+  const int ciShortBlink = 20;
   const int ciOffTime = 250;
 
   switch (m_eControlState) {
