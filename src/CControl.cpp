@@ -59,6 +59,14 @@ CConfigKey<int16_t> *CControl::CreateConfigKey<int16_t>(const char *pszSection,
   return pKey;
 }
 
+template <>
+CConfigKey<bool> *CControl::CreateConfigKey<bool>(const char *pszSection,
+                                                  const char *pszKey,
+                                                  bool def) {
+  CConfigKey<bool> *pKey = new CConfigKey<bool>(pszSection, pszKey, def);
+  return pKey;
+}
+
 CConfigKeyTimeString *CControl::CreateConfigKeyTimeString(
     const char *pszSection, const char *pszKey, std::string def,
     CConfigKeyTimeString::E_Type type /*= CConfigKeyTimeString::HHMM*/) {
