@@ -410,6 +410,8 @@ public:
               std::string s =
                   server->arg(pEntry->m_pValue->m_sSection_Key.c_str()).c_str();
               pEntry->FromString(s.c_str());
+            } else {
+              pEntry->FromString("");
             }
           }
         }

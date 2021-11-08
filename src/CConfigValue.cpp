@@ -171,6 +171,34 @@ template <> std::string CConfigValue<int16_t>::GetFormEntry() {
   return sContent;
 }
 
+template <> std::string &CConfigKey<bool>::ToString() {
+  m_sValue = to_string(static_cast<CConfigValue<bool> *>(m_pValue)->m_Value);
+  return m_sValue;
+}
+
+template <> void CConfigKey<bool>::FromString(const char *pszVal) {
+  bool bVal = (strcmp("on", pszVal) == 0) ? true : false;
+  if (bVal != static_cast<CConfigValue<bool> *>(m_pValue)->m_Value) {
+    static_cast<CConfigValue<bool> *>(m_pValue)->m_Value = bVal;
+    if (m_pOnChangedCb != NULL)
+      (m_pOnChangedCb)(m_pOnChangedObject, this);
+  }
+#if defined DEBUG
+  Serial.printf("\t\t%s %s => %s\n", this->m_sKey.c_str(), pszVal,
+                static_cast<CConfigValue<bool> *>(m_pValue)->m_Value ? "true"
+                                                                     : "false");
+#endif
+}
+
+template <> std::string CConfigValue<bool>::GetFormEntry() {
+  std::string sContent;
+  sContent = "<input type=\"checkbox\" name=\"" + m_sSection_Key + "\"";
+  if (m_Value == true)
+    sContent += " checked";
+  sContent += "/>\n<p>\n";
+  return sContent;
+}
+
 void CConfigSection::Reset() {
   CConfigSection::KeyMap::iterator keys;
   for (keys = begin(); keys != end(); keys++) {
