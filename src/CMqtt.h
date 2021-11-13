@@ -29,6 +29,7 @@ class CMqttValue {
 public:
   explicit CMqttValue(string sPath, string sValue = "");
   void setValue(string sValue);
+  string getValue() const { return m_sValue; }
 
 protected:
   string m_sPath;
