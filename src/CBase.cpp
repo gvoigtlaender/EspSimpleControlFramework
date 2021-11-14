@@ -17,3 +17,24 @@ std::string to_string(size_t n) {
 #endif
 }
 */
+
+std::string TimeToTimeString(int32_t nTimeSeconds) {
+  int nHours = 0, nMinutes = 0, nSeconds = 0;
+
+  while (nTimeSeconds > 3600) {
+    nHours++;
+    nTimeSeconds -= 3600;
+  }
+
+  while (nTimeSeconds > 60) {
+    nMinutes++;
+    nTimeSeconds -= 60;
+  }
+
+  nSeconds = nTimeSeconds;
+
+  char szTmp[32];
+  snprintf(szTmp, sizeof(szTmp), "%02d:%02d:%02d", nHours, nMinutes, nSeconds);
+
+  return szTmp;
+}
