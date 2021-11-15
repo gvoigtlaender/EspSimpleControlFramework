@@ -3,6 +3,7 @@
 #define SRC_CLED_H_
 
 #include "CBase.h"
+#include "CConfigValue.h"
 #include "CControl.h"
 #include "CMqtt.h"
 #include <Arduino.h>
@@ -17,8 +18,9 @@ public:
       : CControl("CLed"), m_nLedPin(nLedPin), m_eControlState(eStart),
         m_eBlinkState(eBlinkStart), m_uiBlinkCnt(0), m_uiBlinkMillis(0),
         m_eBlinkTask(NONE), m_bCurrentState(false), m_pMqtt_CurrentTask(NULL),
-        m_pMqtt_LedState(NULL) {
+        m_pMqtt_LedState(NULL), m_pIntensity(NULL) {
     assert(ms_pInstance == NULL);
+    m_pIntensity = CreateConfigKeyIntSlider("Led", "Intensity", 100, 0, 100);
     ms_pInstance = this;
   }
   uint8_t m_nLedPin;
@@ -49,7 +51,8 @@ public:
 
   void digitalWrite(bool bOn) {
     m_bCurrentState = bOn;
-    ::digitalWrite(m_nLedPin, (bOn == true) ? HIGH : LOW);
+    //::digitalWrite(m_nLedPin, (bOn == true) ? HIGH : LOW);
+    analogWrite(m_nLedPin, bOn ? m_pIntensity->m_pTValue->m_Value : 0);
     if (m_pMqtt_LedState != NULL)
       m_pMqtt_LedState->setValue(to_string(bOn));
   }
@@ -57,6 +60,8 @@ public:
 
   CMqttValue *m_pMqtt_CurrentTask;
   CMqttValue *m_pMqtt_LedState;
+
+  CConfigKeyIntSlider *m_pIntensity;
 
   static CLed *ms_pInstance;
   static void AddBlinkTask(E_BLINKTASK eTask) {
