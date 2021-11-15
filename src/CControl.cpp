@@ -19,8 +19,8 @@ bool CControl::ms_bUsbChargingActive = false;
 // static
 Syslog *CControl::ms_pSyslog = NULL;
 
-CMqttValue *CControl::CreateMqttValue(std::string sName,
-                                      std::string sValue /*= ""*/) {
+CMqttValue *CControl::CreateMqttValue(const std::string& sName,
+                                      const std::string& sValue /*= ""*/) {
   CMqttValue *pValue = new CMqttValue(m_sInstanceName + "/" + sName, sValue);
   pValue->m_pControl = this;
   _log(I, "CreateMqttValue(%s, %s)", pValue->m_sPath.c_str(),

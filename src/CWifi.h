@@ -13,8 +13,8 @@ using std::string;
 
 class CWifi : public CControl {
 public:
-  CWifi(const char *szAppName, string sSsid = "", string sPassword = "",
-        string sStaticIp = "");
+  explicit CWifi(const char *szAppName, string sSsid = "",
+                 string sPassword = "", string sStaticIp = "");
 
   bool setup() override;
 
@@ -28,5 +28,9 @@ public:
   CConfigKey<std::string> *m_pWifiSsid;
   CConfigKey<std::string> *m_pWifiPassword;
   CConfigKey<std::string> *m_pWifiStaticIp;
+
+private:
+  CWifi(const CWifi &src);
+  CWifi &operator=(const CWifi &src);
 };
 #endif // SRC_CWIFI_H_

@@ -32,5 +32,9 @@ public:
   CMqttValue *m_pMqtt_Time;
   time_t m_RawTime;
   struct tm *m_pTimeInfo;
+
+private:
+  CNtp(const CNtp &src);
+  CNtp &operator=(const CNtp &src);
 };
 #endif // SRC_CNTP_H_

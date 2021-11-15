@@ -8,7 +8,7 @@
 // static
 CMqtt *CMqtt::ms_pMqtt = NULL;
 
-CMqttValue::CMqttValue(string sPath, string sValue /*= ""*/)
+CMqttValue::CMqttValue(const string &sPath, const string &sValue /*= ""*/)
     : m_sPath(sPath), m_sValue(sValue), m_pControl(NULL), m_bPublished(false) {
   CMqtt::ms_Values.push_back(this);
 #if defined DEBUG
@@ -16,7 +16,7 @@ CMqttValue::CMqttValue(string sPath, string sValue /*= ""*/)
 #endif
 }
 
-void CMqttValue::setValue(string sValue) {
+void CMqttValue::setValue(const string &sValue) {
   if (m_sValue == sValue)
     return;
   m_sValue = sValue;
@@ -53,7 +53,8 @@ String macToStr(const uint8_t *mac) {
 // static
 list<CMqttValue *> CMqtt::ms_Values;
 
-CMqtt::CMqtt(string sServerIp /* = "" */, string sClientName /* = "" */)
+CMqtt::CMqtt(const string &sServerIp /* = "" */,
+             const string &sClientName /* = "" */)
     : CControl("CMqtt"), m_sServerIp(sServerIp), m_sClientName(sClientName),
       m_WifiClient(), m_pMqttClient(NULL), m_bValuesComplete(false),
       m_bConnected(false), m_bConfigValid(false) {
@@ -189,7 +190,7 @@ void CMqtt::control(bool bForce /*= false*/) {
 
 void CMqtt::publish() {
   list<CMqttValue *>::iterator it;
-  for (it = ms_Values.begin(); it != ms_Values.end(); it++) {
+  for (it = ms_Values.begin(); it != ms_Values.end(); ++it) {
     CMqttValue *pValue = *it;
     publish_value(pValue);
   }

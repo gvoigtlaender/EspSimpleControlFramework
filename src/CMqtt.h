@@ -27,8 +27,8 @@ class CMqttValue {
   friend class CControl;
 
 public:
-  explicit CMqttValue(string sPath, string sValue = "");
-  void setValue(string sValue);
+  explicit CMqttValue(const string &sPath, const string &sValue = "");
+  void setValue(const string &sValue);
   string getValue() const { return m_sValue; }
 
 protected:
@@ -36,13 +36,17 @@ protected:
   string m_sValue;
   CControl *m_pControl;
   bool m_bPublished;
+
+private:
+  CMqttValue(const CMqttValue &src);
+  CMqttValue &operator=(const CMqttValue &src);
 };
 
 class CMqtt : public CControl {
   friend class CMqttValue;
 
 public:
-  CMqtt(string sServerIp = "", string sClientName = "");
+  CMqtt(const string &sServerIp = "", const string &sClientName = "");
 
   void setClientName(const char *szClientName) { m_sClientName = szClientName; }
 
@@ -67,6 +71,10 @@ protected:
   CConfigKey<std::string> *m_pCfgMqttServer;
   CConfigKey<std::string> *m_pCfgMqttUser;
   CConfigKey<std::string> *m_pCfgMqttPasswd;
+
+private:
+  CMqtt(const CMqtt &src);
+  CMqtt &operator=(const CMqtt &src);
 };
 
 #endif // SRC_CMQTT_H_

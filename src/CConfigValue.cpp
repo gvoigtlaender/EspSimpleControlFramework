@@ -21,7 +21,7 @@ long StringHhMmToSeconds(const char *sString) {
     lVal = (60 * 60 * hour);
 
     String s1 = sTargetTime.substring(index + 1);
-    int8_t index = s1.indexOf(':');
+    index = s1.indexOf(':');
     if (index != -1) {
       int8_t minutes = s1.substring(0, index).toInt();
       int8_t seconds = s1.substring(index + 1).toInt();
@@ -201,15 +201,15 @@ template <> std::string CConfigValue<bool>::GetFormEntry() {
 
 void CConfigSection::Reset() {
   CConfigSection::KeyMap::iterator keys;
-  for (keys = begin(); keys != end(); keys++) {
+  for (keys = begin(); keys != end(); ++keys) {
     keys->second->Reset();
   }
 }
 
-CConfigKeyIntSlider::CConfigKeyIntSlider(std::string szSection,
-                                         std::string szKey, int def, int nMin,
+CConfigKeyIntSlider::CConfigKeyIntSlider(const char *pszSection,
+                                         const char *pszKey, int def, int nMin,
                                          int nMax)
-    : CConfigKey<int>(szSection, szKey, def) {
+    : CConfigKey<int>(pszSection, pszKey, def) {
   m_pValue->m_sInputType = "range";
   m_pValue->m_sInputHtmlCode =
       "min=\"" + to_string(nMin) + "\" max=\"" + to_string(nMax) + "\"";

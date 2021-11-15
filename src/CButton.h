@@ -11,7 +11,8 @@ public:
       : CControl("CButton"), m_nPin(nPin), m_nMode(nMode),
         m_nDigitalReadRef((nMode == INPUT_PULLUP) ? 0 : 1),
         m_eButtonState(eNone), m_eStateButtonControl(eInit),
-        m_uiMillisButtonControl(0), m_uiMillisClick(0) {}
+        m_uiMillisButtonControl(0), m_uiMillisClick(0),
+        m_pMqtt_ButtonState(NULL) {}
   bool setup() override;
 
   void control(bool bForce /*= false*/) override;

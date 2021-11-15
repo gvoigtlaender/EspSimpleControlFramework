@@ -13,7 +13,7 @@ using std::string;
 
 class CLed : public CControl {
 public:
-  CLed(uint8_t nLedPin)
+  explicit CLed(uint8_t nLedPin)
       : CControl("CLed"), m_nLedPin(nLedPin), m_eControlState(eStart),
         m_eBlinkState(eBlinkStart), m_uiBlinkCnt(0), m_uiBlinkMillis(0),
         m_eBlinkTask(NONE), m_bCurrentState(false), m_pMqtt_CurrentTask(NULL),
@@ -64,6 +64,10 @@ public:
       ms_pInstance->m_eBlinkTask = eTask;
     }
   }
+
+private:
+  CLed(const CLed &src);
+  CLed &operator=(const CLed &src);
 };
 
 #endif // SRC_CLED_H_

@@ -31,7 +31,7 @@ public:
 
 template <typename T> class CConfigValue : public CConfigValueBase {
 public:
-  explicit CConfigValue(T tDefault)
+  explicit CConfigValue(const T &tDefault)
       : CConfigValueBase(), m_Value(tDefault), m_Default(tDefault) {}
   std::string GetFormEntry() override { return ""; };
   void Reset() override { m_Value = m_Default; };
@@ -65,7 +65,8 @@ class CConfigKeyBase {
   friend class CControl;
 
 public:
-  CConfigKeyBase(std::string szSection, std::string szKey)
+  /*
+  CConfigKeyBase(const char* pszSection, const char* pszKey)
       : m_sSection(szSection), m_sKey(szKey), m_pValue(NULL),
         m_sValue("undefined"), m_pOnChangedCb(NULL), m_pOnChangedObject(NULL) {
     if (CConfigKeyBase::ms_Vars.find(m_sSection) ==
@@ -74,6 +75,7 @@ public:
     CConfigKeyBase::ms_Vars[m_sSection][m_sKey] = this;
     CConfigKeyBase::ms_VarEntries[m_sSection].push_back(this);
   }
+  */
   CConfigKeyBase(const char *pszSection, const char *pszKey)
       : m_sSection(pszSection), m_sKey(pszKey), m_pValue(NULL),
         m_sValue("undefined"), m_pOnChangedCb(NULL), m_pOnChangedObject(NULL) {
@@ -113,15 +115,17 @@ protected:
 
 template <typename T> class CConfigKey : public CConfigKeyBase {
 public:
+  /*
   CConfigKey(std::string szSection, std::string szKey, T def)
-      : CConfigKeyBase(szSection, szKey) {
+      : CConfigKeyBase(szSection, szKey), m_pTValue(NULL) {
     m_pTValue = new CConfigValue<T>(def);
     // m_pTValue->m_sSection_Key = std::to_string(m_pTValue->ms_uiUniqeId++); //
     // m_sSection + "_" + m_sKey;
     m_pValue = m_pTValue;
   }
+  */
   CConfigKey(const char *pszSection, const char *pszKey, T def)
-      : CConfigKeyBase(pszSection, pszKey) {
+      : CConfigKeyBase(pszSection, pszKey), m_pTValue(NULL) {
     m_pTValue = new CConfigValue<T>(def);
     // m_pTValue->m_sSection_Key = std::to_string(m_pTValue->ms_uiUniqeId++); //
     // m_sSection + "_" + m_sKey;
@@ -133,6 +137,10 @@ public:
 
   T &GetValue() { return m_pTValue->m_Value; }
   CConfigValue<T> *m_pTValue;
+
+private:
+  CConfigKey(const CConfigKey &src);
+  CConfigKey &operator=(const CConfigKey &src);
 };
 
 class CConfigKeyTimeString : public CConfigKey<std::string> {
@@ -140,9 +148,10 @@ public:
   enum E_Type {
     HHMM = 0,
   };
-  CConfigKeyTimeString(std::string szSection, std::string szKey,
-                       std::string def, E_Type type = HHMM)
-      : CConfigKey<std::string>(szSection, szKey, def), m_Type(type) {}
+  CConfigKeyTimeString(const char *pszSection, const char *pszKey,
+                       const std::string &def, E_Type type = HHMM)
+      : CConfigKey<std::string>(pszSection, pszKey, def), m_lSeconds(0),
+        m_Type(type) {}
   void FromString(const char *pszVal) override;
   long m_lSeconds;
   E_Type m_Type;
@@ -150,7 +159,7 @@ public:
 
 class CConfigKeyIntSlider : public CConfigKey<int> {
 public:
-  CConfigKeyIntSlider(std::string szSection, std::string szKey, int def,
+  CConfigKeyIntSlider(const char *pszSection, const char *pszKey, int def,
                       int nMin, int nMax);
 };
 

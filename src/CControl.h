@@ -22,11 +22,11 @@ public:
     D,
   };
   CControl()
-      : m_nState(0), m_uiTime(millis()), m_sInstanceName(""),
-        m_bCycleDone(false) {}
-  explicit CControl(std::string sInstance)
       : m_nState(0), m_uiTime(millis()), m_uiProcessTime(0),
-        m_sInstanceName(sInstance)
+        m_sInstanceName(""), m_bCycleDone(false) {}
+  explicit CControl(const char *pszInstance)
+      : m_nState(0), m_uiTime(millis()), m_uiProcessTime(0),
+        m_sInstanceName(pszInstance)
 #if USE_DISPLAY == 1
         ,
         m_pDisplayLine(NULL)
@@ -150,7 +150,8 @@ public:
     ms_ulProcessPending--;
   }
 
-  CMqttValue *CreateMqttValue(std::string sName, std::string sValue = "");
+  CMqttValue *CreateMqttValue(const std::string &sName,
+                              const std::string &sValue = "");
 
   template <typename T>
   CConfigKey<T> *CreateConfigKey(const char *pszSection, const char *pszKey,
