@@ -14,7 +14,7 @@ void CButton::control(bool bForce /*= false*/) {
 
   const int cnFilterMs = 25;
   const int cnDoubleClickDelayMax = 500;
-  const int cnLongClick = 2000;
+  const int cnLongClick = 1000;
   const int cnVeryLongClick = 10000;
 
   bool bPressed = (digitalRead(m_nPin) == m_nDigitalReadRef);
