@@ -17,25 +17,22 @@ template <typename T> std::string to_string(const T &n) {
   return stm.str();
 }
 
-class CConfigValueBase {
+class CConfigValueBase : public CNonCopyable {
 public:
   CConfigValueBase()
-      : /*m_sSection_Key(std::to_string(ms_uiUniqeId++))*/ m_pszSection_Key(
-            NULL),
-        /*m_sInputType("text")*/ m_pcsInputType(szInputType_Text),
-        /*m_sInputHtmlCode("")*/ m_pszInputHtmlCode(NULL) {
+      : m_pszSection_Key(NULL), m_pcsInputType(szInputType_Text),
+        m_pszInputHtmlCode(NULL) {
     m_pszSection_Key = new char[5];
     snprintf(m_pszSection_Key, 5, "%u", ms_uiUniqeId++);
   }
 
+  virtual ~CConfigValueBase() { delete[] m_pszSection_Key; }
+
   virtual std::string GetFormEntry() = 0;
   virtual void Reset() = 0;
 
-  // std::string m_sSection_Key;
   char *m_pszSection_Key;
-  // std::string m_sInputType;
   const char *m_pcsInputType;
-  // std::string m_sInputHtmlCode;
   char *m_pszInputHtmlCode;
   static uint8_t ms_uiUniqeId;
 };
@@ -51,20 +48,6 @@ public:
   std::vector<T> m_Choice;
 };
 
-/*
-class CConfigValueString : public CConfigValue<std::string> {
- public:
-  explicit CConfigValueString(std::string sDefault) :
-CConfigValue<std::string>(sDefault) {
-  }
-  std::string GetFormEntry() override  {
-    std::string sContent;
-    sContent = "<input type=\"text\" name=\"" + m_sSection_Key + "\" value=\"" +
-m_Value + "\" />\n<p>\n"; return sContent;
-  }
-};
-*/
-
 class CConfigKeyBase;
 class CConfigSection : public std::map<std::string, CConfigKeyBase *> {
 public:
@@ -72,25 +55,13 @@ public:
   typedef std::map<std::string, CConfigKeyBase *> KeyMap;
 };
 
-class CConfigKeyBase {
+class CConfigKeyBase : public CNonCopyable {
   friend class CControl;
 
 public:
-  /*
-  CConfigKeyBase(const char* pszSection, const char* pszKey)
-      : m_sSection(szSection), m_sKey(szKey), m_pValue(NULL),
-        m_sValue("undefined"), m_pOnChangedCb(NULL), m_pOnChangedObject(NULL) {
-    if (CConfigKeyBase::ms_Vars.find(m_sSection) ==
-        CConfigKeyBase::ms_Vars.end())
-      ms_SectionList.push_back(m_sSection);
-    CConfigKeyBase::ms_Vars[m_sSection][m_sKey] = this;
-    CConfigKeyBase::ms_VarEntries[m_sSection].push_back(this);
-  }
-  */
   CConfigKeyBase(const char *pszSection, const char *pszKey)
-      : /*m_sSection(pszSection), m_sKey(pszKey)*/ m_pszSection(NULL),
-        m_pszKey(NULL), m_pValue(NULL), m_sValue("undefined"),
-        m_pOnChangedCb(NULL), m_pOnChangedObject(NULL) {
+      : m_pszSection(NULL), m_pszKey(NULL), m_pValue(NULL),
+        m_sValue("undefined"), m_pOnChangedCb(NULL), m_pOnChangedObject(NULL) {
     m_pszSection = new char[strlen(pszSection) + 1];
     strncpy(m_pszSection, pszSection, strlen(pszSection));
     m_pszSection[strlen(pszSection)] = 0x00;
@@ -106,15 +77,18 @@ public:
     CConfigKeyBase::ms_Vars[sSection][sKey] = this;
     CConfigKeyBase::ms_VarEntries[sSection].push_back(this);
   }
+
+  virtual ~CConfigKeyBase() {
+    delete[] m_pszSection;
+    delete[] m_pszKey;
+  }
   virtual std::string &ToString() = 0;
   void FromString(const std::string &sValue) { FromString(sValue.c_str()); }
   virtual void FromString(const char *pszVal) = 0;
   virtual void Reset() = 0;
 
-  // std::string m_sSection;
   char *m_pszSection;
   char *getSection() { return m_pszSection; }
-  // std::string m_sKey;
   char *m_pszKey;
   char *GetKey() { return m_pszKey; }
   CConfigValueBase *m_pValue;
@@ -140,22 +114,13 @@ protected:
 
 template <typename T> class CConfigKey : public CConfigKeyBase {
 public:
-  /*
-  CConfigKey(std::string szSection, std::string szKey, T def)
-      : CConfigKeyBase(szSection, szKey), m_pTValue(NULL) {
-    m_pTValue = new CConfigValue<T>(def);
-    // m_pTValue->m_sSection_Key = std::to_string(m_pTValue->ms_uiUniqeId++); //
-    // m_sSection + "_" + m_sKey;
-    m_pValue = m_pTValue;
-  }
-  */
   CConfigKey(const char *pszSection, const char *pszKey, T def)
       : CConfigKeyBase(pszSection, pszKey), m_pTValue(NULL) {
     m_pTValue = new CConfigValue<T>(def);
-    // m_pTValue->m_sSection_Key = std::to_string(m_pTValue->ms_uiUniqeId++); //
-    // m_sSection + "_" + m_sKey;
     m_pValue = m_pTValue;
   }
+
+  virtual ~CConfigKey() { delete m_pTValue; }
   std::string &ToString() override { return m_sValue; }
   void FromString(const char *pszVal) override {}
   void Reset() override { m_pValue->Reset(); }

@@ -9,8 +9,7 @@
 CMqtt *CMqtt::ms_pMqtt = NULL;
 
 CMqttValue::CMqttValue(const string &sPath, const string &sValue /*= ""*/)
-    : /*m_sPath(sPath), */ m_pszPath(NULL), m_sValue(sValue), m_pControl(NULL),
-      m_bPublished(false) {
+    : m_pszPath(NULL), m_sValue(sValue), m_pControl(NULL), m_bPublished(false) {
   m_pszPath = new char[sPath.length() + 1];
   strncpy(m_pszPath, sPath.c_str(), sPath.length());
   m_pszPath[sPath.length()] = 0x00;

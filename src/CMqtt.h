@@ -28,11 +28,11 @@ class CMqttValue {
 
 public:
   explicit CMqttValue(const string &sPath, const string &sValue = "");
+  virtual ~CMqttValue() { delete[] m_pszPath; }
   void setValue(const string &sValue);
   string getValue() const { return m_sValue; }
 
 protected:
-  // string m_sPath;
   char *m_pszPath;
   string m_sValue;
   CControl *m_pControl;
@@ -48,6 +48,11 @@ class CMqtt : public CControl {
 
 public:
   CMqtt(const string &sServerIp = "", const string &sClientName = "");
+  virtual ~CMqtt() {
+    delete m_pCfgMqttServer;
+    delete m_pCfgMqttUser;
+    delete m_pCfgMqttPasswd;
+  }
 
   void setClientName(const char *szClientName) { m_sClientName = szClientName; }
 

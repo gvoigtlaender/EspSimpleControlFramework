@@ -31,4 +31,13 @@ extern char szInputType_Range[];
 
 void CheckFreeHeap();
 
+class CNonCopyable {
+public:
+  CNonCopyable() {}
+
+private:
+  CNonCopyable(const CNonCopyable &src) {}
+  CNonCopyable &operator=(const CNonCopyable &src) { return *this; }
+};
+
 #endif // _SRC__CBASE_H_
