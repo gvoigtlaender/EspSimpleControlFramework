@@ -29,4 +29,6 @@ extern char szInputType_Text[];
 extern char szInputType_Password[];
 extern char szInputType_Range[];
 
+void CheckFreeHeap();
+
 #endif // _SRC__CBASE_H_

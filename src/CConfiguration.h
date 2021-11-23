@@ -35,23 +35,28 @@ public:
     CConfigKeyBase::SectionsMap::iterator sections;
     CConfigKeyBase::KeyMap::iterator keys;
 
+    CheckFreeHeap();
     for (sections = CConfigKeyBase::ms_Vars.begin();
          sections != CConfigKeyBase::ms_Vars.end(); sections++) {
       sections->second.Reset();
+      CheckFreeHeap();
     }
   }
 
   void load() {
+    CheckFreeHeap();
     if (LittleFS.exists(m_sConfigFile.c_str())) {
       CControl::Log(CControl::I,
                     "LittleFS.exist() sucess, reading config file");
       File configFile = LittleFS.open(m_sConfigFile.c_str(), "r");
+      CheckFreeHeap();
       if (configFile) {
         size_t size = configFile.size();
         std::unique_ptr<char[]> buf(new char[size]);
-
+        CheckFreeHeap();
         configFile.readBytes(buf.get(), size);
         configFile.close();
+        CheckFreeHeap();
 #if ARDUINOJSON_VERSION_MAJOR == 5
         DynamicJsonBuffer jsonBuffer;
         JsonObject &json = jsonBuffer.parseObject(buf.get());
@@ -59,15 +64,19 @@ public:
         Serial.println("");
         if (json.success()) {
 #else
+        CheckFreeHeap();
         DynamicJsonDocument doc(1000);
+        CheckFreeHeap();
         DeserializationError error = deserializeJson(doc, buf.get());
         if (error) {
           CControl::Log(CControl::I,
                         "deserializeJson() fail, failed to load json config");
           return;
         }
+        CheckFreeHeap();
         JsonObject json = doc.as<JsonObject>();
         serializeJson(json, Serial);
+        CheckFreeHeap();
         Serial.println("");
         if (!json.isNull()) {
 #endif
@@ -80,6 +89,7 @@ public:
           const char *pszKey = NULL;
           const char *pszVal = NULL;
 
+          CheckFreeHeap();
           for (sections = CConfigKeyBase::ms_Vars.begin();
                sections != CConfigKeyBase::ms_Vars.end(); sections++) {
             pszSec = sections->first.c_str();
@@ -89,12 +99,13 @@ public:
                             pszSec);
               continue;
             }
-
+            CheckFreeHeap();
 #if ARDUINOJSON_VERSION_MAJOR == 5
             JsonObject &sec = json[pszSec];
 #else
             JsonObject sec = json[pszSec];
 #endif
+            CheckFreeHeap();
             for (keys = sections->second.begin();
                  keys != sections->second.end(); keys++) {
               pszKey = keys->first.c_str();
@@ -105,11 +116,13 @@ public:
                               pszKey);
                 continue;
               }
+              CheckFreeHeap();
               pszVal = sec[pszKey];
               keys->second->FromString(pszVal);
               CControl::Log(CControl::I, "loading section %s key %s value %s",
                             sections->first.c_str(), keys->first.c_str(),
                             pszVal);
+              CheckFreeHeap();
             }
           }
         } else {
@@ -122,11 +135,12 @@ public:
                     "LittleFS.exist() fail, reading config file failed");
       save();
     }
+    CheckFreeHeap();
   }
 
   void save() {
     CControl::Log(CControl::I, "saving config");
-    Serial.println(ESP.getFreeHeap(), DEC);
+    CheckFreeHeap();
 
 #if ARDUINOJSON_VERSION_MAJOR == 5
     DynamicJsonBuffer jsonBuffer;
@@ -135,12 +149,13 @@ public:
     DynamicJsonDocument doc(1000);
 #endif
 
-    Serial.println(ESP.getFreeHeap(), DEC);
+    CheckFreeHeap();
 
     for (CConfigKeyBase::SectionsMap::iterator sections =
              CConfigKeyBase::ms_Vars.begin();
          sections != CConfigKeyBase::ms_Vars.end(); ++sections) {
       std::string sSection = sections->first;
+      CheckFreeHeap();
 #if ARDUINOJSON_VERSION_MAJOR == 5
       JsonObject &sec = json.createNestedObject(sections->first.c_str());
 #else
@@ -151,6 +166,7 @@ public:
         doc.clear();
         return;
       }
+      CheckFreeHeap();
 #endif
       for (CConfigKeyBase::KeyMap::iterator keys = sections->second.begin();
            keys != sections->second.end(); ++keys) {
@@ -163,11 +179,12 @@ public:
 #else
         sec[sKey] = sVal;
 #endif
+        CheckFreeHeap();
         delay(10);
       }
     }
 
-    Serial.println(ESP.getFreeHeap(), DEC);
+    CheckFreeHeap();
 
 #if ARDUINOJSON_VERSION_MAJOR == 5
     json.printTo(Serial);
@@ -179,18 +196,21 @@ public:
     json.printTo(configFile);
     configFile.close();
 #else
+    CheckFreeHeap();
     serializeJson(doc, Serial);
     Serial.println("");
-
+    CheckFreeHeap();
     File configFile = LittleFS.open("/config.json", "w");
     if (!configFile) {
       CControl::Log(CControl::I, "failed to open config file for writing");
     }
+    CheckFreeHeap();
     serializeJson(doc, configFile);
     configFile.close();
     doc.clear();
+    CheckFreeHeap();
 #endif
-    Serial.println(ESP.getFreeHeap(), DEC);
+    CheckFreeHeap();
   }
 
   std::string m_sConfigFile;
@@ -200,6 +220,7 @@ public:
 
   bool GetHtmlForm(const char *pszHtmlHead, const char *pszHtmlTitle) {
 
+    CheckFreeHeap();
     snprintf(m_szhtml_content_buffer, m_szhtml_content_buffer_size,
              "<!DOCTYPE HTML>\n");
 
@@ -237,6 +258,7 @@ public:
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
              "<FORM action =\"/configure\" method=\"post\">\n");
 
+    CheckFreeHeap();
     CConfigKeyBase::SectionsMap::iterator sections;
     CConfigKeyBase::KeyMap::iterator keys;
 
@@ -251,6 +273,7 @@ public:
 
       if (sSection == std::string("0"))
         continue;
+      CheckFreeHeap();
       snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
                m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
                "<fieldset>\n");
@@ -258,6 +281,7 @@ public:
                m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
                "<legend>%s</legend>\n", sSection.c_str());
 
+      CheckFreeHeap();
       for (unsigned int n = 0;
            n < CConfigKeyBase::ms_VarEntries[sSection].size(); n++) {
         CConfigKeyBase *pEntry = CConfigKeyBase::ms_VarEntries[sSection][n];
@@ -269,6 +293,7 @@ public:
                  pEntry->m_pValue->GetFormEntry().c_str());
         // CControl::Log(CControl::I, "done\n");
       }
+      CheckFreeHeap();
       /*
       sContent += "<input type=\"submit\" name=\"action\" value=\"reset " +
                   sSection +
@@ -284,7 +309,7 @@ public:
                m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
                "<p>\n");
     }
-
+    CheckFreeHeap();
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
              "<P>\n");
@@ -313,6 +338,7 @@ public:
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
              "</html>\n");
 
+    CheckFreeHeap();
     return true;
   }
 
@@ -362,38 +388,32 @@ public:
 
   void handleArgs(ESP8266WebServer *server, const char *pszHtmlHead,
                   const char *pszHtmlTitle) {
+    CheckFreeHeap();
     int args = server->args();
 
     CControl::Log(CControl::I, "handleSubmit Args %d", args);
 
+    CheckFreeHeap();
     for (int n = 0; n < args; n++) {
       CControl::Log(CControl::I, "Arg %d: %s = %s", n,
                     server->argName(n).c_str(), server->arg(n).c_str());
     }
+    CheckFreeHeap();
 
     if (server->hasArg("action")) {
       std::string sAction = server->arg("action").c_str();
       CControl::Log(CControl::I, "action=%s", sAction.c_str());
       bool bRebooting = false;
 
-      CConfigKeyBase::SectionsMap::iterator sections;
-      for (sections = CConfigKeyBase::ms_Vars.begin();
-           sections != CConfigKeyBase::ms_Vars.end(); sections++) {
-        std::string sSection = sections->first;
-        if (sAction == "reset " + sSection) {
-          CControl::Log(CControl::I, "Reset %s", sSection.c_str());
-          sections->second.Reset();
-          this->save();
-          bRebooting = true;
-
-          goto ActionDone;
-        }
-      }
+      CheckFreeHeap();
 
       if (sAction == "reset") {
+        CheckFreeHeap();
         CControl::Log(CControl::I, "Reset & Restart");
         this->reset();
+        CheckFreeHeap();
         this->save();
+        CheckFreeHeap();
         bRebooting = true;
       } else if (sAction == "reboot") {
         CControl::Log(CControl::I, "Restart");
@@ -401,6 +421,8 @@ public:
       } else if (sAction == "reload") {
         this->load();
       } else if (sAction == "save") {
+
+        CheckFreeHeap();
         CConfigKeyBase::SectionsMap::iterator sections;
         CConfigKeyBase::KeyMap::iterator keys;
 
@@ -408,11 +430,12 @@ public:
 
         for (unsigned int i = 0; i < CConfigKeyBase::ms_SectionList.size();
              i++) {
+          CheckFreeHeap();
           std::string sSection = CConfigKeyBase::ms_SectionList[i];
           for (unsigned int n = 0;
                n < CConfigKeyBase::ms_VarEntries[sSection].size(); n++) {
             CConfigKeyBase *pEntry = CConfigKeyBase::ms_VarEntries[sSection][n];
-
+            CheckFreeHeap();
             String sSection_Key = pEntry->m_pValue->m_pszSection_Key;
             if (server->hasArg(sSection_Key)) {
               std::string s = server->arg(sSection_Key).c_str();
@@ -420,12 +443,14 @@ public:
             } else {
               pEntry->FromString("");
             }
+            CheckFreeHeap();
           }
         }
-
+        CheckFreeHeap();
         this->save();
+        CheckFreeHeap();
       }
-    ActionDone:
+      // ActionDone:
       if (bRebooting) {
         this->GetHtmlReboot(pszHtmlHead, pszHtmlTitle);
         server->send(200, "text/html", m_szhtml_content_buffer);
@@ -436,9 +461,11 @@ public:
         return;
       }
     }
-
+    CheckFreeHeap();
     this->GetHtmlForm(pszHtmlHead, pszHtmlTitle);
+    CheckFreeHeap();
     server->send(200, "text/html", m_szhtml_content_buffer);
+    CheckFreeHeap();
   }
 };
 #endif // SRC_CCONFIGURATION_H_
