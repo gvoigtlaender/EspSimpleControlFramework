@@ -68,7 +68,7 @@ void CConfigKeyTimeString::FromString(const char *pszVal) {
   m_lSeconds = StringHhMmToSeconds(pszVal);
 #if defined DEBUG
   Serial.printf(
-      "\t\t%s %s => %s => %ld Seconds\n", this->m_sKey.c_str(), pszVal,
+      "\t\t%s %s => %s => %ld Seconds\n", this->GetKey(), pszVal,
       static_cast<CConfigValue<std::string> *>(m_pValue)->m_Value.c_str(),
       m_lSeconds);
 #endif
@@ -76,11 +76,13 @@ void CConfigKeyTimeString::FromString(const char *pszVal) {
 
 template <> std::string CConfigValue<std::string>::GetFormEntry() {
   std::string sContent;
+  std::string sSection_Key(m_pszSection_Key);
+  std::string sInputType(m_pcsInputType);
   if (m_Choice.empty()) {
-    sContent = "<input type=\"" + m_sInputType + "\" name=\"" + m_sSection_Key +
+    sContent = "<input type=\"" + sInputType + "\" name=\"" + sSection_Key +
                "\" value=\"" + m_Value + "\" />\n<p>\n";
   } else {
-    sContent += "<select name=\"" + m_sSection_Key + "\">\n";
+    sContent += "<select name=\"" + sSection_Key + "\">\n";
     for (unsigned int n = 0; n < m_Choice.size(); n++) {
       sContent += "<option value=\"" + m_Choice[n] + "\"";
       if (m_Value == m_Choice[n])
@@ -95,7 +97,7 @@ template <> std::string CConfigValue<std::string>::GetFormEntry() {
 template <> std::string &CConfigKey<int>::ToString() {
   m_sValue = to_string(static_cast<CConfigValue<int> *>(m_pValue)->m_Value);
 #if defined DEBUG
-  Serial.printf("\t\t%s->ToString(%d) => %s\n", this->m_sKey.c_str(),
+  Serial.printf("\t\t%s->ToString(%d) => %s\n", this->GetKey(),
                 m_pTValue->m_Value, m_sValue.c_str());
 #endif
   return m_sValue;
@@ -109,21 +111,25 @@ template <> void CConfigKey<int>::FromString(const char *pszVal) {
       (m_pOnChangedCb)(m_pOnChangedObject, this);
   }
 #if defined DEBUG
-  Serial.printf("\t\t%s->FromString(%s) => %d\n", this->m_sKey.c_str(), pszVal,
+  Serial.printf("\t\t%s->FromString(%s) => %d\n", this->GetKey(), pszVal,
                 static_cast<CConfigValue<int> *>(m_pValue)->m_Value);
 #endif
 }
 
 template <> std::string CConfigValue<int>::GetFormEntry() {
   std::string sContent;
+  std::string sSection_Key(m_pszSection_Key);
+  std::string sInputType(m_pcsInputType);
   if (m_Choice.empty()) {
-    sContent = "<input type=\"" + m_sInputType + "\" name=\"" + m_sSection_Key +
+    sContent = "<input type=\"" + sInputType + "\" name=\"" + sSection_Key +
                "\" value=\"" + to_string(m_Value) + "\"";
-    if (!m_sInputHtmlCode.empty())
-      sContent += m_sInputHtmlCode;
+    /* if (!m_sInputHtmlCode.empty())
+      sContent += m_sInputHtmlCode; */
+    if (m_pszInputHtmlCode != NULL)
+      sContent += m_pszInputHtmlCode;
     sContent += " />\n<p>\n";
   } else {
-    sContent += "<select name=\"" + m_sSection_Key + "\">\n";
+    sContent += "<select name=\"" + sSection_Key + "\">\n";
     for (unsigned int n = 0; n < m_Choice.size(); n++) {
       sContent += "<option value=\"" + to_string(m_Choice[n]) + "\"";
       if (m_Value == m_Choice[n])
@@ -148,18 +154,20 @@ template <> void CConfigKey<int16_t>::FromString(const char *pszVal) {
       (m_pOnChangedCb)(m_pOnChangedObject, this);
   }
 #if defined DEBUG
-  Serial.printf("\t\t%s %s => %d\n", this->m_sKey.c_str(), pszVal,
+  Serial.printf("\t\t%s %s => %d\n", this->GetKey(), pszVal,
                 static_cast<CConfigValue<int16_t> *>(m_pValue)->m_Value);
 #endif
 }
 
 template <> std::string CConfigValue<int16_t>::GetFormEntry() {
   std::string sContent;
+  std::string sSection_Key(m_pszSection_Key);
+  std::string sInputType(m_pcsInputType);
   if (m_Choice.empty()) {
-    sContent = "<input type=\"" + m_sInputType + "\" name=\"" + m_sSection_Key +
+    sContent = "<input type=\"" + sInputType + "\" name=\"" + sSection_Key +
                "\" value=\"" + to_string(m_Value) + "\" />\n<p>\n";
   } else {
-    sContent += "<select name=\"" + m_sSection_Key + "\">\n";
+    sContent += "<select name=\"" + sSection_Key + "\">\n";
     for (unsigned int n = 0; n < m_Choice.size(); n++) {
       sContent += "<option value=\"" + to_string(m_Choice[n]) + "\"";
       if (m_Value == m_Choice[n])
@@ -184,7 +192,7 @@ template <> void CConfigKey<bool>::FromString(const char *pszVal) {
       (m_pOnChangedCb)(m_pOnChangedObject, this);
   }
 #if defined DEBUG
-  Serial.printf("\t\t%s %s => %s\n", this->m_sKey.c_str(), pszVal,
+  Serial.printf("\t\t%s %s => %s\n", this->GetKey(), pszVal,
                 static_cast<CConfigValue<bool> *>(m_pValue)->m_Value ? "true"
                                                                      : "false");
 #endif
@@ -192,7 +200,8 @@ template <> void CConfigKey<bool>::FromString(const char *pszVal) {
 
 template <> std::string CConfigValue<bool>::GetFormEntry() {
   std::string sContent;
-  sContent = "<input type=\"checkbox\" name=\"" + m_sSection_Key + "\"";
+  std::string sSection_Key(m_pszSection_Key);
+  sContent = "<input type=\"checkbox\" name=\"" + sSection_Key + "\"";
   if (m_Value == true)
     sContent += " checked";
   sContent += "/>\n<p>\n";
@@ -210,7 +219,14 @@ CConfigKeyIntSlider::CConfigKeyIntSlider(const char *pszSection,
                                          const char *pszKey, int def, int nMin,
                                          int nMax)
     : CConfigKey<int>(pszSection, pszKey, def) {
-  m_pValue->m_sInputType = "range";
-  m_pValue->m_sInputHtmlCode =
+  // m_pValue->m_sInputType = "range";
+  m_pValue->m_pcsInputType = szInputType_Range;
+  // m_pValue->m_sInputHtmlCode = "min=\"" + to_string(nMin) + "\" max=\"" +
+  // to_string(nMax) + "\"";
+  std::string sInputHtmlCode =
       "min=\"" + to_string(nMin) + "\" max=\"" + to_string(nMax) + "\"";
+  m_pValue->m_pszInputHtmlCode = new char[sInputHtmlCode.length() + 1];
+  strncpy(m_pValue->m_pszInputHtmlCode, sInputHtmlCode.c_str(),
+          sInputHtmlCode.length());
+  m_pValue->m_pszInputHtmlCode[sInputHtmlCode.length()] = 0x00;
 }

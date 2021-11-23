@@ -6,8 +6,8 @@ uint32_t sntp_update_delay_MS_rfc_not_less_than_15000() {
   return 12 * 60 * 60 * 1000UL; // 12 hours
 }
 CNtp::CNtp()
-    : CControl("CNtp"), m_sTimeZone(""), m_sServer(""), m_pCfgServer(NULL),
-      m_pCfgTimeZone(NULL), m_pMqtt_Time(NULL), m_RawTime(), m_pTimeInfo(NULL) {
+    : CControl("CNtp"), m_pCfgServer(NULL), m_pCfgTimeZone(NULL),
+      m_pMqtt_Time(NULL), m_RawTime(), m_pTimeInfo(NULL) {
   m_pCfgServer = CreateConfigKey<string>("NTP", "Server", "pool.ntp.org");
   m_pCfgTimeZone =
       new CConfigKey<string>("NTP", "TimeZone", "CET-1CEST,M3.5.0,M10.5.0/3");
@@ -16,18 +16,19 @@ CNtp::CNtp()
 }
 
 bool CNtp::setup() {
-  m_sTimeZone = m_pCfgTimeZone->m_pTValue->m_Value;
-  m_sServer = m_pCfgServer->m_pTValue->m_Value;
-  if (m_sServer.empty()) {
+  if (m_pCfgServer->m_pTValue->m_Value.empty()) {
     _log2(E, "skip setup, Server not configured");
     return false;
   }
-  _log(I, "configTime(%s, %s, pool.ntp.org)", m_sTimeZone.c_str(),
-       m_sServer.c_str());
+  _log(I, "configTime(%s, %s, pool.ntp.org)",
+       m_pCfgTimeZone->m_pTValue->m_Value.c_str(),
+       m_pCfgServer->m_pTValue->m_Value.c_str());
 #if defined(ESP8266)
-  configTime(m_sTimeZone.c_str(), m_sServer.c_str(), "pool.ntp.org");
+  configTime(m_pCfgTimeZone->m_pTValue->m_Value.c_str(),
+             m_pCfgServer->m_pTValue->m_Value.c_str(), "pool.ntp.org");
 #elif defined(ESP32)
-  configTzTime(m_sTimeZone.c_str(), m_sServer.c_str(), "pool.ntp.org");
+  configTzTime(m_pCfgTimeZone->m_pTValue->m_Value.c_str(),
+               m_pCfgServer->m_pTValue->m_Value.c_str(), "pool.ntp.org");
 #endif
   return true;
 }
@@ -70,11 +71,13 @@ void CNtp::control(bool bForce /*= false*/) {
 
 void CNtp::UpdateTime() {
   _log2(I, "UpdateTime");
-  if (!m_sServer.empty()) {
+  if (!m_pCfgServer->m_pTValue->m_Value.empty()) {
 #if defined(ESP8266)
-    configTime(m_sTimeZone.c_str(), m_sServer.c_str(), "pool.ntp.org");
+    configTime(m_pCfgTimeZone->m_pTValue->m_Value.c_str(),
+               m_pCfgServer->m_pTValue->m_Value.c_str(), "pool.ntp.org");
 #elif defined(ESP32)
-    configTzTime(m_sTimeZone.c_str(), m_sServer.c_str(), "pool.ntp.org");
+    configTzTime(m_pCfgTimeZone->m_pTValue->m_Value.c_str(),
+                 m_pCfgServer->m_pTValue->m_Value.c_str(), "pool.ntp.org");
 #endif
   }
   printLocalTime();

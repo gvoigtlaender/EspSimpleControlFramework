@@ -6,24 +6,19 @@
 
 CWifi::CWifi(const char *szAppName, string sSsid /*= ""*/,
              string sPassword /*= ""*/, string sStaticIp /*= ""*/)
-    : CControl("CWifi"), m_sAppName(szAppName), m_sSsid(sSsid),
-      m_sPassword(sPassword), m_sStaticIp(sStaticIp) {
-  m_pWifiSsid = CreateConfigKey<std::string>("Wifi", "Ssid", m_sSsid);
-  m_pWifiPassword =
-      new CConfigKey<std::string>("Wifi", "Password", m_sPassword);
-  m_pWifiPassword->m_pValue->m_sInputType = "password";
-  m_pWifiStaticIp = new CConfigKey<std::string>("Wifi", "StaticIp", "");
+    : CControl("CWifi"), m_sAppName(szAppName) {
+  m_pWifiSsid = CreateConfigKey<std::string>("Wifi", "Ssid", sSsid);
+  m_pWifiPassword = new CConfigKey<std::string>("Wifi", "Password", sPassword);
+  // m_pWifiPassword->m_pValue->m_sInputType = "password";
+  m_pWifiPassword->m_pValue->m_pcsInputType = szInputType_Password;
+  m_pWifiStaticIp = new CConfigKey<std::string>("Wifi", "StaticIp", sStaticIp);
 }
 
 bool CWifi::setup() {
   CControl::setup();
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
 
-  m_sSsid = m_pWifiSsid->GetValue();
-  m_sPassword = m_pWifiPassword->GetValue();
-  m_sStaticIp = m_pWifiStaticIp->GetValue();
-
-  if (m_sSsid.empty()) {
+  if (m_pWifiSsid->GetValue().empty()) {
 
     // Set WiFi to station mode and disconnect from an AP if it was previously
     // connected
@@ -63,20 +58,20 @@ bool CWifi::setup() {
     return false;
   }
 
-  if (!m_sStaticIp.empty()) {
+  if (!m_pWifiStaticIp->GetValue().empty()) {
     IPAddress oIP;
-    oIP.fromString(m_sStaticIp.c_str());
+    oIP.fromString(m_pWifiStaticIp->GetValue().c_str());
     IPAddress oGW;
-    oGW.fromString(m_sStaticIp.c_str());
+    oGW.fromString(m_pWifiStaticIp->GetValue().c_str());
     IPAddress oSN;
-    oSN.fromString(m_sStaticIp.c_str());
+    oSN.fromString(m_pWifiStaticIp->GetValue().c_str());
     WiFi.config(oIP, oGW, oSN);
   }
   WiFi.setAutoReconnect(true);
   WiFi.persistent(false);
   WiFi.mode(WIFI_AP_STA);
   // WiFi.mode(WIFI_STA);
-  WiFi.begin(m_sSsid.c_str(), m_sPassword.c_str());
+  WiFi.begin(m_pWifiSsid->GetValue().c_str(), m_pWifiPassword->GetValue().c_str());
 #if USE_DISPLAY == 1
   if (m_pDisplayLine)
     m_pDisplayLine->Line("Wifi Connecting");
@@ -109,7 +104,7 @@ void CWifi::control(bool bForce /*= false*/) {
     if (WiFi.status() == WL_CONNECTED) {
       CWifi::m_uiProcessTime = millis() - CWifi::m_uiProcessTime;
       _log(I, "Connected to %s IP address: %s, rssi: %lddb, took %ldms",
-           m_sSsid.c_str(), WiFi.localIP().toString().c_str(), WiFi.RSSI(),
+           m_pWifiSsid->GetValue().c_str(), WiFi.localIP().toString().c_str(), WiFi.RSSI(),
            CWifi::m_uiProcessTime);
 #if USE_DISPLAY == 1
       if (m_pDisplayLine)

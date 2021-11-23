@@ -1,9 +1,12 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
 #ifndef SRC_CCONFIGVALUE_H_
 #define SRC_CCONFIGVALUE_H_
+#include <CBase.h>
+#include <cstring>
 #include <map>
 #include <sstream>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <vector>
@@ -17,15 +20,23 @@ template <typename T> std::string to_string(const T &n) {
 class CConfigValueBase {
 public:
   CConfigValueBase()
-      : m_sSection_Key(std::to_string(ms_uiUniqeId++)), m_sInputType("text"),
-        m_sInputHtmlCode("") {}
+      : /*m_sSection_Key(std::to_string(ms_uiUniqeId++))*/ m_pszSection_Key(
+            NULL),
+        /*m_sInputType("text")*/ m_pcsInputType(szInputType_Text),
+        /*m_sInputHtmlCode("")*/ m_pszInputHtmlCode(NULL) {
+    m_pszSection_Key = new char[5];
+    snprintf(m_pszSection_Key, 5, "%u", ms_uiUniqeId++);
+  }
 
   virtual std::string GetFormEntry() = 0;
   virtual void Reset() = 0;
 
-  std::string m_sSection_Key;
-  std::string m_sInputType;
-  std::string m_sInputHtmlCode;
+  // std::string m_sSection_Key;
+  char *m_pszSection_Key;
+  // std::string m_sInputType;
+  const char *m_pcsInputType;
+  // std::string m_sInputHtmlCode;
+  char *m_pszInputHtmlCode;
   static uint8_t ms_uiUniqeId;
 };
 
@@ -77,21 +88,35 @@ public:
   }
   */
   CConfigKeyBase(const char *pszSection, const char *pszKey)
-      : m_sSection(pszSection), m_sKey(pszKey), m_pValue(NULL),
-        m_sValue("undefined"), m_pOnChangedCb(NULL), m_pOnChangedObject(NULL) {
-    if (CConfigKeyBase::ms_Vars.find(m_sSection) ==
-        CConfigKeyBase::ms_Vars.end())
-      ms_SectionList.push_back(m_sSection);
-    CConfigKeyBase::ms_Vars[m_sSection][m_sKey] = this;
-    CConfigKeyBase::ms_VarEntries[m_sSection].push_back(this);
+      : /*m_sSection(pszSection), m_sKey(pszKey)*/ m_pszSection(NULL),
+        m_pszKey(NULL), m_pValue(NULL), m_sValue("undefined"),
+        m_pOnChangedCb(NULL), m_pOnChangedObject(NULL) {
+    m_pszSection = new char[strlen(pszSection) + 1];
+    strncpy(m_pszSection, pszSection, strlen(pszSection));
+    m_pszSection[strlen(pszSection)] = 0x00;
+
+    m_pszKey = new char[strlen(pszKey) + 1];
+    strncpy(m_pszKey, pszKey, strlen(pszKey));
+    m_pszKey[strlen(pszKey)] = 0x00;
+
+    std::string sSection = pszSection;
+    if (CConfigKeyBase::ms_Vars.find(sSection) == CConfigKeyBase::ms_Vars.end())
+      ms_SectionList.push_back(sSection);
+    std::string sKey = pszKey;
+    CConfigKeyBase::ms_Vars[sSection][sKey] = this;
+    CConfigKeyBase::ms_VarEntries[sSection].push_back(this);
   }
   virtual std::string &ToString() = 0;
   void FromString(const std::string &sValue) { FromString(sValue.c_str()); }
   virtual void FromString(const char *pszVal) = 0;
   virtual void Reset() = 0;
 
-  std::string m_sSection;
-  std::string m_sKey;
+  // std::string m_sSection;
+  char *m_pszSection;
+  char *getSection() { return m_pszSection; }
+  // std::string m_sKey;
+  char *m_pszKey;
+  char *GetKey() { return m_pszKey; }
   CConfigValueBase *m_pValue;
   std::string m_sValue;
 

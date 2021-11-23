@@ -6,16 +6,19 @@ using std::string;
 
 class CUpdater {
 public:
-  CUpdater(ESP8266WebServer *pServer, string sPath, string sTitle = "",
-           string sHtmlHeader = "");
+  CUpdater(ESP8266WebServer *pServer, const char *szPath,
+           const char *szTitle = NULL, const char *szHtmlHeader = NULL);
   void _setUpdaterError();
 
   void getHtmlPage();
 
   ESP8266WebServer *m_pServer;
-  string m_sPath;
-  string m_sTitle;
-  string m_sHtmlHeader;
+  // string m_sPath;
+  const char *m_pcsPath;
+  // string m_sTitle;
+  const char *m_pcsTitle;
+  // string m_sHtmlHeader;
+  const char *m_pcsHtmlHeader;
   string sIndexPage;
   String _updaterError;
 };

@@ -11,19 +11,22 @@ static const char successResponse1[] PROGMEM =
 
 File fsUploadFile;
 
-CUpdater::CUpdater(ESP8266WebServer *pServer, string sPath,
-                   string sTitle /* = "" */, string sHtmlHeader /* = "" */)
-    : m_pServer(pServer), m_sPath(sPath), m_sTitle(sTitle),
-      m_sHtmlHeader(sHtmlHeader), sIndexPage(""), _updaterError("") {
+CUpdater::CUpdater(ESP8266WebServer *pServer, const char *szPath,
+                   const char *szTitle /*= NULL*/,
+                   const char *szHtmlHeader /* = NULL*/)
+    : m_pServer(pServer), /*m_sPath(sPath), m_sTitle(sTitle),
+      m_sHtmlHeader(sHtmlHeader)*/
+      m_pcsPath(szPath), m_pcsTitle(szTitle), m_pcsHtmlHeader(szHtmlHeader),
+      sIndexPage(""), _updaterError("") {
   getHtmlPage();
   // handler for the /update form page
-  m_pServer->on(sPath.c_str(), HTTP_GET, [&]() {
+  m_pServer->on(m_pcsPath, HTTP_GET, [&]() {
     m_pServer->send(200, "text/html", sIndexPage.c_str());
   });
 
   // handler for the /update form POST (once file upload finishes)
   m_pServer->on(
-      sPath.c_str(), HTTP_POST,
+      m_pcsPath, HTTP_POST,
       [&]() {
         if (Update.hasError()) {
           m_pServer->send(200, F("text/html"),
@@ -145,10 +148,10 @@ void CUpdater::getHtmlPage() {
                "<html>\n"
                "<head>\n";
 
-  if (!m_sHtmlHeader.empty())
-    sIndexPage += m_sHtmlHeader;
-  if (!m_sTitle.empty())
-    sIndexPage += "<title>" + m_sTitle + "</title>\n";
+  if (m_pcsHtmlHeader != NULL)
+    sIndexPage += m_pcsHtmlHeader;
+  if (m_pcsTitle != NULL)
+    sIndexPage += "<title>" + string(m_pcsTitle) + "</title>\n";
   sIndexPage +=
       "</head>\n"
       "<body>\n"
@@ -157,7 +160,7 @@ void CUpdater::getHtmlPage() {
       "340px;'>\n"
       "<div style='text-align:center;color:#eaeaea;'>\n"
       "<h1>" +
-      m_sTitle +
+      string(m_pcsTitle) +
       "</h1>\n"
       "<div id=but3d style=\"display: block;\"></div><p>"
       "<form id=but3d "

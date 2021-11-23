@@ -23,10 +23,10 @@ public:
   };
   CControl()
       : m_nState(0), m_uiTime(millis()), m_uiProcessTime(0),
-        m_sInstanceName(""), m_bCycleDone(false) {}
+        /*m_sInstanceName("")*/ m_pszInstanceName(NULL), m_bCycleDone(false) {}
   explicit CControl(const char *pszInstance)
       : m_nState(0), m_uiTime(millis()), m_uiProcessTime(0),
-        m_sInstanceName(pszInstance)
+        /*m_sInstanceName(pszInstance)*/ m_pszInstanceName(pszInstance)
 #if USE_DISPLAY == 1
         ,
         m_pDisplayLine(NULL)
@@ -79,12 +79,11 @@ public:
     vsnprintf(czDebBuf, sizeof(czDebBuf), pcMessage, arg_ptr);
     va_end(arg_ptr);
 
-    Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_sInstanceName.c_str(),
+    Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_pszInstanceName,
                   GetLogTypeChar(type), czDebBuf);
     if (ms_pSyslog != NULL) {
       char szTmp[255];
-      snprintf(szTmp, sizeof(szTmp), "%s %s", m_sInstanceName.c_str(),
-               czDebBuf);
+      snprintf(szTmp, sizeof(szTmp), "%s %s", m_pszInstanceName, czDebBuf);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
     }
     delay(0);
@@ -94,12 +93,11 @@ public:
     if (type == D)
       return;
 #endif
-    Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_sInstanceName.c_str(),
+    Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_pszInstanceName,
                   GetLogTypeChar(type), pcMessage);
     if (ms_pSyslog != NULL) {
       char szTmp[255];
-      snprintf(szTmp, sizeof(szTmp), "%s %s", m_sInstanceName.c_str(),
-               pcMessage);
+      snprintf(szTmp, sizeof(szTmp), "%s %s", m_pszInstanceName, pcMessage);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
     }
     delay(0);
@@ -172,7 +170,8 @@ protected:
   int8_t m_nState;
   uint32_t m_uiTime;
   uint32_t m_uiProcessTime;
-  std::string m_sInstanceName;
+  // std::string m_sInstanceName;
+  const char *m_pszInstanceName;
 #if USE_DISPLAY == 1
   CDisplayLine *m_pDisplayLine;
 #endif

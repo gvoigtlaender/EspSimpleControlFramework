@@ -32,7 +32,8 @@ public:
   string getValue() const { return m_sValue; }
 
 protected:
-  string m_sPath;
+  // string m_sPath;
+  char *m_pszPath;
   string m_sValue;
   CControl *m_pControl;
   bool m_bPublished;

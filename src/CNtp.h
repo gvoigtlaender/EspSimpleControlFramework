@@ -23,9 +23,6 @@ public:
 
   void printLocalTime();
 
-  string m_sTimeZone;
-  string m_sServer;
-
   CConfigKey<string> *m_pCfgServer;
   CConfigKey<string> *m_pCfgTimeZone;
 

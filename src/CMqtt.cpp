@@ -9,7 +9,11 @@
 CMqtt *CMqtt::ms_pMqtt = NULL;
 
 CMqttValue::CMqttValue(const string &sPath, const string &sValue /*= ""*/)
-    : m_sPath(sPath), m_sValue(sValue), m_pControl(NULL), m_bPublished(false) {
+    : /*m_sPath(sPath), */ m_pszPath(NULL), m_sValue(sValue), m_pControl(NULL),
+      m_bPublished(false) {
+  m_pszPath = new char[sPath.length() + 1];
+  strncpy(m_pszPath, sPath.c_str(), sPath.length());
+  m_pszPath[sPath.length()] = 0x00;
   CMqtt::ms_Values.push_back(this);
 #if defined DEBUG
 //  Serial.printf("CMqttValue(%s, %s)\n", sPath.c_str(), sValue.c_str());
@@ -67,7 +71,8 @@ CMqtt::CMqtt(const string &sServerIp /* = "" */,
   m_pCfgMqttServer = new CConfigKey<string>("Mqtt", "ServerIp", "");
   m_pCfgMqttUser = new CConfigKey<string>("Mqtt", "User", "");
   m_pCfgMqttPasswd = new CConfigKey<string>("Mqtt", "Passwd", "");
-  m_pCfgMqttPasswd->m_pValue->m_sInputType = "password";
+  // m_pCfgMqttPasswd->m_pValue->m_sInputType = "password";
+  m_pCfgMqttPasswd->m_pValue->m_pcsInputType = szInputType_Password;
   // m_pCfgMqttClient = new CConfigKey<string>("Mqtt", "ClientName", "esp");
 }
 
@@ -207,7 +212,7 @@ void CMqtt::publish_value(CMqttValue *pValue) {
   pValue->m_bPublished = true;
   char szKey[128];
   snprintf(szKey, sizeof(szKey), "%s/%s", m_sClientName.c_str(),
-           pValue->m_sPath.c_str());
+           /*pValue->m_sPath.c_str()*/ pValue->m_pszPath);
   char szValue[64];
   snprintf(szValue, sizeof(szValue), "%s", pValue->m_sValue.c_str());
 

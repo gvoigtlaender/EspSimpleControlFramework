@@ -25,4 +25,8 @@ std::string to_string_with_precision(const T a_value, const int n = 6) {
 
 std::string TimeToTimeString(int32_t nTimeSeconds);
 
+extern char szInputType_Text[];
+extern char szInputType_Password[];
+extern char szInputType_Range[];
+
 #endif // _SRC__CBASE_H_

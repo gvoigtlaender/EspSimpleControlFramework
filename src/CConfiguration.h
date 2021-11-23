@@ -18,8 +18,8 @@ public:
   CConfiguration(const char *szConfigFile, const char *szTitle,
                  const char *szHtmlHead, char *szhtml_content_buffer,
                  size_t szhtml_content_buffer_size)
-      : m_sConfigFile(szConfigFile), m_sHtmlTitle(szTitle),
-        m_sHtmlHead(szHtmlHead), m_szhtml_content_buffer(szhtml_content_buffer),
+      : m_sConfigFile(szConfigFile),
+        m_szhtml_content_buffer(szhtml_content_buffer),
         m_szhtml_content_buffer_size(szhtml_content_buffer_size) {
     if (LittleFS.begin()) {
       CControl::Log(CControl::I,
@@ -126,6 +126,7 @@ public:
 
   void save() {
     CControl::Log(CControl::I, "saving config");
+    Serial.println(ESP.getFreeHeap(), DEC);
 
 #if ARDUINOJSON_VERSION_MAJOR == 5
     DynamicJsonBuffer jsonBuffer;
@@ -134,10 +135,12 @@ public:
     DynamicJsonDocument doc(1000);
 #endif
 
+    Serial.println(ESP.getFreeHeap(), DEC);
+
     for (CConfigKeyBase::SectionsMap::iterator sections =
              CConfigKeyBase::ms_Vars.begin();
          sections != CConfigKeyBase::ms_Vars.end(); ++sections) {
-      string sSection = sections->first;
+      std::string sSection = sections->first;
 #if ARDUINOJSON_VERSION_MAJOR == 5
       JsonObject &sec = json.createNestedObject(sections->first.c_str());
 #else
@@ -145,6 +148,7 @@ public:
       if (sec.isNull()) {
         CControl::Log(CControl::E, "Create section %s failed",
                       sSection.c_str());
+        doc.clear();
         return;
       }
 #endif
@@ -162,6 +166,8 @@ public:
         delay(10);
       }
     }
+
+    Serial.println(ESP.getFreeHeap(), DEC);
 
 #if ARDUINOJSON_VERSION_MAJOR == 5
     json.printTo(Serial);
@@ -182,17 +188,17 @@ public:
     }
     serializeJson(doc, configFile);
     configFile.close();
+    doc.clear();
 #endif
+    Serial.println(ESP.getFreeHeap(), DEC);
   }
 
   std::string m_sConfigFile;
-  std::string m_sHtmlTitle;
-  std::string m_sHtmlHead;
 
   char *m_szhtml_content_buffer;
   size_t m_szhtml_content_buffer_size;
 
-  bool GetHtmlForm() {
+  bool GetHtmlForm(const char *pszHtmlHead, const char *pszHtmlTitle) {
 
     snprintf(m_szhtml_content_buffer, m_szhtml_content_buffer_size,
              "<!DOCTYPE HTML>\n");
@@ -200,13 +206,13 @@ public:
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
              "<html>\n<head>\n");
-    if (!m_sHtmlHead.empty())
+    if (pszHtmlHead != NULL)
       snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
                m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-               m_sHtmlHead.c_str());
+               pszHtmlHead);
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<title>%s</title>\n", m_sHtmlTitle.c_str());
+             "<title>%s</title>\n", pszHtmlTitle);
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
              "</head>\n");
@@ -221,7 +227,7 @@ public:
         "width:340px;'>\n<div style='text-align:center;color:#eaeaea;'>\n");
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<h1>%s</h1>\n", m_sHtmlTitle.c_str());
+             "<h1>%s</h1>\n", pszHtmlTitle);
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
              "<div id=but3d style=\"display: block;\"></div><p><form id=but3 "
@@ -243,7 +249,7 @@ public:
       std::string sSection = CConfigKeyBase::ms_SectionList[i];
       // sContent += "<h2>" + sSection + "</h2>\n";
 
-      if (sSection == string("0"))
+      if (sSection == std::string("0"))
         continue;
       snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
                m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
@@ -259,7 +265,7 @@ public:
         // pEntry->m_sSection.c_str(), pEntry->m_sKey.c_str());
         snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
                  m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-                 "%s: %s", pEntry->m_sKey.c_str(),
+                 "%s: %s", pEntry->GetKey(),
                  pEntry->m_pValue->GetFormEntry().c_str());
         // CControl::Log(CControl::I, "done\n");
       }
@@ -310,7 +316,7 @@ public:
     return true;
   }
 
-  bool GetHtmlReboot() {
+  bool GetHtmlReboot(const char *pszHtmlHead, const char *pszHtmlTitle) {
     snprintf(m_szhtml_content_buffer, m_szhtml_content_buffer_size,
              "<!DOCTYPE HTML>\n");
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
@@ -319,13 +325,13 @@ public:
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
              "<head>\n");
-    if (!m_sHtmlHead.empty())
+    if (pszHtmlHead != NULL)
       snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
                m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-               m_sHtmlHead.c_str());
+               pszHtmlHead);
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<title>%s</title>\n", m_sHtmlTitle.c_str());
+             "<title>%s</title>\n", pszHtmlTitle);
     snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
              m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
              "<style>\n");
@@ -354,7 +360,8 @@ public:
     return true;
   }
 
-  void handleArgs(ESP8266WebServer *server) {
+  void handleArgs(ESP8266WebServer *server, const char *pszHtmlHead,
+                  const char *pszHtmlTitle) {
     int args = server->args();
 
     CControl::Log(CControl::I, "handleSubmit Args %d", args);
@@ -406,9 +413,9 @@ public:
                n < CConfigKeyBase::ms_VarEntries[sSection].size(); n++) {
             CConfigKeyBase *pEntry = CConfigKeyBase::ms_VarEntries[sSection][n];
 
-            if (server->hasArg(pEntry->m_pValue->m_sSection_Key.c_str())) {
-              std::string s =
-                  server->arg(pEntry->m_pValue->m_sSection_Key.c_str()).c_str();
+            String sSection_Key = pEntry->m_pValue->m_pszSection_Key;
+            if (server->hasArg(sSection_Key)) {
+              std::string s = server->arg(sSection_Key).c_str();
               pEntry->FromString(s.c_str());
             } else {
               pEntry->FromString("");
@@ -420,7 +427,7 @@ public:
       }
     ActionDone:
       if (bRebooting) {
-        this->GetHtmlReboot();
+        this->GetHtmlReboot(pszHtmlHead, pszHtmlTitle);
         server->send(200, "text/html", m_szhtml_content_buffer);
 
         delay(1000);
@@ -430,7 +437,7 @@ public:
       }
     }
 
-    this->GetHtmlForm();
+    this->GetHtmlForm(pszHtmlHead, pszHtmlTitle);
     server->send(200, "text/html", m_szhtml_content_buffer);
   }
 };

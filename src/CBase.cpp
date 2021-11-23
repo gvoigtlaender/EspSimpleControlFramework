@@ -38,3 +38,7 @@ std::string TimeToTimeString(int32_t nTimeSeconds) {
 
   return szTmp;
 }
+
+char szInputType_Text[] = "text";
+char szInputType_Password[] = "password";
+char szInputType_Range[] = "range";

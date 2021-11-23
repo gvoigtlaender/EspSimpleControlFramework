@@ -10,7 +10,9 @@ public:
   void control(bool bForce /*= false*/) override;
   void OnServerIpChanged();
   CConfigKey<std::string> *m_pCfgServer;
-  string m_sDeviceName;
-  string m_sShortName;
+  // string m_sDeviceName;
+  const char *m_pcsDeviceName;
+  // string m_sShortName;
+  const char *m_pcsShortName;
   bool m_bConfigValid;
 };
