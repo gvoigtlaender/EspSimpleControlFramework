@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <CBase.h>
+#include <CControl.h>
 #include <stdio.h>
 
 double dmap(double x, double in_min, double in_max, double out_min,
@@ -43,15 +44,15 @@ std::string TimeToTimeString(int32_t nTimeSeconds) {
 char szInputType_Text[] = "text";
 char szInputType_Password[] = "password";
 char szInputType_Range[] = "range";
-
+uint32_t g_uiHeapMin = UINT32_MAX;
+uint32_t g_uiHeap = 0;
 void CheckFreeHeap() {
-  static uint32_t s_uiHeap = UINT32_MAX;
   static uint64_t s_uiMillis = millis();
-  uint32_t uiHeap = ESP.getFreeHeap();
-  if (uiHeap < s_uiHeap || s_uiMillis < millis()) {
-    if (uiHeap < s_uiHeap)
-      s_uiHeap = uiHeap;
-    Serial.printf("Heap %u Min=%u\n", uiHeap, s_uiHeap);
+  g_uiHeap = ESP.getFreeHeap();
+  if (g_uiHeap < g_uiHeapMin || s_uiMillis < millis()) {
+    if (g_uiHeap < g_uiHeapMin)
+      g_uiHeapMin = g_uiHeap;
+    CControl::Log(CControl::D, "Heap %u Min=%u", g_uiHeap, g_uiHeapMin);
     s_uiMillis = millis() + 1000;
   }
 }
