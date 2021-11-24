@@ -19,6 +19,9 @@ bool CControl::ms_bUsbChargingActive = false;
 // static
 Syslog *CControl::ms_pSyslog = NULL;
 
+// static
+uint64_t CControl::ms_uiLastLogMs = 0;
+
 CMqttValue *CControl::CreateMqttValue(const std::string &sName,
                                       const std::string &sValue /*= ""*/) {
   CMqttValue *pValue =

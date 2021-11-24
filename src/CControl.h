@@ -57,6 +57,9 @@ public:
     vsnprintf(czDebBuf, sizeof(czDebBuf), pcMessage, arg_ptr);
     va_end(arg_ptr);
 
+    if (millis() - CControl::ms_uiLastLogMs < 5)
+      delay(2);
+
     Serial.printf("%08lu: \tSYSTEM\t%c: %s\n", millis(), GetLogTypeChar(type),
                   czDebBuf);
     if (ms_pSyslog != NULL) {
@@ -79,6 +82,9 @@ public:
     vsnprintf(czDebBuf, sizeof(czDebBuf), pcMessage, arg_ptr);
     va_end(arg_ptr);
 
+    if (millis() - CControl::ms_uiLastLogMs < 5)
+      delay(2);
+
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_pszInstanceName,
                   GetLogTypeChar(type), czDebBuf);
     if (ms_pSyslog != NULL) {
@@ -93,6 +99,10 @@ public:
     if (type == D)
       return;
 #endif
+
+    if (millis() - CControl::ms_uiLastLogMs < 5)
+      delay(2);
+
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_pszInstanceName,
                   GetLogTypeChar(type), pcMessage);
     if (ms_pSyslog != NULL) {
@@ -197,5 +207,7 @@ public:
   static bool ms_bUsbChargingActive;
 
   static Syslog *ms_pSyslog;
+
+  static uint64_t ms_uiLastLogMs;
 };
 #endif // SRC_CCONTROL_H_
