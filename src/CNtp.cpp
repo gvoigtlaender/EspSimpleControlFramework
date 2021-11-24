@@ -1,6 +1,7 @@
 #include "CNtp.h"
 #include "CWifi.h"
 #include <Arduino.h>
+#include <ctime>
 
 uint32_t sntp_update_delay_MS_rfc_not_less_than_15000() {
   return 12 * 60 * 60 * 1000UL; // 12 hours
@@ -86,7 +87,11 @@ void CNtp::UpdateTime() {
 void CNtp::printLocalTime() {
   time(&m_RawTime);
   m_pTimeInfo = localtime(&m_RawTime);
-  string sTime = asctime(m_pTimeInfo);
+  string sTime = ""; // asctime(m_pTimeInfo);
+  char mbstr[100];
+  std::strftime(mbstr, sizeof(mbstr), "%A %c", m_pTimeInfo);
+  sTime = mbstr;
+
   if (sTime[sTime.length() - 1] == '\n')
     sTime.erase(sTime.length() - 1);
   _log2(I, sTime.c_str());
