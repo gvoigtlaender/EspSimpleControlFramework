@@ -23,7 +23,7 @@ public:
       : m_pszSection_Key(NULL), m_pcsInputType(szInputType_Text),
         m_pszInputHtmlCode(NULL) {
     m_pszSection_Key = new char[5];
-    snprintf(m_pszSection_Key, 5, "%u", ms_uiUniqeId++);
+    snprintf(m_pszSection_Key, 5, "%d", (int)ms_uiUniqeId++);
   }
 
   virtual ~CConfigValueBase() { delete[] m_pszSection_Key; }

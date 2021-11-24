@@ -221,6 +221,7 @@ public:
   bool GetHtmlForm(const char *pszHtmlHead, const char *pszHtmlTitle) {
 
     CheckFreeHeap();
+    memset(m_szhtml_content_buffer, 0, m_szhtml_content_buffer_size);
     snprintf(m_szhtml_content_buffer, m_szhtml_content_buffer_size,
              "<!DOCTYPE HTML>\n");
 
