@@ -185,7 +185,8 @@ template <> std::string &CConfigKey<bool>::ToString() {
 }
 
 template <> void CConfigKey<bool>::FromString(const char *pszVal) {
-  bool bVal = (strcmp("on", pszVal) == 0) ? true : false;
+  bool bVal =
+      (strcmp("on", pszVal) == 0 || strcmp("1", pszVal) == 0) ? true : false;
   if (bVal != static_cast<CConfigValue<bool> *>(m_pValue)->m_Value) {
     static_cast<CConfigValue<bool> *>(m_pValue)->m_Value = bVal;
     if (m_pOnChangedCb != NULL)
