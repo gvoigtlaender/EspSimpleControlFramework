@@ -15,4 +15,5 @@ public:
   // string m_sShortName;
   const char *m_pcsShortName;
   bool m_bConfigValid;
+  bool m_bCycleDone = false;
 };

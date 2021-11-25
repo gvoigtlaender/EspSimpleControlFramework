@@ -20,7 +20,8 @@ public:
 
   void control(bool bForce /*= false*/) override;
 
-  string m_sAppName;
+  // string m_sAppName;
+  const char *m_pszAppName;
   // string m_sSsid;
   // string m_sPassword;
   // string m_sStaticIp;
@@ -28,6 +29,7 @@ public:
   CConfigKey<std::string> *m_pWifiSsid;
   CConfigKey<std::string> *m_pWifiPassword;
   CConfigKey<std::string> *m_pWifiStaticIp;
+  uint32_t m_uiProcessTime = 0;
 
 private:
   CWifi(const CWifi &src);

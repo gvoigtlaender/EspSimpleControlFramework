@@ -22,17 +22,16 @@ public:
     D,
   };
   CControl()
-      : m_nState(0), m_uiTime(millis()), m_uiProcessTime(0),
-        /*m_sInstanceName("")*/ m_pszInstanceName(NULL), m_bCycleDone(false) {}
+      : m_nState(0), m_uiTime(millis()),
+        /*m_sInstanceName("")*/ m_pszInstanceName(NULL) {}
   explicit CControl(const char *pszInstance)
-      : m_nState(0), m_uiTime(millis()), m_uiProcessTime(0),
+      : m_nState(0), m_uiTime(millis()),
         /*m_sInstanceName(pszInstance)*/ m_pszInstanceName(pszInstance)
 #if USE_DISPLAY == 1
         ,
         m_pDisplayLine(NULL)
 #endif
-        ,
-        m_bCycleDone(false) {
+  {
     // CControl::Log("Instance %s", sInstance.c_str());
     ms_Instances.push_back(this);
     // control(true);
@@ -179,13 +178,11 @@ public:
 protected:
   int8_t m_nState;
   uint32_t m_uiTime;
-  uint32_t m_uiProcessTime;
   // std::string m_sInstanceName;
   const char *m_pszInstanceName;
 #if USE_DISPLAY == 1
   CDisplayLine *m_pDisplayLine;
 #endif
-  bool m_bCycleDone;
   static int8_t ms_ulValuesPending;
   static int8_t ms_ulProcessPending;
   static bool ms_bNetworkConnected;

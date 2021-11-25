@@ -41,7 +41,7 @@ public:
 protected:
   uint8_t m_nPin;
   uint8_t m_nMode;
-  int m_nDigitalReadRef;
+  int8_t m_nDigitalReadRef;
   _E_BUTTONSTATE m_eButtonState;
   _E_STATE m_eStateButtonControl;
   uint64_t m_uiMillisButtonControl;

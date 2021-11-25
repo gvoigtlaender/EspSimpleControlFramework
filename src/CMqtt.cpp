@@ -58,12 +58,11 @@ list<CMqttValue *> CMqtt::ms_Values;
 
 CMqtt::CMqtt(const string &sServerIp /* = "" */,
              const string &sClientName /* = "" */)
-    : CControl("CMqtt"), m_sServerIp(sServerIp), m_sClientName(sClientName),
-      m_WifiClient(), m_pMqttClient(NULL), m_bValuesComplete(false),
-      m_bConnected(false), m_bConfigValid(false) {
+    : CControl("CMqtt"), m_sClientName(sClientName), m_WifiClient(),
+      m_pMqttClient(NULL), m_bConnected(false), m_bConfigValid(false) {
   ms_pMqtt = this;
   m_pMqttClient = new PubSubClient(m_WifiClient);
-  m_pMqttClient->setServer(m_sServerIp.c_str(), 1883);
+  // m_pMqttClient->setServer(m_sServerIp.c_str(), 1883);
   ValuePending();
   ProcessPending();
 
@@ -76,9 +75,8 @@ CMqtt::CMqtt(const string &sServerIp /* = "" */,
 }
 
 bool CMqtt::setup() {
-  m_sServerIp = m_pCfgMqttServer->m_pTValue->m_Value;
   IPAddress oIP;
-  if (oIP.fromString(m_sServerIp.c_str())) {
+  if (oIP.fromString(m_pCfgMqttServer->m_pTValue->m_Value.c_str())) {
     m_bConfigValid = true;
     m_pMqttClient->setServer(oIP, 1883);
   }
@@ -131,11 +129,13 @@ void CMqtt::control(bool bForce /*= false*/) {
 
   case eWaitForWifi:
     // wait for WiFi
-    if (!CControl::ms_bNetworkConnected && !m_sServerIp.empty()) {
+    if (!CControl::ms_bNetworkConnected &&
+        !m_pCfgMqttServer->m_pTValue->m_Value.empty()) {
       break;
     }
 
-    _log(I, "Connecting to %s as %s", m_sServerIp.c_str(),
+    _log(I, "Connecting to %s as %s",
+         m_pCfgMqttServer->m_pTValue->m_Value.c_str(),
          this->m_sClientName.c_str());
 #if USE_DISPLAY == 1
     if (m_pDisplayLine)

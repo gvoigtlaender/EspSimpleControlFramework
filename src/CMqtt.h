@@ -64,12 +64,11 @@ public:
   void publish_value(CMqttValue *pValue);
 
 protected:
-  string m_sServerIp;
+  // string m_sServerIp;
   string m_sClientName;
   WiFiClient m_WifiClient;
   PubSubClient *m_pMqttClient;
   static list<CMqttValue *> ms_Values;
-  bool m_bValuesComplete;
   static CMqtt *ms_pMqtt;
   bool m_bConnected;
   bool m_bConfigValid;

@@ -6,7 +6,7 @@
 
 CWifi::CWifi(const char *szAppName, string sSsid /*= ""*/,
              string sPassword /*= ""*/, string sStaticIp /*= ""*/)
-    : CControl("CWifi"), m_sAppName(szAppName) {
+    : CControl("CWifi"), /*m_sAppName(szAppName)*/ m_pszAppName(szAppName) {
   m_pWifiSsid = CreateConfigKey<std::string>("Wifi", "Ssid", sSsid);
   m_pWifiPassword = new CConfigKey<std::string>("Wifi", "Password", sPassword);
   // m_pWifiPassword->m_pValue->m_sInputType = "password";
@@ -51,7 +51,7 @@ bool CWifi::setup() {
       }
     }
 
-    WiFi.softAP(m_sAppName.c_str());
+    WiFi.softAP(m_pszAppName);
 
     IPAddress myIP = WiFi.softAPIP();
     _log(I, "AP IP address: %s", myIP.toString().c_str());
@@ -71,7 +71,8 @@ bool CWifi::setup() {
   WiFi.persistent(false);
   WiFi.mode(WIFI_AP_STA);
   // WiFi.mode(WIFI_STA);
-  WiFi.begin(m_pWifiSsid->GetValue().c_str(), m_pWifiPassword->GetValue().c_str());
+  WiFi.begin(m_pWifiSsid->GetValue().c_str(),
+             m_pWifiPassword->GetValue().c_str());
 #if USE_DISPLAY == 1
   if (m_pDisplayLine)
     m_pDisplayLine->Line("Wifi Connecting");
@@ -104,8 +105,8 @@ void CWifi::control(bool bForce /*= false*/) {
     if (WiFi.status() == WL_CONNECTED) {
       CWifi::m_uiProcessTime = millis() - CWifi::m_uiProcessTime;
       _log(I, "Connected to %s IP address: %s, rssi: %lddb, took %ldms",
-           m_pWifiSsid->GetValue().c_str(), WiFi.localIP().toString().c_str(), WiFi.RSSI(),
-           CWifi::m_uiProcessTime);
+           m_pWifiSsid->GetValue().c_str(), WiFi.localIP().toString().c_str(),
+           WiFi.RSSI(), CWifi::m_uiProcessTime);
 #if USE_DISPLAY == 1
       if (m_pDisplayLine)
         m_pDisplayLine->Line(WiFi.localIP().toString().c_str());
