@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <CBase.h>
 #include <CControl.h>
+#include <LittleFS.h>
 #include <stdio.h>
 
 double dmap(double x, double in_min, double in_max, double out_min,
@@ -55,4 +56,11 @@ void CheckFreeHeap() {
     CControl::Log(CControl::D, "Heap %u Min=%u", g_uiHeap, g_uiHeapMin);
     s_uiMillis = millis() + 1000;
   }
+}
+
+size_t LittleFS_GetFreeSpaceKb() {
+  FSInfo fs_info;
+  LittleFS.info(fs_info);
+
+  return (fs_info.totalBytes - fs_info.usedBytes) / 1024;
 }

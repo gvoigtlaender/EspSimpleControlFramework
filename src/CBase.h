@@ -34,6 +34,8 @@ extern uint32_t g_uiHeap;
 
 void CheckFreeHeap();
 
+size_t LittleFS_GetFreeSpaceKb();
+
 class CNonCopyable {
 public:
   CNonCopyable() {}
