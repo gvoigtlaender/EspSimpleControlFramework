@@ -86,10 +86,6 @@ void CConfiguration::_handleHttpGetContent() {
 #else
   std::string sContent = "";
   CheckFreeHeap();
-  CConfigKeyBase::SectionsMap::iterator sections;
-  CConfigKeyBase::KeyMap::iterator keys;
-
-  CConfigKeyBase::SectionsList::iterator sec_list;
 
   for (unsigned int i = 0; i < CConfigKeyBase::ms_SectionList.size(); i++) {
     std::string sSection = CConfigKeyBase::ms_SectionList[i];
@@ -159,10 +155,6 @@ void CConfiguration::_handleHttpPost() {
     } else if (sAction == "save") {
 
       CheckFreeHeap();
-      CConfigKeyBase::SectionsMap::iterator sections;
-      CConfigKeyBase::KeyMap::iterator keys;
-
-      CConfigKeyBase::SectionsList::iterator sec_list;
 
       for (unsigned int i = 0; i < CConfigKeyBase::ms_SectionList.size(); i++) {
         CheckFreeHeap();
@@ -204,11 +196,10 @@ void CConfiguration::_handleHttpPost() {
 void CConfiguration::reset() {
   CControl::Log(CControl::I, "CConfiguration::reset()");
   CConfigKeyBase::SectionsMap::iterator sections;
-  CConfigKeyBase::KeyMap::iterator keys;
 
   CheckFreeHeap();
   for (sections = CConfigKeyBase::ms_Vars.begin();
-       sections != CConfigKeyBase::ms_Vars.end(); sections++) {
+       sections != CConfigKeyBase::ms_Vars.end(); ++sections) {
     sections->second.Reset();
     CheckFreeHeap();
   }
@@ -261,7 +252,7 @@ void CConfiguration::load() {
 
         CheckFreeHeap();
         for (sections = CConfigKeyBase::ms_Vars.begin();
-             sections != CConfigKeyBase::ms_Vars.end(); sections++) {
+             sections != CConfigKeyBase::ms_Vars.end(); ++sections) {
           pszSec = sections->first.c_str();
 
           if (!json.containsKey(pszSec)) {
@@ -276,7 +267,7 @@ void CConfiguration::load() {
 #endif
           CheckFreeHeap();
           for (keys = sections->second.begin(); keys != sections->second.end();
-               keys++) {
+               ++keys) {
             pszKey = keys->first.c_str();
 
             if (!sec.containsKey(pszKey)) {
