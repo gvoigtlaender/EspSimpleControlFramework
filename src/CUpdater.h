@@ -7,13 +7,10 @@ using std::string;
 class CUpdater {
 public:
   CUpdater(ESP8266WebServer *pServer, const char *szPath,
-           char *szhtml_content_buffer, size_t szhtml_content_buffer_size,
            const char *szTitle = NULL, const char *szHtmlHeader = NULL);
   void _setUpdaterError();
 
-  void getHtmlPage();
-
-  void OnGet();
+  void OnGet_filelist();
   void OnPost();
   void OnPost2();
   void OnUpload();
@@ -30,8 +27,8 @@ public:
   // string sIndexPage;
   String _updaterError;
 
-  char *m_szhtml_content_buffer;
-  size_t m_szhtml_content_buffer_size;
+  // char *m_szhtml_content_buffer;
+  // size_t m_szhtml_content_buffer_size;
 
   static CUpdater *ms_pInstance;
 };

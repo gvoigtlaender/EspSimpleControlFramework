@@ -14,7 +14,7 @@ File fsUploadFile;
 // static
 CUpdater *CUpdater::ms_pInstance = NULL;
 
-void OnGet() { CUpdater::ms_pInstance->OnGet(); }
+void OnGet_filelist() { CUpdater::ms_pInstance->OnGet_filelist(); }
 void OnPost() { CUpdater::ms_pInstance->OnPost(); }
 void OnPost2() { CUpdater::ms_pInstance->OnPost2(); }
 void OnUpload() { CUpdater::ms_pInstance->OnUpload(); }
@@ -22,18 +22,16 @@ void OnUpload2() { CUpdater::ms_pInstance->OnUpload2(); }
 void OnDelete() { CUpdater::ms_pInstance->OnDelete(); }
 
 CUpdater::CUpdater(ESP8266WebServer *pServer, const char *szPath,
-                   char *szhtml_content_buffer,
-                   size_t szhtml_content_buffer_size,
                    const char *szTitle /*= NULL*/,
                    const char *szHtmlHeader /* = NULL*/)
     : m_pServer(pServer), m_pcsPath(szPath), m_pcsTitle(szTitle),
-      m_pcsHtmlHeader(szHtmlHeader), _updaterError(""),
-      m_szhtml_content_buffer(szhtml_content_buffer),
-      m_szhtml_content_buffer_size(szhtml_content_buffer_size) {
+      m_pcsHtmlHeader(szHtmlHeader), _updaterError("") {
   CUpdater::ms_pInstance = this;
-  getHtmlPage();
   // handler for the /update form page
-  m_pServer->on(m_pcsPath, HTTP_GET, ::OnGet);
+  // m_pServer->on(m_pcsPath, HTTP_GET, ::OnGet);
+  m_pServer->serveStatic(m_pcsPath, LittleFS, "update.html");
+  m_pServer->serveStatic("/updatepage.js", LittleFS, "updatepage.js");
+  m_pServer->on("/filelist", HTTP_GET, ::OnGet_filelist);
 
   // handler for the /update form POST (once file upload finishes)
   m_pServer->on(m_pcsPath, HTTP_POST, ::OnPost, ::OnPost2);
@@ -53,56 +51,13 @@ void CUpdater::_setUpdaterError() {
   _updaterError = str.c_str();
 }
 
-void CUpdater::getHtmlPage() {
-  CheckFreeHeap();
-  memset(m_szhtml_content_buffer, 0, m_szhtml_content_buffer_size);
-  snprintf(m_szhtml_content_buffer, m_szhtml_content_buffer_size,
-           "<!DOCTYPE HTML>\n<html>\n<head>\n");
-
-  if (m_pcsHtmlHeader != NULL)
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             m_pcsHtmlHeader);
-  if (m_pcsTitle != NULL)
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<title>%s</title>\n", m_pcsTitle);
-  snprintf(
-      m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-      m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-      "</head>\n"
-      "<body>\n"
-      "<div "
-      "style='text-align:left;display:inline-block;color:#eaeaea;min-width:"
-      "340px;'>\n"
-      "<div style='text-align:center;color:#eaeaea;'>\n"
-      "<h1>%s</h1>\n"
-      "<div id=but3d style=\"display: block;\"></div><p>"
-      "<form id=but3d "
-      "style=\"display: block;\" action='../' "
-      "method='get'>\n<button>Main</button>\n</form>\n",
-      m_pcsTitle);
-  snprintf(
-      m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-      m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-      "<fieldset>\n<legend>Firmware:</legend>\n"
-      "<form method = 'POST' action ='' enctype ='multipart/form-data'>\n"
-      "<input type = 'file' accept = '.bin,.bin.gz' name = 'firmware'>\n"
-      "<input type = 'submit' value =  'Update Firmware' >\n"
-      "</form>\n"
-      "</fieldset>\n"
-      "<fieldset>\n<legend>FS:</legend>\n"
-      "<form method = 'POST' action ='upload' enctype ='multipart/form-data'>\n"
-      "<input type = 'file' accept = '.*' name = 'file'>\n"
-      "<input type = 'submit' value = 'Upload File'>\n"
-      "</form>\n"
-      "<p>"
-      "<form method = 'POST' action ='delete' >\n"
-      "<table>");
+void CUpdater::OnGet_filelist() {
+  CControl::Log(CControl::I, "CUpdater::OnGet_filelist");
 
   File root = LittleFS.open("/", "r");
   File file = root.openNextFile();
 
+  string sContent = "";
   while (file) {
     string sFile = string(file.name());
     double dSize = file.size();
@@ -114,43 +69,24 @@ void CUpdater::getHtmlPage() {
     else
       snprintf(szSize, sizeof(szSize), "%.3f MB", dSize / 1024 / 1024);
 
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<tr>\n");
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<td>%s</td>\n", sFile.c_str());
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<td>%s</td>", szSize);
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<td><input type = 'submit' name=\"%s\" value=\"delete\"></td>\n",
-             sFile.c_str());
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "</tr>\n");
+    sContent += "<tr>\n";
+    sContent += "<td>" + sFile + "</td>\n";
+    sContent += "<td>" + string(szSize) + "</td>\n";
+    sContent += "<td><input type = 'submit' name=\"" + sFile +
+                "\" value=\"delete\"></td>\n";
+    sContent += "</tr>\n";
 
     file = root.openNextFile();
   }
-
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</table>\n</form>\n");
-
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</fieldset>\n"
-           "</div>\n</div>\n</body>\n</html>\n");
-
+  root.close();
+  sContent += "<tr><td></td><td></td><td></td></tr>\n";
+  sContent += "<tr><td>Free Space</td><td>" +
+              std::to_string(LittleFS_GetFreeSpaceKb()) +
+              " kB</td><td></td></tr>\n";
   CControl::Log(CControl::I, "CUpdater::getHtmlPage, size=%u",
-                strlen(m_szhtml_content_buffer));
-}
-
-void CUpdater::OnGet() {
-  CControl::Log(CControl::I, "CUpdater::OnGet");
-  getHtmlPage();
-  m_pServer->send(200, "text/html", m_szhtml_content_buffer);
+                sContent.length());
+  m_pServer->send(200, "text/html", sContent.c_str());
+  sContent.clear();
 }
 void CUpdater::OnPost() {
   CControl::Log(CControl::I, "CUpdater::OnPost");
@@ -235,8 +171,9 @@ void CUpdater::OnUpload2() {
     if (fsUploadFile) {     // If the file was successfully created
       fsUploadFile.close(); // Close the file again
       CControl::Log(CControl::I, "handleFileUpload Size: %u", upload.totalSize);
-      getHtmlPage();
-      m_pServer->send(200, "text/html", m_szhtml_content_buffer);
+      m_pServer->send(
+          200, "text/html",
+          "<META http-equiv=\"refresh\" content=\"1;URL=/update\">");
     } else {
       m_pServer->send(500, "text/plain", "500: couldn't create file");
     }
@@ -249,6 +186,6 @@ void CUpdater::OnDelete() {
   }
 
   LittleFS.remove(m_pServer->argName(0).c_str());
-  getHtmlPage();
-  m_pServer->send(200, "text/html", m_szhtml_content_buffer);
+  m_pServer->send(200, "text/html",
+                  "<META http-equiv=\"refresh\" content=\"1;URL=/update\">");
 }
