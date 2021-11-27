@@ -5,6 +5,7 @@ main.cpp
 config.h
 data/config.json
 doxygen/*
+/cppcheck.xml
 
 # build objects
 .pio
