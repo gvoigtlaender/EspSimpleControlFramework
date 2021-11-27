@@ -4,6 +4,7 @@ include
 main.cpp
 config.h
 data/config.json
+doxygen/*
 
 # build objects
 .pio
