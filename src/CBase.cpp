@@ -45,6 +45,10 @@ std::string TimeToTimeString(int32_t nTimeSeconds) {
 char szInputType_Text[] = "text";
 char szInputType_Password[] = "password";
 char szInputType_Range[] = "range";
+
+char szInputPattern_HHMM[] = " pattern=\"^\\d{2}:\\d{2}(:\\d{2})?$\"";
+char szInputPattern_MMSS[] = " pattern=\"\\d{2}:\\d{2}\"";
+
 uint32_t g_uiHeapMin = UINT32_MAX;
 uint32_t g_uiHeap = 0;
 void CheckFreeHeap() {

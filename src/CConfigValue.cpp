@@ -1,5 +1,6 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
 #include "CConfigValue.h"
+#include "CBase.h"
 #include <Arduino.h>
 
 // static
@@ -9,31 +10,6 @@ template <> std::string to_string<int>(const int &n) {
   char buffer[33];
   itoa(n, buffer, 10);
   return std::string(buffer);
-}
-
-long StringHhMmToSeconds(const char *sString) {
-  long lVal = 0;
-
-  String sTargetTime = sString;
-  int8_t index = sTargetTime.indexOf(':');
-  if (index != -1) {
-    int8_t hour = sTargetTime.substring(0, index).toInt();
-    lVal = (60 * 60 * hour);
-
-    String s1 = sTargetTime.substring(index + 1);
-    index = s1.indexOf(':');
-    if (index != -1) {
-      int8_t minutes = s1.substring(0, index).toInt();
-      int8_t seconds = s1.substring(index + 1).toInt();
-      lVal += minutes * 60 + seconds;
-    } else {
-      lVal += 60 * s1.toInt();
-    }
-
-  } else {
-    lVal += 60 * 60 * sTargetTime.toInt();
-  }
-  return lVal;
 }
 
 // static
@@ -58,29 +34,16 @@ template <> void CConfigKey<std::string>::FromString(const char *pszVal) {
   }
 }
 
-void CConfigKeyTimeString::FromString(const char *pszVal) {
-  std::string sString = pszVal;
-  if (sString != static_cast<CConfigValue<std::string> *>(m_pValue)->m_Value) {
-    static_cast<CConfigValue<std::string> *>(m_pValue)->m_Value = pszVal;
-    if (m_pOnChangedCb != NULL)
-      (m_pOnChangedCb)(m_pOnChangedObject, this);
-  }
-  m_lSeconds = StringHhMmToSeconds(pszVal);
-#if defined DEBUG
-  Serial.printf(
-      "\t\t%s %s => %s => %ld Seconds\n", this->GetKey(), pszVal,
-      static_cast<CConfigValue<std::string> *>(m_pValue)->m_Value.c_str(),
-      m_lSeconds);
-#endif
-}
-
 template <> std::string CConfigValue<std::string>::GetFormEntry() {
   std::string sContent;
   std::string sSection_Key(m_pszSection_Key);
   std::string sInputType(m_pcsInputType);
   if (m_Choice.empty()) {
     sContent = "<input type=\"" + sInputType + "\" name=\"" + sSection_Key +
-               "\" value=\"" + m_Value + "\" />\n<p>\n";
+               "\" value=\"" + m_Value + "\"";
+    if (m_pszInputHtmlCode != NULL)
+      sContent += m_pszInputHtmlCode;
+    sContent += "/>\n<p>\n";
   } else {
     sContent += "<select name=\"" + sSection_Key + "\">\n";
     for (unsigned int n = 0; n < m_Choice.size(); n++) {
@@ -214,6 +177,103 @@ void CConfigSection::Reset() {
   for (keys = begin(); keys != end(); ++keys) {
     keys->second->Reset();
   }
+}
+
+CConfigKeyTimeString::CConfigKeyTimeString(const char *pszSection,
+                                           const char *pszKey,
+                                           const std::string &def,
+                                           E_Type type /*= HHMM*/)
+    : CConfigKey<std::string>(pszSection, pszKey, def), m_lSeconds(0),
+      m_Type(type) {
+  std::string sPattern = "";
+  switch (m_Type) {
+  case HHMM:
+    sPattern = szInputPattern_HHMM;
+    break;
+  case MMSS:
+    sPattern = szInputPattern_MMSS;
+    break;
+
+  default:
+    break;
+  }
+  if (sPattern.length() > 0) {
+    m_pValue->m_pszInputHtmlCode = new char[sPattern.length() + 1];
+    strncpy(m_pValue->m_pszInputHtmlCode, sPattern.c_str(), sPattern.length());
+    m_pValue->m_pszInputHtmlCode[sPattern.length()] = 0x00;
+  }
+}
+
+void CConfigKeyTimeString::FromString(const char *pszVal) {
+  std::string sString = pszVal;
+  if (sString != static_cast<CConfigValue<std::string> *>(m_pValue)->m_Value) {
+    static_cast<CConfigValue<std::string> *>(m_pValue)->m_Value = pszVal;
+    if (m_pOnChangedCb != NULL)
+      (m_pOnChangedCb)(m_pOnChangedObject, this);
+  }
+  m_lSeconds = StringToSeconds(pszVal);
+#if defined DEBUG
+  Serial.printf(
+      "\t\t%s %s => %s => %ld Seconds\n", this->GetKey(), pszVal,
+      static_cast<CConfigValue<std::string> *>(m_pValue)->m_Value.c_str(),
+      m_lSeconds);
+#endif
+}
+
+long CConfigKeyTimeString::StringToSeconds(const char *sString) {
+  switch (m_Type) {
+  case HHMM:
+    return StringHhMmToSeconds(sString);
+
+  case MMSS:
+    return StringMmSsToSeconds(sString);
+
+  default:
+    return 0;
+  }
+}
+
+long CConfigKeyTimeString::StringHhMmToSeconds(const char *sString) {
+  long lVal = 0;
+
+  String sTargetTime = sString;
+  int8_t index = sTargetTime.indexOf(':');
+  if (index != -1) {
+    int8_t hour = sTargetTime.substring(0, index).toInt();
+    lVal = (60 * 60 * hour);
+
+    String s1 = sTargetTime.substring(index + 1);
+    index = s1.indexOf(':');
+    if (index != -1) {
+      int8_t minutes = s1.substring(0, index).toInt();
+      int8_t seconds = s1.substring(index + 1).toInt();
+      lVal += minutes * 60 + seconds;
+    } else {
+      lVal += 60 * s1.toInt();
+    }
+
+  } else {
+    lVal += 60 * sTargetTime.toInt();
+  }
+  return lVal;
+}
+
+long CConfigKeyTimeString::StringMmSsToSeconds(const char *sString) {
+  long lVal = 0;
+
+  String sTargetTime = sString;
+  int8_t index = sTargetTime.indexOf(':');
+  if (index != -1) {
+    int8_t minutes = sTargetTime.substring(0, index).toInt();
+    lVal = (60 * minutes);
+
+    String s1 = sTargetTime.substring(index + 1);
+    lVal += s1.toInt();
+
+  } else {
+    lVal += sTargetTime.toInt();
+  }
+  return lVal;
 }
 
 CConfigKeyIntSlider::CConfigKeyIntSlider(const char *pszSection,

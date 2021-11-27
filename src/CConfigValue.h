@@ -137,12 +137,14 @@ class CConfigKeyTimeString : public CConfigKey<std::string> {
 public:
   enum E_Type {
     HHMM = 0,
+    MMSS,
   };
   CConfigKeyTimeString(const char *pszSection, const char *pszKey,
-                       const std::string &def, E_Type type = HHMM)
-      : CConfigKey<std::string>(pszSection, pszKey, def), m_lSeconds(0),
-        m_Type(type) {}
+                       const std::string &def, E_Type type = HHMM);
   void FromString(const char *pszVal) override;
+  long StringToSeconds(const char *sString);
+  long StringHhMmToSeconds(const char *sString);
+  long StringMmSsToSeconds(const char *sString);
   long m_lSeconds;
   E_Type m_Type;
 };

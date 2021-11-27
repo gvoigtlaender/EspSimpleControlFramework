@@ -29,6 +29,9 @@ extern char szInputType_Text[];
 extern char szInputType_Password[];
 extern char szInputType_Range[];
 
+extern char szInputPattern_HHMM[];
+extern char szInputPattern_MMSS[];
+
 extern uint32_t g_uiHeapMin;
 extern uint32_t g_uiHeap;
 
