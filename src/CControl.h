@@ -9,11 +9,12 @@
 class CDisplayLine;
 #endif
 
-#include "CConfigValue.h"
+#include <CBase.h>
+#include <CConfigValue.h>
 #include <Syslog.h>
 
 class CMqttValue;
-class CControl {
+class CControl : public CNonCopyable {
 public:
   enum E_LOGTYPE {
     E = 0,
@@ -21,9 +22,13 @@ public:
     I,
     D,
   };
+
+private:
   CControl()
       : m_nState(0), m_uiTime(millis()),
         /*m_sInstanceName("")*/ m_pszInstanceName(NULL) {}
+
+public:
   explicit CControl(const char *pszInstance)
       : m_nState(0), m_uiTime(millis()),
         /*m_sInstanceName(pszInstance)*/ m_pszInstanceName(pszInstance)

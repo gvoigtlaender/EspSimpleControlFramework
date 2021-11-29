@@ -6,6 +6,7 @@ config.h
 data/config.json
 doxygen/*
 /cppcheck.xml
+doxygen.warnings.log
 
 # build objects
 .pio
