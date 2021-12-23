@@ -199,7 +199,6 @@ void CMqtt::control(bool bForce /*= false*/) {
 
   case ePublish:
     m_pMqttClient->loop();
-    m_pMqttClient->subscribe("inTopic");
     publish();
     subscribe();
     ProcessDone();
