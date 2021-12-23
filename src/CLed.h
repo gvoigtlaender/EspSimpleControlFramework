@@ -60,6 +60,7 @@ public:
 
   CMqttValue *m_pMqtt_CurrentTask;
   CMqttValue *m_pMqtt_LedState;
+  CMqttCmd *m_pMqtt_CmdOnOff;
 
   CConfigKeyIntSlider *m_pIntensity;
 
@@ -69,6 +70,9 @@ public:
       ms_pInstance->m_eBlinkTask = eTask;
     }
   }
+
+  void ControlMqttCmdCallback(CMqttCmd *pCmd, byte *payload,
+                              unsigned int length) override;
 
 private:
   CLed(const CLed &src);

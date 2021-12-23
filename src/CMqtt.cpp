@@ -6,7 +6,16 @@
 #endif
 
 // static
+vector<CMqttCmd *> CMqttCmd::ms_MqttCommands;
+// static
 CMqtt *CMqtt::ms_pMqtt = NULL;
+
+void callback(char *topic, byte *payload, unsigned int length) {
+#if defined DEBUG
+  CControl::Log(CControl::I, "callback");
+#endif
+  CMqtt::ms_pMqtt->callback(topic, payload, length);
+}
 
 CMqttValue::CMqttValue(const string &sPath, const string &sValue /*= ""*/)
     : m_pszPath(NULL), m_sValue(sValue), m_pControl(NULL), m_bPublished(false) {
@@ -41,6 +50,18 @@ void CMqttValue::setValue(const string &sValue) {
 #endif
   if (CMqtt::ms_pMqtt != NULL && CMqtt::ms_pMqtt->m_bConnected)
     CMqtt::ms_pMqtt->publish_value(this);
+}
+
+CMqttCmd::CMqttCmd(const char *szTopic, CControl *pControl, CMqttCmd_cb cb)
+    : m_szTopic(NULL), m_pControl(pControl), m_Callback(cb),
+      m_bSubscribed(false) {
+  std::string sTopic =
+      CMqtt::ms_pMqtt->m_sClientName + "/" + std::string(szTopic);
+  m_szTopic = new char[sTopic.length() + 1];
+  strncpy(m_szTopic, sTopic.c_str(), sTopic.length());
+  m_szTopic[sTopic.length()] = 0x00;
+  ms_MqttCommands.push_back(this);
+  CMqtt::ms_pMqtt->subscribe_cmd(this);
 }
 
 String macToStr(const uint8_t *mac) {
@@ -79,6 +100,7 @@ bool CMqtt::setup() {
   if (oIP.fromString(m_pCfgMqttServer->m_pTValue->m_Value.c_str())) {
     m_bConfigValid = true;
     m_pMqttClient->setServer(oIP, 1883);
+    m_pMqttClient->setCallback(::callback);
   }
   // m_sClientName = m_pCfgMqttClient->m_pTValue->m_Value;
   // Generate client name based on MAC address and last 8 bits of msec cnt
@@ -177,7 +199,9 @@ void CMqtt::control(bool bForce /*= false*/) {
 
   case ePublish:
     m_pMqttClient->loop();
+    m_pMqttClient->subscribe("inTopic");
     publish();
+    subscribe();
     ProcessDone();
     this->m_nState = eDone;
     break;
@@ -225,4 +249,42 @@ void CMqtt::publish_value(CMqttValue *pValue) {
     _log2(E, "publish exception");
   }
   // _log(I, "publish %s done", szKey);
+}
+
+void CMqtt::subscribe() {
+  for (unsigned int n = 0; n < CMqttCmd::ms_MqttCommands.size(); n++) {
+    CMqttCmd *pCmd = CMqttCmd::ms_MqttCommands[n];
+    if (pCmd->m_bSubscribed)
+      continue;
+    subscribe_cmd(pCmd);
+  }
+}
+void CMqtt::subscribe_cmd(CMqttCmd *pCmd) {
+  if (m_pMqttClient->connected() && !pCmd->m_bSubscribed) {
+    static char szLog[220];
+    snprintf(szLog, sizeof(szLog), "subscribe_cmd %s", pCmd->m_szTopic);
+    _log2(I, szLog);
+    m_pMqttClient->subscribe(pCmd->m_szTopic);
+    pCmd->m_bSubscribed = true;
+  }
+}
+
+void CMqtt::callback(char *topic, byte *payload, unsigned int length) {
+#if defined DEBUG
+  _log2(I, "callback");
+  char szPayLoad[length + 1];
+  memcpy(szPayLoad, payload, length);
+  szPayLoad[length] = 0x00;
+  char szLog[200];
+  snprintf(szLog, sizeof(szLog), "callback(%s, %s, %u)", topic, szPayLoad,
+           length);
+  _log2(I, szLog);
+#endif
+  for (unsigned int n = 0; n < CMqttCmd::ms_MqttCommands.size(); n++) {
+    CMqttCmd *pCmd = CMqttCmd::ms_MqttCommands[n];
+    if (strcmp(pCmd->m_szTopic, topic) != 0)
+      continue;
+    if (pCmd->m_Callback != NULL)
+      (*pCmd->m_Callback)(pCmd, payload, length);
+  }
 }

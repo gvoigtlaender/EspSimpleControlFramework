@@ -8,6 +8,9 @@ using std::string;
 #include <list>
 using std::list;
 
+#include <vector>
+using std::vector;
+
 #include "CConfigValue.h"
 #include <Arduino.h>
 #if defined(ESP8266)
@@ -43,8 +46,25 @@ private:
   CMqttValue &operator=(const CMqttValue &src);
 };
 
+class CMqttCmd : CNonCopyable {
+  friend class CMqtt;
+  friend class CControl;
+
+public:
+public:
+  CMqttCmd(const char *szTopic, CControl *pControl, CMqttCmd_cb cb);
+
+protected:
+  char *m_szTopic;
+  CControl *m_pControl;
+  CMqttCmd_cb m_Callback;
+  bool m_bSubscribed;
+  static vector<CMqttCmd *> ms_MqttCommands;
+};
+
 class CMqtt : public CControl {
   friend class CMqttValue;
+  friend class CMqttCmd;
 
 public:
   CMqtt(const string &sServerIp = "", const string &sClientName = "");
@@ -63,19 +83,25 @@ public:
   void publish();
   void publish_value(CMqttValue *pValue);
 
+  void subscribe();
+  void subscribe_cmd(CMqttCmd *pCmd);
+
 protected:
   // string m_sServerIp;
   string m_sClientName;
   WiFiClient m_WifiClient;
   PubSubClient *m_pMqttClient;
   static list<CMqttValue *> ms_Values;
-  static CMqtt *ms_pMqtt;
   bool m_bConnected;
   bool m_bConfigValid;
 
   CConfigKey<std::string> *m_pCfgMqttServer;
   CConfigKey<std::string> *m_pCfgMqttUser;
   CConfigKey<std::string> *m_pCfgMqttPasswd;
+
+public:
+  static CMqtt *ms_pMqtt;
+  void callback(char *topic, byte *payload, unsigned int length);
 
 private:
   CMqtt(const CMqtt &src);

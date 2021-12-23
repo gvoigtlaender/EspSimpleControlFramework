@@ -14,6 +14,7 @@ class CDisplayLine;
 #include <Syslog.h>
 
 class CMqttValue;
+class CMqttCmd;
 class CControl : public CNonCopyable {
 public:
   enum E_LOGTYPE {
@@ -164,6 +165,11 @@ public:
 
   CMqttValue *CreateMqttValue(const std::string &sName,
                               const std::string &sValue = "");
+  CMqttCmd *CreateMqttCmd(const char *szTopic);
+  static void MqttCmdCallback(CMqttCmd *pCmd, byte *payload,
+                              unsigned int length);
+  virtual void ControlMqttCmdCallback(CMqttCmd *pCmd, byte *payload,
+                                      unsigned int length);
 
   template <typename T>
   CConfigKey<T> *CreateConfigKey(const char *pszSection, const char *pszKey,

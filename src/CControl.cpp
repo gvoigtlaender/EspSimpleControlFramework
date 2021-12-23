@@ -32,6 +32,26 @@ CMqttValue *CControl::CreateMqttValue(const std::string &sName,
   return pValue;
 }
 
+CMqttCmd *CControl::CreateMqttCmd(const char *szTopic) {
+  string sCmd = std::string(m_pszInstanceName) + "/" + std::string(szTopic);
+  CMqttCmd *pCmd = new CMqttCmd(sCmd.c_str(), this, CControl::MqttCmdCallback);
+  return pCmd;
+}
+
+// static
+void CControl::MqttCmdCallback(CMqttCmd *pCmd, byte *payload,
+                               unsigned int length) {
+  if (pCmd != NULL && pCmd->m_pControl != NULL)
+    pCmd->m_pControl->ControlMqttCmdCallback(pCmd, payload, length);
+}
+void CControl::ControlMqttCmdCallback(CMqttCmd *pCmd, byte *payload,
+                                      unsigned int length) {
+  char szPayLoad[length + 1];
+  memcpy(szPayLoad, payload, length);
+  szPayLoad[length] = 0x00;
+  _log(I, "ControlMqttCmdCallback(%s, %s)", pCmd->m_szTopic, szPayLoad);
+}
+
 template <typename T>
 CConfigKey<T> *CControl::CreateConfigKey(const char *pszSection,
                                          const char *pszKey, T def) {

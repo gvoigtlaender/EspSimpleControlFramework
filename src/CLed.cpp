@@ -7,6 +7,7 @@ bool CLed::setup() {
 
   m_pMqtt_CurrentTask = CreateMqttValue("CurrentTask", "");
   m_pMqtt_LedState = CreateMqttValue("LedState", "false");
+  m_pMqtt_CmdOnOff = CreateMqttCmd("LedOnOff");
 
   pinMode(m_nLedPin, OUTPUT);
   digitalWrite(false);
@@ -127,4 +128,15 @@ _E_STMRESULT CLed::LedBlink(int nOnTimeMs, int nOffTimeMs, uint8_t uiCnt) {
     break;
   }
   return STM_BUSY;
+}
+
+void CLed::ControlMqttCmdCallback(CMqttCmd *pCmd, byte *payload,
+                                  unsigned int length) {
+  CControl::ControlMqttCmdCallback(pCmd, payload, length);
+  if (length == 1) {
+    if ((char)payload[0] == '0')
+      digitalWrite(false);
+    else if ((char)payload[0] == '1')
+      digitalWrite(true);
+  }
 }

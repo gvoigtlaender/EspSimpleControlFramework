@@ -1,6 +1,6 @@
 #if !defined _SRC__CBASE_H_
 #define _SRC__CBASE_H_
-
+#include <Arduino.h>
 #include <sstream>
 #include <string>
 
@@ -80,5 +80,8 @@ private:
   CNonCopyable(const CNonCopyable &src) {}
   CNonCopyable &operator=(const CNonCopyable &src) { return *this; }
 };
+
+class CMqttCmd;
+typedef void (*CMqttCmd_cb)(CMqttCmd *pCmd, byte *payload, unsigned int length);
 
 #endif // _SRC__CBASE_H_
