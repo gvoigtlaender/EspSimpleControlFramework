@@ -28,8 +28,8 @@ CMqttValue::CMqttValue(const string &sPath, const string &sValue /*= ""*/)
 #endif
 }
 
-void CMqttValue::setValue(const string &sValue) {
-  if (m_sValue == sValue)
+void CMqttValue::setValue(const string &sValue, bool bForce /*= false*/) {
+  if (m_sValue == sValue && !bForce)
     return;
   m_sValue = sValue;
   m_bPublished = false;
@@ -52,11 +52,11 @@ void CMqttValue::setValue(const string &sValue) {
     CMqtt::ms_pMqtt->publish_value(this);
 }
 
-CMqttCmd::CMqttCmd(const char *szTopic, CControl *pControl, CMqttCmd_cb cb)
-    : m_szTopic(NULL), m_pControl(pControl), m_Callback(cb),
+CMqttCmd::CMqttCmd(const string &sPath, CControl *pControl, CMqttCmd_cb cb)
+    : CMqttValue(sPath, ""), m_szTopic(NULL), m_Callback(cb),
       m_bSubscribed(false) {
-  std::string sTopic =
-      CMqtt::ms_pMqtt->m_sClientName + "/" + std::string(szTopic);
+  m_pControl = pControl;
+  std::string sTopic = CMqtt::ms_pMqtt->m_sClientName + "/" + sPath;
   m_szTopic = new char[sTopic.length() + 1];
   strncpy(m_szTopic, sTopic.c_str(), sTopic.length());
   m_szTopic[sTopic.length()] = 0x00;

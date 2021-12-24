@@ -25,14 +25,14 @@ using std::vector;
 #include "CControl.h"
 #include "CWifi.h"
 
-class CMqttValue {
+class CMqttValue : CNonCopyable {
   friend class CMqtt;
   friend class CControl;
 
 public:
   explicit CMqttValue(const string &sPath, const string &sValue = "");
   virtual ~CMqttValue() { delete[] m_pszPath; }
-  void setValue(const string &sValue);
+  void setValue(const string &sValue, bool bForce = false);
   string getValue() const { return m_sValue; }
 
 protected:
@@ -46,17 +46,16 @@ private:
   CMqttValue &operator=(const CMqttValue &src);
 };
 
-class CMqttCmd : CNonCopyable {
+class CMqttCmd : public CMqttValue {
   friend class CMqtt;
   friend class CControl;
 
 public:
 public:
-  CMqttCmd(const char *szTopic, CControl *pControl, CMqttCmd_cb cb);
+  CMqttCmd(const string &sPath, CControl *pControl, CMqttCmd_cb cb);
 
 protected:
   char *m_szTopic;
-  CControl *m_pControl;
   CMqttCmd_cb m_Callback;
   bool m_bSubscribed;
   static vector<CMqttCmd *> ms_MqttCommands;
