@@ -53,9 +53,9 @@ void CMqttValue::setValue(const string &sValue, bool bForce /*= false*/) {
 }
 
 CMqttCmd::CMqttCmd(const string &sPath, CControl *pControl, CMqttCmd_cb cb)
-    : CMqttValue(sPath, ""), m_szTopic(NULL), m_Callback(cb),
-      m_bSubscribed(false) {
-  m_pControl = pControl;
+    : /*CMqttValue(sPath, ""),*/ m_szTopic(NULL), m_pControl(pControl),
+      m_Callback(cb), m_bSubscribed(false) {
+  // m_pControl = pControl;
   std::string sTopic = CMqtt::ms_pMqtt->m_sClientName + "/" + sPath;
   m_szTopic = new char[sTopic.length() + 1];
   strncpy(m_szTopic, sTopic.c_str(), sTopic.length());

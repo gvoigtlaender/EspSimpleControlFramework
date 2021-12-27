@@ -138,6 +138,6 @@ void CLed::ControlMqttCmdCallback(CMqttCmd *pCmd, byte *payload,
       digitalWrite(false);
     else if ((char)payload[0] == '1')
       digitalWrite(true);
-    pCmd->setValue("", true);
+    // pCmd->setValue("", true);
   }
 }

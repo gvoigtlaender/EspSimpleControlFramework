@@ -46,7 +46,7 @@ private:
   CMqttValue &operator=(const CMqttValue &src);
 };
 
-class CMqttCmd : public CMqttValue {
+class CMqttCmd : public CNonCopyable {
   friend class CMqtt;
   friend class CControl;
 
@@ -56,6 +56,7 @@ public:
 
 protected:
   char *m_szTopic;
+  CControl* m_pControl;
   CMqttCmd_cb m_Callback;
   bool m_bSubscribed;
   static vector<CMqttCmd *> ms_MqttCommands;

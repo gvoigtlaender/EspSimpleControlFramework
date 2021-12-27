@@ -107,3 +107,22 @@ CConfigKeyIntSlider *CControl::CreateConfigKeyIntSlider(const char *pszSection,
       new CConfigKeyIntSlider(pszSection, pszKey, def, nMin, nMax);
   return pKey;
 }
+
+// static
+bool CControl::Setup() {
+
+  new CMqttValue("SYSTEM/FwkVersion", FWK_VERSION_STRING);
+  new CMqttValue("SYSTEM/Version", VERSION_STRING);
+  new CMqttValue("SYSTEM/APPNAME", APPNAME);
+
+  bool bSuccess = true;
+  for (unsigned int n = 0; n < ms_Instances.size(); n++)
+    bSuccess &= ms_Instances[n]->setup();
+  return bSuccess;
+}
+
+// static
+void CControl::Control() {
+  for (unsigned int n = 0; n < ms_Instances.size(); n++)
+    ms_Instances[n]->control(false);
+}

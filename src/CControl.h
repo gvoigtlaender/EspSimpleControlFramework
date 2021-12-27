@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+extern char VERSION_STRING[];
+extern char APPNAME[];
+
 #if USE_DISPLAY == 1
 class CDisplayLine;
 #endif
@@ -202,16 +205,8 @@ protected:
 public:
   static std::vector<CControl *> ms_Instances;
 
-  static bool Setup() {
-    bool bSuccess = true;
-    for (unsigned int n = 0; n < ms_Instances.size(); n++)
-      bSuccess &= ms_Instances[n]->setup();
-    return bSuccess;
-  }
-  static void Control() {
-    for (unsigned int n = 0; n < ms_Instances.size(); n++)
-      ms_Instances[n]->control(false);
-  }
+  static bool Setup();
+  static void Control();
   static bool ms_bUsbChargingActive;
 
   static Syslog *ms_pSyslog;
