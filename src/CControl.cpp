@@ -34,7 +34,7 @@ CMqttValue *CControl::CreateMqttValue(const std::string &sName,
 
 CMqttCmd *CControl::CreateMqttCmd(const char *szTopic) {
   string sCmd = std::string(m_pszInstanceName) + "/" + std::string(szTopic);
-  CMqttCmd *pCmd = new CMqttCmd(sCmd.c_str(), this, CControl::MqttCmdCallback);
+  CMqttCmd *pCmd = new CMqttCmd(sCmd, this, CControl::MqttCmdCallback);
   return pCmd;
 }
 

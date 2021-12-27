@@ -53,10 +53,11 @@ class CMqttCmd : public CNonCopyable {
 public:
 public:
   CMqttCmd(const string &sPath, CControl *pControl, CMqttCmd_cb cb);
+  ~CMqttCmd() { delete[] m_szTopic; }
 
 protected:
   char *m_szTopic;
-  CControl* m_pControl;
+  CControl *m_pControl;
   CMqttCmd_cb m_Callback;
   bool m_bSubscribed;
   static vector<CMqttCmd *> ms_MqttCommands;
@@ -85,6 +86,9 @@ public:
 
   void subscribe();
   void subscribe_cmd(CMqttCmd *pCmd);
+
+  bool isConnected() { return m_bConnected; }
+  bool isRetryConnect() { return !m_bConnected && m_uiFailCnt < 5; }
 
 protected:
   // string m_sServerIp;

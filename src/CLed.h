@@ -58,9 +58,9 @@ public:
   }
   bool m_bCurrentState;
 
-  CMqttValue *m_pMqtt_CurrentTask;
-  CMqttValue *m_pMqtt_LedState;
-  CMqttCmd *m_pMqtt_CmdOnOff;
+  CMqttValue *m_pMqtt_CurrentTask = NULL;
+  CMqttValue *m_pMqtt_LedState = NULL;
+  CMqttCmd *m_pMqtt_CmdOnOff = NULL;
 
   CConfigKeyIntSlider *m_pIntensity;
 
