@@ -190,8 +190,9 @@ public:
 #endif
 
 protected:
-  int8_t m_nState;
-  uint32_t m_uiTime;
+  int8_t m_nState = 0;
+  uint32_t m_uiTime = 0;
+  uint8_t m_uiFailCnt = 0;
   // std::string m_sInstanceName;
   const char *m_pszInstanceName;
 #if USE_DISPLAY == 1

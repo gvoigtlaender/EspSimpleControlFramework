@@ -83,16 +83,13 @@ CMqtt::CMqtt(const string &sServerIp /* = "" */,
       m_pMqttClient(NULL), m_bConnected(false), m_bConfigValid(false) {
   ms_pMqtt = this;
   m_pMqttClient = new PubSubClient(m_WifiClient);
-  // m_pMqttClient->setServer(m_sServerIp.c_str(), 1883);
   ValuePending();
   ProcessPending();
 
   m_pCfgMqttServer = new CConfigKey<string>("Mqtt", "ServerIp", "");
   m_pCfgMqttUser = new CConfigKey<string>("Mqtt", "User", "");
   m_pCfgMqttPasswd = new CConfigKey<string>("Mqtt", "Passwd", "");
-  // m_pCfgMqttPasswd->m_pValue->m_sInputType = "password";
   m_pCfgMqttPasswd->m_pValue->m_pcsInputType = szInputType_Password;
-  // m_pCfgMqttClient = new CConfigKey<string>("Mqtt", "ClientName", "esp");
 }
 
 bool CMqtt::setup() {
@@ -102,7 +99,6 @@ bool CMqtt::setup() {
     m_pMqttClient->setServer(oIP, 1883);
     m_pMqttClient->setCallback(::callback);
   }
-  // m_sClientName = m_pCfgMqttClient->m_pTValue->m_Value;
   // Generate client name based on MAC address and last 8 bits of msec cnt
   if (this->m_sClientName.empty()) {
     this->m_sClientName = "";
@@ -121,13 +117,12 @@ void CMqtt::control(bool bForce /*= false*/) {
     return;
 
   this->m_uiTime += 5;
-  // Serial.print(m_sInstanceName.c_str());
-  // Serial.println(".control()");
 
   enum {
     eStart = 0,
     eWaitForWifi,
     eSetup,
+    eFailDelay,
     eConnect,
     eWaitForPublish,
     ePublish,
@@ -171,8 +166,23 @@ void CMqtt::control(bool bForce /*= false*/) {
     if (m_pMqttClient->connect(this->m_sClientName.c_str(),
                                m_pCfgMqttUser->m_pTValue->m_Value.c_str(),
                                m_pCfgMqttPasswd->m_pTValue->m_Value.c_str())) {
+      _log(I, "W4Connected");
       this->m_nState = eConnect;
+    } else {
+      _log(E, "Connect failed");
+      if (++m_uiFailCnt < 5)
+        this->m_nState = eFailDelay;
+      else
+        this->m_nState = eError;
     }
+    break;
+
+  case eFailDelay:
+    this->m_uiTime += 1000;
+    this->m_nState = eSetup;
+    _log(I, "Retry Connecting to %s as %s",
+         m_pCfgMqttServer->m_pTValue->m_Value.c_str(),
+         this->m_sClientName.c_str());
     break;
 
   case eConnect:
@@ -221,7 +231,6 @@ void CMqtt::publish() {
     CMqttValue *pValue = *it;
     publish_value(pValue);
   }
-  // m_pMqttClient->disconnect();
 #if USE_DISPLAY == 1
   if (m_pDisplayLine)
     m_pDisplayLine->Line("Mqtt published");
