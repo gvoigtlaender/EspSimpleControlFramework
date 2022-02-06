@@ -30,6 +30,16 @@
       "owner": "knolleary",
       "name": "PubSubClient",
       "version": "^2.8"
+    },
+    {
+      "owner": "paulstoffregen",
+      "name": "OneWire",
+      "version": "^2.3.6"
+    },
+    {
+      "owner": "robtillaart",
+      "name": "DS18B20",
+      "version": "^0.1.12"
     }
   ],
   "frameworks": "arduino",
