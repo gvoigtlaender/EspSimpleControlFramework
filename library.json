@@ -40,6 +40,11 @@
       "owner": "robtillaart",
       "name": "DS18B20",
       "version": "^0.1.12"
+    },
+    {
+      "owner": "milesburton",
+      "name": "DallasTemperature",
+      "version": "^3.9.1"
     }
   ],
   "frameworks": "arduino",
