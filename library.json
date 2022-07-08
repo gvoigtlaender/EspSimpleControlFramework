@@ -45,6 +45,21 @@
       "owner": "milesburton",
       "name": "DallasTemperature",
       "version": "^3.9.1"
+    },
+    {
+      "owner": "olikraus",
+      "name": "U8g2",
+      "version": "^2.32.10"
+    },
+    {
+      "owner": "paulstoffregen",
+      "name": "OneWire",
+      "version": "^2.3.6"
+    },
+    {
+      "owner": "milesburton",
+      "name": "DallasTemperature",
+      "version": "^3.9.1"
     }
   ],
   "frameworks": "arduino",
