@@ -8,8 +8,8 @@
 extern char VERSION_STRING[];
 extern char APPNAME[];
 
-#if USE_DISPLAY == 1
-class CDisplayLine;
+#if USE_DISPLAY >= 1
+#include <CDisplayLine.h>
 #endif
 
 #include <CBase.h>
@@ -36,10 +36,10 @@ public:
   explicit CControl(const char *pszInstance)
       : m_nState(0), m_uiTime(millis()),
         /*m_sInstanceName(pszInstance)*/ m_pszInstanceName(pszInstance)
-#if USE_DISPLAY == 1
+        //#if USE_DISPLAY == 1
         ,
         m_pDisplayLine(NULL)
-#endif
+  //#endif
   {
     // CControl::Log("Instance %s", sInstance.c_str());
     ms_Instances.push_back(this);
@@ -185,8 +185,11 @@ public:
                                                 const char *pszKey, int def,
                                                 int nMin, int nMax);
 
-#if USE_DISPLAY == 1
-  void SetDisplayLine(CDisplayLine *pLine) { m_pDisplayLine = pLine; }
+#if USE_DISPLAY >= 1
+  void SetDisplayLine(CDisplayLine *pLine) {
+    _log(I, "SetDisplayLine(%x)", pLine);
+    m_pDisplayLine = pLine;
+  }
 #endif
 
 protected:
@@ -195,8 +198,10 @@ protected:
   uint8_t m_uiFailCnt = 0;
   // std::string m_sInstanceName;
   const char *m_pszInstanceName;
-#if USE_DISPLAY == 1
+#if USE_DISPLAY >= 1
   CDisplayLine *m_pDisplayLine;
+#else
+  void *m_pDisplayLine;
 #endif
   static int8_t ms_ulValuesPending;
   static int8_t ms_ulProcessPending;

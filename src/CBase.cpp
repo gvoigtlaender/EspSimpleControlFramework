@@ -49,6 +49,10 @@ char szInputType_Range[] = "range";
 char szInputPattern_HHMM[] = " pattern=\"^\\d{2}:\\d{2}(:\\d{2})?$\"";
 char szInputPattern_MMSS[] = " pattern=\"\\d{2}:\\d{2}\"";
 
+#if USE_DISPLAY >= 1
+CDisplayLine *g_HeapDisplayLine = NULL;
+#endif
+
 uint32_t g_uiHeapMin = UINT32_MAX;
 uint32_t g_uiHeap = 0;
 void CheckFreeHeap() {
@@ -57,7 +61,14 @@ void CheckFreeHeap() {
   if (g_uiHeap < g_uiHeapMin || s_uiMillis < millis()) {
     if (g_uiHeap < g_uiHeapMin)
       g_uiHeapMin = g_uiHeap;
-    CControl::Log(CControl::D, "Heap %u Min=%u", g_uiHeap, g_uiHeapMin);
+    char szTmp[64];
+    snprintf(szTmp, sizeof(szTmp), "Heap:%u (%u)", g_uiHeap, g_uiHeapMin);
+    CControl::Log(CControl::D, szTmp);
+#if USE_DISPLAY >= 1
+    if (g_HeapDisplayLine != NULL)
+      g_HeapDisplayLine->Line(szTmp);
+#endif
+
     s_uiMillis = millis() + 1000;
   }
 }

@@ -32,10 +32,6 @@ void CSyslog::control(bool bForce /*= false*/) {
   switch (this->m_nState) {
   case eStart:
     _log2(I, "W4Wifi");
-#if USE_DISPLAY == 1
-    if (m_pDisplayLine)
-      m_pDisplayLine->Line("Mqtt w4wifi");
-#endif
     this->m_nState = eWaitForWifi;
 
   case eWaitForWifi:

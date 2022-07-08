@@ -1,6 +1,7 @@
 #if !defined _SRC__CBASE_H_
 #define _SRC__CBASE_H_
 #include <Arduino.h>
+#include <config.h>
 #include <sstream>
 #include <string>
 
@@ -59,6 +60,11 @@ extern char szInputPattern_MMSS[];
 
 extern uint32_t g_uiHeapMin;
 extern uint32_t g_uiHeap;
+
+#if USE_DISPLAY >= 1
+#include <CDisplayLine.h>
+extern CDisplayLine *g_HeapDisplayLine;
+#endif
 
 //! Checks free heap. Log if new minimum, or each 1s
 /*!
