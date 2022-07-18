@@ -68,7 +68,7 @@
     },
     {
       "owner": "adafruit",
-      "name": "Adafruit BMP280 Library",
+      "name": "Adafruit BME280 Library",
       "version": "^2.2.2"
     },
     {
