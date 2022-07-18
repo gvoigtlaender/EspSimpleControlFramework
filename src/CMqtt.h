@@ -34,6 +34,7 @@ public:
   virtual ~CMqttValue() { delete[] m_pszPath; }
   void setValue(const string &sValue, bool bForce = false);
   string getValue() const { return m_sValue; }
+  bool IsPublished() { return m_bPublished; }
 
 protected:
   char *m_pszPath;

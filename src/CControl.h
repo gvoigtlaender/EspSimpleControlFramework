@@ -199,7 +199,7 @@ protected:
   // std::string m_sInstanceName;
   const char *m_pszInstanceName;
 #if USE_DISPLAY >= 1
-  CDisplayLine *m_pDisplayLine;
+  CDisplayLine *m_pDisplayLine = NULL;
 #else
   void *m_pDisplayLine;
 #endif
