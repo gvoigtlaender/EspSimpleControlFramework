@@ -34,6 +34,8 @@ public:
 
   virtual void display() = 0;
   virtual void publish() = 0;
+
+  virtual bool IsPublished() = 0;
 };
 
 class CSensorSingle : public CSensorBase {
@@ -67,6 +69,10 @@ public:
 
   virtual void display() override;
   virtual void publish() override;
+
+  virtual bool IsPublished() override {
+    return m_pMqttTemp && m_pMqttTemp->IsPublished();
+  }
 };
 
 class CSensorDHT : public CSensorSingle {

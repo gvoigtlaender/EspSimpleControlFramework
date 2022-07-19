@@ -136,7 +136,7 @@ public:
     this->CControl::m_uiTime = millis() + 150;
   }
   bool setup() override {
-    // _log("CDisplayBase::setup()");
+    // _log(I, "CDisplayU8x8::setup(), %d lines", GetNoOfLines());
     m_pDisplay->begin();
     m_pDisplay->setPowerSave(0);
 
@@ -183,7 +183,7 @@ public:
   }
 
   bool setup() override {
-    // _log("CDisplayBase::setup()");
+    // _log(I, "CDisplayU8g2::setup(), %d lines", GetNoOfLines());
     m_pDisplay->begin();
     m_pDisplay->setFont(u8g2_font_6x10_tf);
     m_pDisplay->setContrast(1);

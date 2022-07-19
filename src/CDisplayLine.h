@@ -1,6 +1,6 @@
 #if !defined SRC_CDISPLAYLINE_H_
 #define SRC_CDISPLAYLINE_H_
-
+#include <Arduino.h>
 #include <string>
 
 class CDisplayLine {
