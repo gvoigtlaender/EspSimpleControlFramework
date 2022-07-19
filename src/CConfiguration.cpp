@@ -17,20 +17,14 @@ CConfiguration::CConfiguration(const char *szConfigFile, const char *szTitle,
        m_szhtml_content_buffer(szhtml_content_buffer),
        m_szhtml_content_buffer_size(szhtml_content_buffer_size)*/
 {
-  if (LittleFS.begin()) {
-    CControl::Log(CControl::I, "LittleFS.begin() success, mounted file system");
-  } else {
-    CControl::Log(CControl::I,
-                  "LittleFS.begin() fail, mounted file system failed");
-  }
   ms_Instance = this;
 }
 
-void CConfiguration::SetupServer(ESP8266WebServer *server, bool bAsRoot) {
+void CConfiguration::SetupServer(CWebServer *server, bool bAsRoot) {
   m_pServer = server;
 
-  server->serveStatic(bAsRoot ? "/" : "/configure", LittleFS, "configure.html");
-  server->serveStatic("/configpage.js", LittleFS, "configpage.js");
+  server->serveStatic(bAsRoot ? "/" : "/configure", "configure.html");
+  server->serveStatic("/configpage.js", "configpage.js");
   server->on("/configcontent", HTTP_GET, handleHttpGetContent);
   server->on("/storecfg", HTTP_POST, handleHttpPost);
 }
@@ -207,9 +201,15 @@ void CConfiguration::reset() {
 
 void CConfiguration::load() {
   CheckFreeHeap();
+#if defined(ESP8266)
   if (LittleFS.exists(m_sConfigFile.c_str())) {
     CControl::Log(CControl::I, "LittleFS.exist() sucess, reading config file");
     File configFile = LittleFS.open(m_sConfigFile.c_str(), "r");
+#else
+  if (SPIFFS.exists(m_sConfigFile.c_str())) {
+    CControl::Log(CControl::I, "SPIFFS.exist() sucess, reading config file");
+    File configFile = SPIFFS.open(m_sConfigFile.c_str(), "r");
+#endif
     CheckFreeHeap();
     if (configFile) {
       size_t size = configFile.size();
@@ -347,7 +347,11 @@ void CConfiguration::save() {
 #if ARDUINOJSON_VERSION_MAJOR == 5
   json.printTo(Serial);
   Serial.println("");
+#if defined(ESP8266)
   File configFile = LittleFS.open("/config.json", "w");
+#else
+  File configFile = SPIFFS.open("/config.json", "w");
+#endif
   if (!configFile) {
     CControl::Log(CControl::I, "failed to open config file for writing");
   }
@@ -623,4 +627,5 @@ void CConfiguration::handleArgs(ESP8266WebServer *server,
   server->send(200, "text/html", m_szhtml_content_buffer);
   CheckFreeHeap();
 }
+
 #endif // _OLD_CODE

@@ -1,9 +1,13 @@
 #include "CUpdater.h"
 #include "CControl.h"
 #include <FS.h>
-#include <LittleFS.h>
 #include <WiFiUdp.h>
+#if defined(ESP8266)
+#include <LittleFS.h>
 #include <flash_hal.h>
+#elif defined(ESP32)
+#include <SPIFFS.h>
+#endif
 
 static const char successResponse1[] PROGMEM =
     "<META http-equiv=\"refresh\" content=\"15;URL=/\">Update Success! "
@@ -21,7 +25,7 @@ void OnUpload() { CUpdater::ms_pInstance->OnUpload(); }
 void OnUpload2() { CUpdater::ms_pInstance->OnUpload2(); }
 void OnDelete() { CUpdater::ms_pInstance->OnDelete(); }
 
-CUpdater::CUpdater(ESP8266WebServer *pServer, const char *szPath,
+CUpdater::CUpdater(CWebServer *pServer, const char *szPath,
                    const char *szTitle /*= NULL*/,
                    const char *szHtmlHeader /* = NULL*/)
     : m_pServer(pServer), m_pcsPath(szPath), m_pcsTitle(szTitle),
@@ -29,8 +33,8 @@ CUpdater::CUpdater(ESP8266WebServer *pServer, const char *szPath,
   CUpdater::ms_pInstance = this;
   // handler for the /update form page
   // m_pServer->on(m_pcsPath, HTTP_GET, ::OnGet);
-  m_pServer->serveStatic(m_pcsPath, LittleFS, "update.html");
-  m_pServer->serveStatic("/updatepage.js", LittleFS, "updatepage.js");
+  m_pServer->serveStatic(m_pcsPath, "update.html");
+  m_pServer->serveStatic("/updatepage.js", "updatepage.js");
   m_pServer->on("/filelist", HTTP_GET, ::OnGet_filelist);
 
   // handler for the /update form POST (once file upload finishes)
@@ -45,16 +49,23 @@ CUpdater::CUpdater(ESP8266WebServer *pServer, const char *szPath,
 }
 
 void CUpdater::_setUpdaterError() {
+#if defined(ESP8266)
   Update.printError(Serial);
   StreamString str;
   Update.printError(str);
   _updaterError = str.c_str();
+#elif defined(ESP32)
+#endif
 }
 
 void CUpdater::OnGet_filelist() {
   CControl::Log(CControl::I, "CUpdater::OnGet_filelist");
 
+#if defined(ESP8266)
   File root = LittleFS.open("/", "r");
+#elif defined(ESP32)
+  File root = SPIFFS.open("/", "r");
+#endif
   File file = root.openNextFile();
 
   string sContent = "";
@@ -90,6 +101,7 @@ void CUpdater::OnGet_filelist() {
 }
 void CUpdater::OnPost() {
   CControl::Log(CControl::I, "CUpdater::OnPost");
+#if defined(ESP8266)
   if (Update.hasError()) {
     m_pServer->send(200, F("text/html"),
                     String(F("Update error: ")) + _updaterError);
@@ -100,6 +112,8 @@ void CUpdater::OnPost() {
     m_pServer->client().stop();
     ESP.restart();
   }
+#elif defined(ESP32)
+#endif
 }
 void CUpdater::OnPost2() {
   CheckFreeHeap();
@@ -108,6 +122,7 @@ void CUpdater::OnPost2() {
   // them through the Update object
   HTTPUpload &upload = m_pServer->upload();
 
+#if defined(ESP8266)
   if (upload.status == UPLOAD_FILE_START) {
     _updaterError.clear();
     Serial.setDebugOutput(true);
@@ -148,6 +163,8 @@ void CUpdater::OnPost2() {
   }
   delay(0);
   CheckFreeHeap();
+#elif defined(ESP32)
+#endif
 }
 
 void CUpdater::OnUpload() { m_pServer->send(200); }
@@ -158,8 +175,13 @@ void CUpdater::OnUpload2() {
     if (!filename.startsWith("/"))
       filename = "/" + filename;
     CControl::Log(CControl::I, "handleFileUpload Name: %s", filename.c_str());
+#if defined(ESP8266)
     fsUploadFile =
         LittleFS.open(filename, "w"); // Open the file for writing in SPIFFS
+#elif defined(ESP32)
+    fsUploadFile =
+        SPIFFS.open(filename, "w"); // Open the file for writing in SPIFFS
+#endif
                                       // (create if it doesn't exist)
     filename = String();
   } else if (upload.status == UPLOAD_FILE_WRITE) {
@@ -185,7 +207,11 @@ void CUpdater::OnDelete() {
                   m_pServer->arg(n).c_str());
   }
 
+#if defined(ESP8266)
   LittleFS.remove(m_pServer->argName(0).c_str());
+#elif defined(ESP32)
+  SPIFFS.remove(m_pServer->argName(0).c_str());
+#endif
   m_pServer->send(200, "text/html",
                   "<META http-equiv=\"refresh\" content=\"1;URL=/update\">");
 }

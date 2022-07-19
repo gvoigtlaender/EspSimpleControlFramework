@@ -14,14 +14,14 @@
 
 class CDisplayBase : public CControl {
 public:
-  CDisplayBase(uint8 nNoOfLines, uint8 nNoOfColumns, const char *szInstance)
+  CDisplayBase(uint8_t nNoOfLines, uint8_t nNoOfColumns, const char *szInstance)
       : CControl(szInstance), m_Lines(), m_uiScrollTime(millis()),
         /*m_sEmptyLine(""), */ m_uiScrollDelay(250), m_uiDrawDelay(255) {
     // _log("CDisplayBase::CDisplayBase()");
     // m_sEmptyLine.resize(m_uiNoOfColumns, ' ');
   }
   virtual ~CDisplayBase() {
-    for (uint8 n = 0; n < m_Lines.size(); n++) {
+    for (uint8_t n = 0; n < m_Lines.size(); n++) {
       delete m_Lines[n];
     }
     m_Lines.clear();
@@ -29,7 +29,7 @@ public:
 
   bool setup() override = 0;
 
-  CDisplayLine *AddLine(u8g2_uint_t x, u8g2_uint_t y, uint8 uiNoOfColumns,
+  CDisplayLine *AddLine(u8g2_uint_t x, u8g2_uint_t y, uint8_t uiNoOfColumns,
                         const uint8_t *pFont) {
     CDisplayLine *pLine = new CDisplayLine(x, y, uiNoOfColumns, pFont);
     m_Lines.push_back(pLine);
@@ -40,7 +40,7 @@ public:
     CXbm *pXbm = new CXbm(x, y, w, h);
     m_Xbms.push_back(pXbm);
     this->_log(I, "AddXbm(%u, %u, %u, %u) s=%u, w/8=%u", x, y, w, h,
-               pXbm->m_uiS, (uint8)(w / 8));
+               pXbm->m_uiS, (uint8_t)(w / 8));
     return pXbm;
   }
 
@@ -69,7 +69,7 @@ public:
       break;
 
     case eScrollText:
-      for (uint8 n = 0; n < m_Lines.size(); n++) {
+      for (uint8_t n = 0; n < m_Lines.size(); n++) {
         CDisplayLine *pLine = m_Lines[n];
         pLine->Scroll();
         if (pLine->m_sLine.length() > pLine->m_uiNoOfColumns) {
@@ -89,7 +89,7 @@ public:
 
   virtual void updateDisplay() = 0;
 
-  void Line(uint8 nIdx, std::string sLineContent) {
+  void Line(uint8_t nIdx, std::string sLineContent) {
     if (nIdx >= m_Lines.size())
       return;
     while (sLineContent.length() < m_Lines.size())
@@ -100,12 +100,12 @@ public:
     this->m_uiScrollTime = millis() + m_uiScrollDelay;
   }
 
-  CDisplayLine *GetLine(uint8 n) {
+  CDisplayLine *GetLine(uint8_t n) {
     if (n < m_Lines.size())
       return m_Lines[n];
     return NULL;
   }
-  CXbm *GetXbm(uint8 n) {
+  CXbm *GetXbm(uint8_t n) {
     if (n < m_Xbms.size())
       return m_Xbms[n];
     return NULL;
@@ -119,18 +119,18 @@ protected:
   // uint8 m_uiNoOfColumns;
   std::vector<CDisplayLine *> m_Lines;
   std::vector<CXbm *> m_Xbms;
-  uint64 m_uiScrollTime;
+  uint64_t m_uiScrollTime;
   // std::string m_sEmptyLine;
-  uint8 m_uiScrollDelay;
-  uint8 m_uiDrawDelay;
+  uint8_t m_uiScrollDelay;
+  uint8_t m_uiDrawDelay;
 };
 
 template <typename T> class CDisplayU8x8 : public CDisplayBase {
 public:
-  CDisplayU8x8(int resetpin, uint8 nNoOfLines, uint8 nNoOfColumns)
+  CDisplayU8x8(int resetpin, uint8_t nNoOfLines, uint8_t nNoOfColumns)
       : CDisplayBase(nNoOfLines, nNoOfColumns, "CDisplay"),
         m_pDisplay(new T(resetpin)) {
-    for (uint8 n = 0; n < nNoOfLines; n++) {
+    for (uint8_t n = 0; n < nNoOfLines; n++) {
       m_Lines.push_back(new CDisplayLine(0, n, nNoOfColumns, u8x8_font_5x8_r));
     }
     this->CControl::m_uiTime = millis() + 150;
@@ -142,7 +142,7 @@ public:
 
     m_pDisplay->clear();
 
-    for (uint8 n = 0; n < m_Lines.size(); n++) {
+    for (uint8_t n = 0; n < m_Lines.size(); n++) {
       String sLine = String("Line ") + String(n);
       Line(n, sLine.c_str());
       m_pDisplay->setFont(m_Lines[n]->m_pFont);
@@ -160,7 +160,7 @@ public:
   }
   void updateDisplay() override {
     CDisplayLine *pLine;
-    for (uint8 n = 0; n < m_Lines.size(); n++) {
+    for (uint8_t n = 0; n < m_Lines.size(); n++) {
       pLine = m_Lines[n];
       if (pLine->m_sLineToDraw != pLine->m_sLineDrawn) {
         m_pDisplay->setFont(pLine->m_pFont);
@@ -176,7 +176,7 @@ protected:
 };
 template <typename T> class CDisplayU8g2 : public CDisplayBase {
 public:
-  CDisplayU8g2(int resetpin, uint8 nNoOfLines, uint8 nNoOfColumns)
+  CDisplayU8g2(int resetpin, uint8_t nNoOfLines, uint8_t nNoOfColumns)
       : CDisplayBase(nNoOfLines, nNoOfColumns, "CDisplay"),
         m_pDisplay(new T(U8G2_R0, U8X8_PIN_NONE)) {
     this->CControl::m_uiTime = millis() + 150;
@@ -194,13 +194,13 @@ public:
   void updateDisplay() override {
     m_pDisplay->clearBuffer();
     CDisplayLine *pLine;
-    for (uint8 n = 0; n < m_Lines.size(); n++) {
+    for (uint8_t n = 0; n < m_Lines.size(); n++) {
       pLine = m_Lines[n];
       m_pDisplay->setFont(pLine->m_pFont);
       drawUTF8(pLine->m_uiX, pLine->m_uiY, pLine->m_sLineToDraw.c_str());
     }
     CXbm *pXbm;
-    for (uint8 n = 0; n < m_Xbms.size(); n++) {
+    for (uint8_t n = 0; n < m_Xbms.size(); n++) {
       pXbm = m_Xbms[n];
       m_pDisplay->drawXBM(pXbm->m_uiX, pXbm->m_uiY, pXbm->m_uiW, pXbm->m_uiH,
                           pXbm->m_pBuffer);

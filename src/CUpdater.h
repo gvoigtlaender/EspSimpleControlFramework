@@ -1,13 +1,14 @@
 #if !defined _SRC_CUPDATER_H_
 #define _SRC_CUPDATER_H_
-#include <ESP8266WebServer.h>
+#include <CBase.h>
+#include <CWebserver.h>
 #include <string>
 using std::string;
 
 class CUpdater {
 public:
-  CUpdater(ESP8266WebServer *pServer, const char *szPath,
-           const char *szTitle = NULL, const char *szHtmlHeader = NULL);
+  CUpdater(CWebServer *pServer, const char *szPath, const char *szTitle = NULL,
+           const char *szHtmlHeader = NULL);
   void _setUpdaterError();
 
   void OnGet_filelist();
@@ -17,7 +18,7 @@ public:
   void OnUpload2();
   void OnDelete();
 
-  ESP8266WebServer *m_pServer;
+  CWebServer *m_pServer;
   // string m_sPath;
   const char *m_pcsPath;
   // string m_sTitle;

@@ -1,7 +1,12 @@
 #include <Arduino.h>
 #include <CBase.h>
 #include <CControl.h>
+#include <FS.h>
+#if defined(ESP8266)
 #include <LittleFS.h>
+#elif defined(ESP32)
+#include <SPIFFS.h>
+#endif
 #include <stdio.h>
 
 double dmap(double x, double in_min, double in_max, double out_min,
@@ -74,8 +79,12 @@ void CheckFreeHeap() {
 }
 
 size_t LittleFS_GetFreeSpaceKb() {
+#if defined(ESP8266)
   FSInfo fs_info;
   LittleFS.info(fs_info);
 
   return (fs_info.totalBytes - fs_info.usedBytes) / 1024;
+#elif defined(ESP32)
+  return (SPIFFS.totalBytes() - SPIFFS.usedBytes()) / 1024;
+#endif
 }

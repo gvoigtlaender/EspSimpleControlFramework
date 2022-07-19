@@ -39,17 +39,17 @@ public:
   }
   void Clear() { memset(m_pBuffer, 0x00, m_uiS); }
 
-  void FromVector(vector<uint8> &vec) {
+  void FromVector(vector<uint8_t> &vec) {
     Clear();
-    for (uint8 n = 0; n < vec.size(); n++) {
-      uint8 x = m_uiW - n - 1;
+    for (uint8_t n = 0; n < vec.size(); n++) {
+      uint8_t x = m_uiW - n - 1;
       SetPixel(x, vec[n]);
     }
   }
-  void FromVectorI(vector<uint8> &vec) {
+  void FromVectorI(vector<uint8_t> &vec) {
     Clear();
-    for (uint8 n = 0; n < vec.size(); n++) {
-      uint8 x = n;
+    for (uint8_t n = 0; n < vec.size(); n++) {
+      uint8_t x = n;
       SetPixel(x, vec[n]);
     }
   }

@@ -16,7 +16,11 @@ CWifi::CWifi(const char *szAppName, string sSsid /*= ""*/,
 
 bool CWifi::setup() {
   CControl::setup();
+#if defined(ESP8266)
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
+#elif defined(ESP32)
+  WiFi.setSleep(false);
+#endif
 
   if (m_pWifiSsid->GetValue().empty()) {
 
@@ -42,8 +46,13 @@ bool CWifi::setup() {
         Serial.print(" (");
         Serial.print(WiFi.RSSI(i));
         Serial.print(")");
+#if defined(ESP8266)
         _log2(CControl::I,
               (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*");
+#elif defined(ESP32)
+        _log2(CControl::I,
+              (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
+#endif
 
         std::string ssid = WiFi.SSID(i).c_str();
         m_pWifiSsid->m_pTValue->m_Choice.push_back(ssid);
@@ -137,9 +146,12 @@ void CWifi::control(bool bForce /*= false*/) {
     case WL_SCAN_COMPLETED:
       _log2(I, "WL_SCAN_COMPLETED");
       break;
+#if defined(ESP8266)
     case WL_WRONG_PASSWORD:
       _log2(I, "WL_WRONG_PASSWORD");
       break;
+#elif defined(ESP32)
+#endif
     case WL_DISCONNECTED:
       _log2(I, "WL_DISCONNECTED");
       break;
@@ -151,6 +163,9 @@ void CWifi::control(bool bForce /*= false*/) {
       break;
     case WL_CONNECTION_LOST:
       _log2(I, "WL_CONNECTION_LOST");
+      break;
+    default:
+      _log(I, "Undefined WiFi State %d", (int)WiFi.status());
       break;
     }
     CControl::ms_bNetworkConnected = false;
