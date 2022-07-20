@@ -7,7 +7,7 @@
 #include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
 #include <CBase.h>
 #include <FS.h>
-#if defined(ESP8266)
+#if defined(USE_LITTLEFS)
 #include <LittleFS.h>
 #elif defined(ESP32)
 #include <SPIFFS.h>

@@ -2,13 +2,16 @@
 #define _SRC_CWEBSERVER_H_
 #include <Arduino.h>
 #if defined(ESP8266)
-#include "LittleFS.h"
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #elif defined(ESP32)
-#include "SPIFFS.h"
 #include "WebServer.h"
+#endif
+#if defined(USE_LITTLEFS)
+#include "LittleFS.h"
+#else
+#include "SPIFFS.h"
 #endif
 
 #if defined(ESP8266)
@@ -19,7 +22,11 @@ public:
 
   void serveStatic(const char *uri, const char *path,
                    const char *cache_header = NULL) {
+#if defined(USE_LITTLEFS)
     ESP8266WebServer::serveStatic(uri, LittleFS, path, cache_header);
+#else
+    ESP8266WebServer::serveStatic(uri, SPIFFS, path, cache_header);
+#endif
   }
 };
 #elif defined(ESP32)
@@ -30,9 +37,12 @@ public:
 
   void serveStatic(const char *uri, const char *path,
                    const char *cache_header = NULL) {
-    // WebServer::serveStatic(uri, LittleFS, path, cache_header);
+#if defined(USE_LITTLEFS)
+    WebServer::serveStatic(uri, LittleFS, path, cache_header);
+#else
     String spath = "/" + String(path);
     WebServer::serveStatic(uri, SPIFFS, spath.c_str(), cache_header);
+#endif
   }
   /*
     void serveStatic(const char *uri, FS &fs, const char *path,

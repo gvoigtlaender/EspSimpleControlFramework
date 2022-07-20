@@ -201,7 +201,7 @@ void CConfiguration::reset() {
 
 void CConfiguration::load() {
   CheckFreeHeap();
-#if defined(ESP8266)
+#if defined(USE_LITTLEFS)
   if (LittleFS.exists(m_sConfigFile.c_str())) {
     CControl::Log(CControl::I, "LittleFS.exist() sucess, reading config file");
     File configFile = LittleFS.open(m_sConfigFile.c_str(), "r");
@@ -347,7 +347,7 @@ void CConfiguration::save() {
 #if ARDUINOJSON_VERSION_MAJOR == 5
   json.printTo(Serial);
   Serial.println("");
-#if defined(ESP8266)
+#if defined(USE_LITTLEFS)
   File configFile = LittleFS.open("/config.json", "w");
 #else
   File configFile = SPIFFS.open("/config.json", "w");
@@ -362,7 +362,11 @@ void CConfiguration::save() {
   serializeJson(doc, Serial);
   Serial.println("");
   CheckFreeHeap();
+#if defined(USE_LITTLEFS)
   File configFile = LittleFS.open("/config.json", "w");
+#else
+  File configFile = SPIFFS.open("/config.json", "w");
+#endif
   if (!configFile) {
     CControl::Log(CControl::I, "failed to open config file for writing");
   }

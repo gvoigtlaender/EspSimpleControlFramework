@@ -2,9 +2,9 @@
 #include <CBase.h>
 #include <CControl.h>
 #include <FS.h>
-#if defined(ESP8266)
+#if defined(USE_LITTLEFS)
 #include <LittleFS.h>
-#elif defined(ESP32)
+#else
 #include <SPIFFS.h>
 #endif
 #include <stdio.h>
@@ -54,7 +54,7 @@ char szInputType_Range[] = "range";
 char szInputPattern_HHMM[] = " pattern=\"^\\d{2}:\\d{2}(:\\d{2})?$\"";
 char szInputPattern_MMSS[] = " pattern=\"\\d{2}:\\d{2}\"";
 
-#if USE_DISPLAY >= 1
+#if defined(USE_DISPLAY)
 CDisplayLine *g_HeapDisplayLine = NULL;
 #endif
 
@@ -69,7 +69,7 @@ void CheckFreeHeap() {
     char szTmp[64];
     snprintf(szTmp, sizeof(szTmp), "Heap:%u (%u)", g_uiHeap, g_uiHeapMin);
     CControl::Log(CControl::D, szTmp);
-#if USE_DISPLAY >= 1
+#if defined(USE_DISPLAY)
     if (g_HeapDisplayLine != NULL)
       g_HeapDisplayLine->Line(szTmp);
 #endif

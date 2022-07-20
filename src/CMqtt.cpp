@@ -1,7 +1,7 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
 #include "CMqtt.h"
 
-#if USE_DISPLAY == 1
+#if defined(USE_DISPLAY)
 #include <CDisplay.h>
 #endif
 
@@ -138,7 +138,7 @@ void CMqtt::control(bool bForce /*= false*/) {
       break;
     }
     _log2(I, "W4Wifi");
-#if USE_DISPLAY == 1
+#if defined(USE_DISPLAY)
     if (m_pDisplayLine)
       m_pDisplayLine->Line("Mqtt w4wifi");
 #endif
@@ -154,7 +154,7 @@ void CMqtt::control(bool bForce /*= false*/) {
     _log(I, "Connecting to %s as %s",
          m_pCfgMqttServer->m_pTValue->m_Value.c_str(),
          this->m_sClientName.c_str());
-#if USE_DISPLAY == 1
+#if defined(USE_DISPLAY)
     if (m_pDisplayLine)
       m_pDisplayLine->Line("Mqtt connecting");
 #endif
@@ -189,7 +189,7 @@ void CMqtt::control(bool bForce /*= false*/) {
     if (m_pMqttClient->connected()) {
       _log2(I, "connected");
       m_bConnected = true;
-#if USE_DISPLAY == 1
+#if defined(USE_DISPLAY)
       if (m_pDisplayLine)
         m_pDisplayLine->Line("Mqtt " + m_sClientName);
 #endif
@@ -231,7 +231,7 @@ void CMqtt::publish() {
     CMqttValue *pValue = *it;
     publish_value(pValue);
   }
-#if USE_DISPLAY == 1
+#if defined(USE_DISPLAY)
   if (m_pDisplayLine)
     m_pDisplayLine->Line("Mqtt published");
 #endif

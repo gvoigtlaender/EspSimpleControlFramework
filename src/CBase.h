@@ -61,7 +61,7 @@ extern char szInputPattern_MMSS[];
 extern uint32_t g_uiHeapMin;
 extern uint32_t g_uiHeap;
 
-#if USE_DISPLAY >= 1
+#if defined(USE_DISPLAY)
 #include <CDisplayLine.h>
 extern CDisplayLine *g_HeapDisplayLine;
 #endif

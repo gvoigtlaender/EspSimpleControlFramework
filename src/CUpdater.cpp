@@ -2,13 +2,15 @@
 #include "CControl.h"
 #include <FS.h>
 #include <WiFiUdp.h>
-#if defined(ESP8266)
+#if defined(USE_LITTLEFS)
 #include <LittleFS.h>
-#include <flash_hal.h>
 #elif defined(ESP32)
 #include <SPIFFS.h>
 #endif
-
+#if defined(ESP8266)
+#include <flash_hal.h>
+#else
+#endif
 static const char successResponse1[] PROGMEM =
     "<META http-equiv=\"refresh\" content=\"15;URL=/\">Update Success! "
     "Rebooting...";
@@ -61,9 +63,9 @@ void CUpdater::_setUpdaterError() {
 void CUpdater::OnGet_filelist() {
   CControl::Log(CControl::I, "CUpdater::OnGet_filelist");
 
-#if defined(ESP8266)
+#if defined(USE_LITTLEFS)
   File root = LittleFS.open("/", "r");
-#elif defined(ESP32)
+#else
   File root = SPIFFS.open("/", "r");
 #endif
   File file = root.openNextFile();
@@ -175,10 +177,10 @@ void CUpdater::OnUpload2() {
     if (!filename.startsWith("/"))
       filename = "/" + filename;
     CControl::Log(CControl::I, "handleFileUpload Name: %s", filename.c_str());
-#if defined(ESP8266)
+#if defined(USE_LITTLEFS)
     fsUploadFile =
         LittleFS.open(filename, "w"); // Open the file for writing in SPIFFS
-#elif defined(ESP32)
+#else
     fsUploadFile =
         SPIFFS.open(filename, "w"); // Open the file for writing in SPIFFS
 #endif
@@ -207,9 +209,9 @@ void CUpdater::OnDelete() {
                   m_pServer->arg(n).c_str());
   }
 
-#if defined(ESP8266)
+#if defined(USE_LITTLEFS)
   LittleFS.remove(m_pServer->argName(0).c_str());
-#elif defined(ESP32)
+#else
   SPIFFS.remove(m_pServer->argName(0).c_str());
 #endif
   m_pServer->send(200, "text/html",

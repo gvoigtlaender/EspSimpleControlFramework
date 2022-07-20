@@ -1,6 +1,6 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
 #include "CWifi.h"
-#if USE_DISPLAY == 1
+#if defined(USE_DISPLAY)
 #include <CDisplay.h>
 #endif
 
@@ -82,7 +82,7 @@ bool CWifi::setup() {
   // WiFi.mode(WIFI_STA);
   WiFi.begin(m_pWifiSsid->GetValue().c_str(),
              m_pWifiPassword->GetValue().c_str());
-#if USE_DISPLAY == 1
+#if defined(USE_DISPLAY)
   if (m_pDisplayLine)
     m_pDisplayLine->Line("Wifi Connecting");
 #endif
@@ -116,7 +116,7 @@ void CWifi::control(bool bForce /*= false*/) {
       _log(I, "Connected to %s IP address: %s, rssi: %lddb, took %ldms",
            m_pWifiSsid->GetValue().c_str(), WiFi.localIP().toString().c_str(),
            WiFi.RSSI(), CWifi::m_uiProcessTime);
-#if USE_DISPLAY == 1
+#if defined(USE_DISPLAY)
       if (m_pDisplayLine)
         m_pDisplayLine->Line(WiFi.localIP().toString().c_str());
 #endif
