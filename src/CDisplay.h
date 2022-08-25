@@ -36,8 +36,9 @@ public:
     return pLine;
   }
 
-  CXbm *AddXbm(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h) {
-    CXbm *pXbm = new CXbm(x, y, w, h);
+  CXbm *AddXbm(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h,
+               uint16_t uiUpdateIntervalS = 0) {
+    CXbm *pXbm = new CXbm(x, y, w, h, uiUpdateIntervalS);
     m_Xbms.push_back(pXbm);
     this->_log(I, "AddXbm(%u, %u, %u, %u) s=%u, w/8=%u", x, y, w, h,
                pXbm->m_uiS, (uint8_t)(w / 8));
@@ -202,14 +203,20 @@ public:
     CXbm *pXbm;
     for (uint8_t n = 0; n < m_Xbms.size(); n++) {
       pXbm = m_Xbms[n];
-      m_pDisplay->drawXBM(pXbm->m_uiX, pXbm->m_uiY, pXbm->m_uiW, pXbm->m_uiH,
-                          pXbm->m_pBuffer);
+      drawXBM(pXbm->m_uiX, pXbm->m_uiY, pXbm->m_uiW, pXbm->m_uiH,
+              pXbm->m_pBuffer);
     }
     m_pDisplay->sendBuffer();
   }
 
   u8g2_uint_t drawUTF8(u8g2_uint_t x, u8g2_uint_t y, const char *s) {
+    // _log(I, "drawUTF8(%u, %u, %s)", x, y, s);
     return m_pDisplay->drawStr(x, y, s);
+  }
+  void drawXBM(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h,
+               const uint8_t *bitmap) {
+    // _log(I, "drawXBM(%u, %u, %u, %u)", x, y, w, h);
+    m_pDisplay->drawXBM(x, y, w, h, bitmap);
   }
 
   U8G2 *GetU8G2() { return m_pDisplay; }
