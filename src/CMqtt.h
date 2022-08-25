@@ -74,6 +74,7 @@ public:
     delete m_pCfgMqttServer;
     delete m_pCfgMqttUser;
     delete m_pCfgMqttPasswd;
+    delete m_pCfgMqttPublishIntervalS;
   }
 
   void setClientName(const char *szClientName) { m_sClientName = szClientName; }
@@ -99,6 +100,9 @@ protected:
   static list<CMqttValue *> ms_Values;
   bool m_bConnected;
   bool m_bConfigValid;
+
+  CConfigKey<int> *m_pCfgMqttPublishIntervalS;
+  uint32_t m_uiPublishTime = 0;
 
   CConfigKey<std::string> *m_pCfgMqttServer;
   CConfigKey<std::string> *m_pCfgMqttUser;
