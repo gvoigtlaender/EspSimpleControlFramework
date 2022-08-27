@@ -43,7 +43,7 @@ public:
 
     if (m_pIna219->success()) {
       if (m_pXbm && millis() > m_pXbm->m_uiTimer) {
-        const double dMax = 120;
+        const double dMax = 50;
         const double dOffs = -5;
         uint8_t y = m_pXbm->m_uiH - (m_pFilterCurrent->m_OutputValue - dOffs) /
                                         (dMax - dOffs) * m_pXbm->m_uiH;
@@ -57,8 +57,9 @@ public:
 
       char szTmp[64];
       if (m_pDisplayLine) {
-        snprintf(szTmp, sizeof(szTmp), "I:%.1fmA i:%.1fmA U=%.1fV", current_mA,
-                 m_pFilterCurrent->m_OutputValue, busvoltage_V);
+        snprintf(szTmp, sizeof(szTmp), "I:%.1f i:%.1f U=%.1f P=%.0f",
+                 current_mA, m_pFilterCurrent->m_OutputValue, busvoltage_V,
+                 power_mW);
         m_pDisplayLine->Line(szTmp);
       }
 

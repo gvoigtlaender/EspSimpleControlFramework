@@ -133,6 +133,7 @@ void CMqtt::control(bool bForce /*= false*/) {
     eWaitForPublish,
     ePublish,
     eDone,
+    eReconnect,
     eError,
   };
 
@@ -227,18 +228,33 @@ void CMqtt::control(bool bForce /*= false*/) {
     if (!m_pMqttClient->loop()) {
       _log(E, "Connection lost. WiFi.status()=%d - reboot!",
            (int)WiFi.status());
-      m_pMqttClient->disconnect();
-      ESP.restart();
+      if (++m_uiFailCnt < 5) {
+        _log(W, "Trying to reconnect");
+        m_pMqttClient->disconnect();
+        this->m_nState = eSetup;
+      } else {
+        _log(E, "give up, restarting");
+        ESP.restart();
+      }
       break;
     }
 
     if (!isConnected()) {
       _log(E, "MQTT Connection lost. WiFi.status()=%d - reboot!",
            (int)WiFi.status());
-      m_pMqttClient->disconnect();
-      ESP.restart();
+      if (++m_uiFailCnt < 5) {
+        _log(W, "Trying to reconnect");
+        m_pMqttClient->disconnect();
+        this->m_nState = eSetup;
+      } else {
+        _log(E, "give up, restarting");
+        ESP.restart();
+      }
       break;
     }
+
+    if (m_uiFailCnt > 0)
+      m_uiFailCnt = 0;
 
     if (millis() > m_uiPublishTime) {
       publish();
