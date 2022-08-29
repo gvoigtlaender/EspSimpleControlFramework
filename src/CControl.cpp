@@ -5,10 +5,6 @@
 // static
 std::vector<CControl *> CControl::ms_Instances;
 // static
-int8_t CControl::ms_ulValuesPending = 0;
-// static
-int8_t CControl::ms_ulProcessPending = 0;
-// static
 bool CControl::ms_bNetworkConnected = false;
 // static
 bool CControl::ms_bTimeUpdated = false;

@@ -87,8 +87,6 @@ CMqtt::CMqtt(const string &sServerIp /* = "" */,
       m_pMqttClient(NULL), m_bConnected(false), m_bConfigValid(false) {
   ms_pMqtt = this;
   m_pMqttClient = new PubSubClient(m_WifiClient);
-  ValuePending();
-  ProcessPending();
 
   m_pCfgMqttServer = new CConfigKey<string>("Mqtt", "ServerIp", "");
   m_pCfgMqttUser = new CConfigKey<string>("Mqtt", "User", "");
@@ -130,7 +128,6 @@ void CMqtt::control(bool bForce /*= false*/) {
     eSetup,
     eFailDelay,
     eConnect,
-    eWaitForPublish,
     ePublish,
     eDone,
     eReconnect,
@@ -176,7 +173,7 @@ void CMqtt::control(bool bForce /*= false*/) {
       _log(I, "W4Connected");
       this->m_nState = eConnect;
     } else {
-      _log(E, "Connect failed");
+      _log(E, "Connect failed, rc=%d", m_pMqttClient->state());
       if (++m_uiFailCnt < 5)
         this->m_nState = eFailDelay;
       else
@@ -200,16 +197,6 @@ void CMqtt::control(bool bForce /*= false*/) {
       if (m_pDisplayLine)
         m_pDisplayLine->Line("Mqtt " + m_sClientName);
 #endif
-      ValueDone();
-      this->m_nState = eWaitForPublish;
-      _log2(D, "WaitForPublish");
-      break;
-    }
-
-    break;
-
-  case eWaitForPublish:
-    if (CControl::ms_ulValuesPending == 0) {
       this->m_nState = ePublish;
       _log2(I, "Publish");
     }
@@ -219,15 +206,14 @@ void CMqtt::control(bool bForce /*= false*/) {
     m_pMqttClient->loop();
     publish();
     subscribe();
-    ProcessDone();
     this->m_nState = eDone;
     m_uiPublishTime = millis() + m_pCfgMqttPublishIntervalS->GetValue() * 1000;
     break;
 
   case eDone:
     if (!m_pMqttClient->loop()) {
-      _log(E, "Connection lost. WiFi.status()=%d - reboot!",
-           (int)WiFi.status());
+      _log(E, "Connection lost. WiFi.status()=%d, rc=%d - reboot!",
+           (int)WiFi.status(), m_pMqttClient->state());
       if (++m_uiFailCnt < 5) {
         _log(W, "Trying to reconnect");
         m_pMqttClient->disconnect();
@@ -240,8 +226,8 @@ void CMqtt::control(bool bForce /*= false*/) {
     }
 
     if (!isConnected()) {
-      _log(E, "MQTT Connection lost. WiFi.status()=%d - reboot!",
-           (int)WiFi.status());
+      _log(E, "MQTT Connection lost. WiFi.status()=%d, rc=%d - reboot!",
+           (int)WiFi.status(), m_pMqttClient->state());
       if (++m_uiFailCnt < 5) {
         _log(W, "Trying to reconnect");
         m_pMqttClient->disconnect();
@@ -263,6 +249,7 @@ void CMqtt::control(bool bForce /*= false*/) {
     break;
 
   case eError:
+    ESP.restart();
     break;
   }
 }
@@ -293,8 +280,12 @@ void CMqtt::publish_value(CMqttValue *pValue) {
     if (m_pMqttClient->publish(szKey, szValue, true)) {
       _log(D, "publish %s = %s", szKey, szValue);
     } else {
-      _log(E, "publish %s = %s FAILED, WiFi.status()=%d", szKey, szValue,
-           (int)WiFi.status());
+      _log(E,
+           "publish %s = %s FAILED, WiFi.status()=%d, MQTT.connected()=%s, "
+           "rc=%d",
+           szKey, szValue, (int)WiFi.status(),
+           m_pMqttClient->connected() ? "true" : "false",
+           m_pMqttClient->state());
     }
   } catch (...) {
     _log2(E, "publish exception");

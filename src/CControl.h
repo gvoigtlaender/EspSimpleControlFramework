@@ -150,23 +150,6 @@ public:
     }
   }
 
-  void ValuePending() {
-    // _log("ValuePending()");
-    ms_ulValuesPending++;
-  }
-  void ValueDone() {
-    // _log("ValueDone()");
-    ms_ulValuesPending--;
-  }
-  void ProcessPending() {
-    // _log("ProcessPending()");
-    ms_ulProcessPending++;
-  }
-  void ProcessDone() {
-    // _log("ProcessDone()");
-    ms_ulProcessPending--;
-  }
-
   CMqttValue *CreateMqttValue(const std::string &sName,
                               const std::string &sValue = "");
   CMqttCmd *CreateMqttCmd(const char *szTopic);
@@ -202,8 +185,6 @@ protected:
 #if defined(USE_DISPLAY)
   CDisplayLine *m_pDisplayLine = NULL;
 #endif
-  static int8_t ms_ulValuesPending;
-  static int8_t ms_ulProcessPending;
   static bool ms_bNetworkConnected;
   static bool ms_bTimeUpdated;
 
