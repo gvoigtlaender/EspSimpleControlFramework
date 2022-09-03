@@ -216,7 +216,7 @@ void CMqtt::control(bool bForce /*= false*/) {
            (int)WiFi.status(), m_pMqttClient->state());
       if (++m_uiFailCnt < 5) {
         _log(W, "Trying to reconnect");
-        m_pMqttClient->disconnect();
+        disconnect();
         this->m_nState = eSetup;
       } else {
         _log(E, "give up, restarting");
@@ -230,7 +230,7 @@ void CMqtt::control(bool bForce /*= false*/) {
            (int)WiFi.status(), m_pMqttClient->state());
       if (++m_uiFailCnt < 5) {
         _log(W, "Trying to reconnect");
-        m_pMqttClient->disconnect();
+        disconnect();
         this->m_nState = eSetup;
       } else {
         _log(E, "give up, restarting");

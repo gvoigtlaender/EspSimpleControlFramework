@@ -92,6 +92,12 @@ public:
   bool isConnected() { return m_bConnected; }
   bool isRetryConnect() { return !m_bConnected && m_uiFailCnt < 5; }
 
+  void disconnect() {
+    _log(I, "disconnect()");
+    m_bConnected = false;
+    m_pMqttClient->disconnect();
+  }
+
 protected:
   // string m_sServerIp;
   string m_sClientName;
