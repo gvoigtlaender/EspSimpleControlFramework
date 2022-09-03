@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-const char FWK_VERSION_STRING[] = "0.0.22.0";
+const char FWK_VERSION_STRING[] = "0.0.23.0";
 
 //! defines return codes of state machines.
 /*!

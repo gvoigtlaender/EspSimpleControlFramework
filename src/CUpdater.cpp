@@ -6,6 +6,8 @@
 #include <LittleFS.h>
 #elif defined(ESP32)
 #include <SPIFFS.h>
+#include <StreamString.h>
+#include <Update.h>
 #endif
 #if defined(ESP8266)
 #include <flash_hal.h>
@@ -51,11 +53,12 @@ CUpdater::CUpdater(CWebServer *pServer, const char *szPath,
 }
 
 void CUpdater::_setUpdaterError() {
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ESP32)
   Update.printError(Serial);
   StreamString str;
   Update.printError(str);
   _updaterError = str.c_str();
+  CControl::Log(CControl::E, "UpdaterError %s", str.c_str());
 #elif defined(ESP32)
 #endif
 }
@@ -103,7 +106,7 @@ void CUpdater::OnGet_filelist() {
 }
 void CUpdater::OnPost() {
   CControl::Log(CControl::I, "CUpdater::OnPost");
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ESP32)
   if (Update.hasError()) {
     m_pServer->send(200, F("text/html"),
                     String(F("Update error: ")) + _updaterError);
@@ -166,6 +169,44 @@ void CUpdater::OnPost2() {
   delay(0);
   CheckFreeHeap();
 #elif defined(ESP32)
+  if (upload.status == UPLOAD_FILE_START) {
+    _updaterError.clear();
+    Serial.setDebugOutput(true);
+
+    CControl::Log(CControl::I, "Update: %s", upload.filename.c_str());
+    if (upload.name == "filesystem") {
+      if (!Update.begin(SPIFFS.totalBytes(),
+                        U_SPIFFS)) { // start with max available size
+        _setUpdaterError();
+      }
+    } else {
+      uint32_t maxSketchSpace =
+          (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+      if (!Update.begin(maxSketchSpace,
+                        U_FLASH)) { // start with max available size
+        _setUpdaterError();
+      }
+    }
+  } else if (upload.status == UPLOAD_FILE_WRITE && !_updaterError.length()) {
+    CControl::Log(CControl::I, " write += %lu", upload.currentSize);
+    if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+      _setUpdaterError();
+    }
+  } else if (upload.status == UPLOAD_FILE_END && !_updaterError.length()) {
+    if (Update.end(true)) { // true to set the size to the current
+                            // progress
+      CControl::Log(CControl::I, "Update Success: %u\nRebooting...\n",
+                    upload.totalSize);
+    } else {
+      _setUpdaterError();
+    }
+    Serial.setDebugOutput(false);
+  } else if (upload.status == UPLOAD_FILE_ABORTED) {
+    Update.end();
+    CControl::Log(CControl::I, "Update was aborted");
+  }
+  delay(0);
+  CheckFreeHeap();
 #endif
 }
 
