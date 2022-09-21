@@ -15,6 +15,8 @@ using std::string;
 #include "CConfigValue.h"
 #include "CControl.h"
 
+class CMqttValue;
+
 class CWifi : public CControl {
 public:
   explicit CWifi(const char *szAppName, string sSsid = "",
@@ -30,9 +32,10 @@ public:
   // string m_sPassword;
   // string m_sStaticIp;
 
-  CConfigKey<std::string> *m_pWifiSsid;
-  CConfigKey<std::string> *m_pWifiPassword;
-  CConfigKey<std::string> *m_pWifiStaticIp;
+  CConfigKey<std::string> *m_pWifiSsid = NULL;
+  CConfigKey<std::string> *m_pWifiPassword = NULL;
+  CConfigKey<std::string> *m_pWifiStaticIp = NULL;
+  CMqttValue *m_pMqttIP = NULL;
   uint32_t m_uiProcessTime = 0;
 
 private:

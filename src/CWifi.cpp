@@ -4,6 +4,8 @@
 #include <CDisplay.h>
 #endif
 
+#include <CMqtt.h>
+
 CWifi::CWifi(const char *szAppName, string sSsid /*= ""*/,
              string sPassword /*= ""*/, string sStaticIp /*= ""*/)
     : CControl("CWifi"), /*m_sAppName(szAppName)*/ m_pszAppName(szAppName) {
@@ -12,6 +14,8 @@ CWifi::CWifi(const char *szAppName, string sSsid /*= ""*/,
   // m_pWifiPassword->m_pValue->m_sInputType = "password";
   m_pWifiPassword->m_pValue->m_pcsInputType = szInputType_Password;
   m_pWifiStaticIp = new CConfigKey<std::string>("Wifi", "StaticIp", sStaticIp);
+
+  m_pMqttIP = CControl::CreateMqttValue("IP", "");
 }
 
 bool CWifi::setup() {
@@ -120,6 +124,7 @@ void CWifi::control(bool bForce /*= false*/) {
       if (m_pDisplayLine)
         m_pDisplayLine->Line(WiFi.localIP().toString().c_str());
 #endif
+      m_pMqttIP->setValue(WiFi.localIP().toString().c_str());
 
       this->m_nState = 2;
       break;
