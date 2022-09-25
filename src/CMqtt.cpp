@@ -29,11 +29,10 @@ CMqttValue::CMqttValue(const string &sPath, const string &sValue /*= ""*/)
 }
 
 void CMqttValue::setValue(const string &sValue, bool bForce /*= false*/) {
-  /*
-  if (m_sValue == sValue && !bForce &&
-      CMqtt::ms_pMqtt->m_pCfgMqttPublishIntervalS->GetValue() == 0)
+
+  if (m_sValue == sValue && !bForce)
     return;
-  */
+
   m_sValue = sValue;
   m_bPublished = false;
   // return;
@@ -51,8 +50,7 @@ void CMqttValue::setValue(const string &sValue, bool bForce /*= false*/) {
   }
 */
 #endif
-  if (CMqtt::ms_pMqtt != NULL && CMqtt::ms_pMqtt->m_bConnected &&
-      CMqtt::ms_pMqtt->m_pCfgMqttPublishIntervalS->GetValue() == 0)
+  if (CMqtt::ms_pMqtt != NULL && CMqtt::ms_pMqtt->m_bConnected)
     CMqtt::ms_pMqtt->publish_value(this);
 }
 
@@ -228,7 +226,7 @@ void CMqtt::control(bool bForce /*= false*/) {
     if (!isConnected()) {
       _log(E, "MQTT Connection lost. WiFi.status()=%d, rc=%d - reboot!",
            (int)WiFi.status(), m_pMqttClient->state());
-      if (++m_uiFailCnt < 5) {
+      if (++m_uiFailCnt < 5 || !m_bAllowRestartOnFailure) {
         _log(W, "Trying to reconnect");
         disconnect();
         this->m_nState = eSetup;
@@ -266,7 +264,7 @@ void CMqtt::publish() {
 #endif
 }
 void CMqtt::publish_value(CMqttValue *pValue) {
-  if (pValue->m_bPublished || !m_bConnected || !m_bConfigValid)
+  if (!m_bConnected || !m_bConfigValid)
     return;
   // return;
   pValue->m_bPublished = true;

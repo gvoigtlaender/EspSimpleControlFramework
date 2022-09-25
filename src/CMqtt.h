@@ -98,6 +98,10 @@ public:
     m_pMqttClient->disconnect();
   }
 
+  void AllowRestartOnFailure(bool bAllowRestartOnFailure) {
+    m_bAllowRestartOnFailure = bAllowRestartOnFailure;
+  }
+
 protected:
   // string m_sServerIp;
   string m_sClientName;
@@ -106,6 +110,7 @@ protected:
   static list<CMqttValue *> ms_Values;
   bool m_bConnected;
   bool m_bConfigValid;
+  bool m_bAllowRestartOnFailure = true;
 
   CConfigKey<int> *m_pCfgMqttPublishIntervalS;
   uint32_t m_uiPublishTime = 0;
