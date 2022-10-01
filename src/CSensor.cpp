@@ -42,10 +42,12 @@ void CSensorSingle::display() {
   char szTmp[64];
   snprintf(szTmp, sizeof(szTmp), "T: %02.1f°C", m_Temperature.m_OutputValue);
   this->_log(I, szTmp);
+#if defined(USE_DISPLAY)
   if (m_pDisplayLine != NULL) {
     string s = string(szTmp) + string("%");
     m_pDisplayLine->Line(s.c_str());
   }
+#endif
 }
 
 void CSensorSingle::publish() {

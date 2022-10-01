@@ -240,14 +240,15 @@ void CMqtt::control(bool bForce /*= false*/) {
     if (m_uiFailCnt > 0)
       m_uiFailCnt = 0;
 
-    if (millis() > m_uiPublishTime) {
+    if (millis() > m_uiPublishTime &&
+        m_pCfgMqttPublishIntervalS->GetValue() > 0) {
       publish();
       m_uiPublishTime += m_pCfgMqttPublishIntervalS->GetValue() * 1000;
     }
     break;
 
   case eError:
-    ESP.restart();
+    // ESP.restart();
     break;
   }
 }

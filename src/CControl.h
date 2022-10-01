@@ -9,7 +9,7 @@ extern char VERSION_STRING[];
 extern char APPNAME[];
 
 #if defined(USE_DISPLAY)
-#include <CDisplayLine.h>
+class CDisplayLine;
 #endif
 
 #include <CBase.h>
@@ -40,7 +40,6 @@ public:
         ,
         m_pDisplayLine(NULL)
 #endif
-  //#endif
   {
     // CControl::Log("Instance %s", sInstance.c_str());
     ms_Instances.push_back(this);
@@ -170,10 +169,7 @@ public:
                                                 int nMin, int nMax);
 
 #if defined(USE_DISPLAY)
-  void SetDisplayLine(CDisplayLine *pLine) {
-    _log(I, "SetDisplayLine(%x)", pLine);
-    m_pDisplayLine = pLine;
-  }
+  void SetDisplayLine(CDisplayLine *pLine) { m_pDisplayLine = pLine; }
 #endif
 
 protected:
