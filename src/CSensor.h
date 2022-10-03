@@ -55,8 +55,10 @@ public:
   bool ReadValues() override {
     float temp = readTemperature();
     float hum = readHumidity();
-    if (!isnan(temp) && !isnan(hum)) {
+    if (!isnan(temp)) {
       m_Temperature.Filter(temp);
+    }
+    if (!isnan(hum)) {
       m_Humidity.Filter(hum);
     }
     if (m_Temperature.m_nSize > 2)

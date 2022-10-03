@@ -24,7 +24,11 @@ void CSensorBase::control(bool bForce) {
     m_nState = eUpdate;
 
   case eUpdate:
+#if defined(ESP8266)
     this->CControl::m_uiTime += 2000;
+#elif defined(ESP32)
+    this->CControl::m_uiTime += 500;
+#endif
     if (ReadValues()) {
       publish();
       // m_nState = eEnd;
