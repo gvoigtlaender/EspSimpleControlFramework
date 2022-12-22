@@ -74,13 +74,14 @@ public:
       snprintf(szTmp, sizeof(szTmp), "%.8f", power_mW);
       m_pMqtt_Power->setValue(szTmp);
 
-      if (++nCnt % 50 == 0) {
+      if (nCnt % 50 == 0) {
         _log(D, "Bus Voltage:   %.1fV", busvoltage_V);
         _log(D, "Shunt Voltage: %.1fmV", shuntvoltage_mV);
         _log(D, "Load Voltage:  %.1fV", loadvoltage_V);
         _log(D, "Current:       %.1fmA", current_mA);
         _log(D, "Power:         %.8fmW", power_mW);
       }
+      nCnt++;
     } else
       _log(E, "Communication Error");
   }

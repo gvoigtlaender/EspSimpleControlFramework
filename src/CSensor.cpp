@@ -7,6 +7,7 @@ bool CSensorBase::setup() {
   // ValuePending();
   _log(I, "setup");
   CreateMqttValues();
+  this->m_uiTime = millis();
   return true;
 }
 
@@ -21,6 +22,7 @@ void CSensorBase::control(bool bForce) {
   case eWaitForDelay:
     if (millis() < this->CControl::m_uiTime)
       break;
+    _log(D, "eUpdate");
     m_nState = eUpdate;
 
   case eUpdate:
@@ -35,6 +37,7 @@ void CSensorBase::control(bool bForce) {
     }
     display();
     m_nState = eWaitForDelay;
+    _log(D, "next cycle: %lums", this->CControl::m_uiTime);
     break;
 
   case eEnd:
@@ -81,4 +84,11 @@ void CSensorMulti::publish() {
     pChannel->m_pMqttTemp->setValue(
         std::to_string(pChannel->m_Temperature.m_OutputValue));
   }
+}
+
+bool CSensorMulti::IsPublished() {
+  if (m_Sensors.empty())
+    return true;
+
+  return m_Sensors[0]->m_pMqttTemp->IsPublished();
 }

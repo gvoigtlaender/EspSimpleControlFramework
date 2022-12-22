@@ -61,9 +61,12 @@ public:
     if (!isnan(hum)) {
       m_Humidity.Filter(hum);
     }
+    /*
     if (m_Temperature.m_nSize > 2)
       return true;
     return false;
+    */
+    return true;
   }
 
   virtual float readTemperature() = 0;
@@ -148,14 +151,15 @@ public:
   void CreateMqttValues() override {
     for (uint8_t i = 0; i < m_Sensors.size(); i++) {
       m_Sensors[i]->m_pMqttTemp =
-          CreateMqttValue("Temperature\\" + std::to_string(i));
+          CreateMqttValue(std::to_string(i) + "/Temperature");
       // m_Sensors[i]->m_pMqttHum =
-      //    CreateMqttValue("Humidity\\" + std::to_string(i));
+      //    CreateMqttValue(std::to_string(i) + "/Humidity");
     }
   }
 
   virtual void display() override;
   virtual void publish() override;
+  virtual bool IsPublished() override;
 
   void SetDisplayLine(uint8_t n, CDisplayLine *pDL) {
     _log(I, "SetDisplayLine(%u, %x)", n, pDL);
@@ -202,16 +206,17 @@ public:
           static_cast<CSensorChannelDS18B20 *>(m_Sensors[nCnt]);
       float t = m_pDallas->getTempC(pSensor->m_Addr);
       pSensor->m_Temperature.Filter(t);
-      _log(I, "%u Temp: %.1f %s", nCnt, t, pSensor->m_szAddr);
+      _log(I, "%u Temp: %.1f %s %.1f", nCnt, t, pSensor->m_szAddr,
+           pSensor->m_Temperature.m_OutputValue);
     }
 
     m_pDallas->requestTemperatures();
     stop = millis();
 
-    if ((stop - start) > 100)
-      _log(W, "took %lums", stop - start);
+    // if ((stop - start) > 100)
+    _log(W, "ReadValues() took %lums", stop - start);
 
-    return (m_Sensors[0]->m_Temperature.m_nSize > 2);
+    return true; //(m_Sensors[0]->m_Temperature.m_nSize > 2);
   }
 
 protected:
