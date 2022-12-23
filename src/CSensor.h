@@ -169,6 +169,12 @@ public:
   }
 
   vector<CSensorChannel *> m_Sensors;
+  double GetTemperature(uint8_t n) {
+    if (n < m_Sensors.size()) {
+      return m_Sensors[n]->m_Temperature.m_OutputValue;
+    }
+    return 0.0;
+  }
 };
 class CSensorDS18B20 : public CSensorMulti {
 public:
