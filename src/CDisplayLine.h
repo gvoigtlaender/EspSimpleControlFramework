@@ -14,7 +14,7 @@ public:
 
   virtual void Line(const std::string &sLineContent) {
     m_sLine = sLineContent;
-    if (sLineContent.length() <= m_uiNoOfColumns) {
+    if (sLineContent.length() <= m_uiNoOfColumns || true) {
       m_iScrollIdx = 0;
       m_sLineToDraw = m_sLine; // .substr(m_iScrollIdx, m_uiNoOfColumns);
     } else
@@ -54,6 +54,7 @@ public:
     m_sLine = sLineContent;
     m_sLineToDraw = m_sLine;
     m_iScrollIdx = 0;
+    m_uiXOffset = 0;
     if (sLineContent.length() > m_uiNoOfColumns) {
       m_uiXOffset = m_nWidth;
       m_iScrollIdx = 0;

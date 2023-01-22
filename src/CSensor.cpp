@@ -51,8 +51,7 @@ void CSensorSingle::display() {
   this->_log(I, szTmp);
 #if defined(USE_DISPLAY)
   if (m_pDisplayLine != NULL) {
-    string s = string(szTmp) + string("%");
-    m_pDisplayLine->Line(s.c_str());
+    m_pDisplayLine->Line(szTmp);
   }
 #endif
 }
@@ -69,10 +68,9 @@ void CSensorMulti::display() {
     CSensorChannel *pChannel = m_Sensors[i];
     if (pChannel->m_pDisplayLine != NULL) {
       char szTmp[64];
-      snprintf(szTmp, sizeof(szTmp), "T: %02.1f°C",
+      snprintf(szTmp, sizeof(szTmp), "%02.1fC",
                pChannel->m_Temperature.m_OutputValue);
-      string s = string(szTmp) + string("%");
-      pChannel->m_pDisplayLine->Line(s.c_str());
+      pChannel->m_pDisplayLine->Line(szTmp);
       this->_log(I, szTmp);
     }
   }
