@@ -156,7 +156,7 @@ protected:
   vector<CSensor *> m_Sensors;
 #endif
 
-  uint32_t start, stop;
+  uint32_t start = 0, stop = 0;
   uint8_t res = 12;
 };
 

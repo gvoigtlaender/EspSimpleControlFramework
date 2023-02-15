@@ -1,8 +1,9 @@
 #if !defined SRC_CXBM_H
 #define SRC_CXBM_H
+#include <CBase.h>
 #include <vector>
 using std::vector;
-class CXbm {
+class CXbm : CNonCopyable {
 private:
   CXbm() {}
 
@@ -23,8 +24,7 @@ public:
   void SetPixel(uint8_t x, uint8_t y) {
     if (x < m_uiW && y < m_uiH) {
       uint16_t nOffs = y * m_uiB + x / 8;
-      unsigned char &c = m_pBuffer[nOffs];
-      c |= (1 << (x % 8));
+      m_pBuffer[nOffs] |= (1 << (x % 8));
       // CControl::Log(CControl::I, "CXbm::SetPixel(%u, %u), nOffs=%lu ->
       // 0x%02X",                    x, y, nOffs, c);
     }
@@ -32,8 +32,7 @@ public:
   void DelPixel(uint8_t x, uint8_t y) {
     if (x < m_uiW && y < m_uiH) {
       uint16_t nOffs = y * m_uiB + x / 8;
-      unsigned char &c = m_pBuffer[nOffs];
-      c &= ~(1 << (x % 8));
+      m_pBuffer[nOffs] &= ~(1 << (x % 8));
       // CControl::Log(CControl::I, "CXbm::DelPixel(%u, %u), nOffs=%lu ->
       // 0x%02X",                    x, y, nOffs, c);
     }

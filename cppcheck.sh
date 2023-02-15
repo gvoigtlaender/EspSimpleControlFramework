@@ -1,2 +1,2 @@
 #!/bin/sh
-cppcheck --xml --enable=all --suppress=*:.pio/libdeps/esp12e/PubSubClient/* --suppress=*:.pio/libdeps/esp12e/Syslog/* -DUSE_DISPLAY=0 -DESP8266 --suppress=missingIncludeSystem:* --inline-suppr . 2> cppcheck.xml
+cppcheck --language=c++ --std=c++20 --suppress=noExplicitConstructor --suppress=unusedFunction --xml --enable=all  -DUSE_DISPLAY=0 -DESP32 --suppress=missingIncludeSystem:* --inline-suppr -i src/* 2> cppcheck.xml

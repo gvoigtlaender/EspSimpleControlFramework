@@ -249,7 +249,7 @@ protected:
     return s;
   }
 
-  uint32_t start, stop;
+  uint32_t start = 0, stop = 0;
   uint8_t res = 12;
 };
 

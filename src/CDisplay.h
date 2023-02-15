@@ -195,23 +195,22 @@ public:
     pLine->m_nCharWidth = m_pDisplay->getUTF8Width("X");
     pLine->m_nWidth = m_pDisplay->getWidth();
     pLine->m_uiNoOfColumns = pLine->m_nWidth / pLine->m_nCharWidth;
-    // _log(D, "AddLine(%u, %u, %u->%u", x, y, uiNoOfColumns, pLine->m_uiNoOfColumns);
+    // _log(D, "AddLine(%u, %u, %u->%u", x, y, uiNoOfColumns,
+    // pLine->m_uiNoOfColumns);
     m_Lines.push_back(pLine);
     return pLine;
   }
 
   void updateDisplay() override {
     m_pDisplay->clearBuffer();
-    CDisplayLineU8g2 *pLine;
     for (uint8_t n = 0; n < m_Lines.size(); n++) {
-      pLine = static_cast<CDisplayLineU8g2 *>(m_Lines[n]);
+      CDisplayLineU8g2 *pLine = static_cast<CDisplayLineU8g2 *>(m_Lines[n]);
       m_pDisplay->setFont(pLine->m_pFont);
       drawUTF8(pLine->m_uiX + pLine->m_uiXOffset, pLine->m_uiY,
                pLine->m_sLineToDraw.c_str());
     }
-    CXbm *pXbm;
     for (uint8_t n = 0; n < m_Xbms.size(); n++) {
-      pXbm = m_Xbms[n];
+      CXbm *pXbm = m_Xbms[n];
       drawXBM(pXbm->m_uiX, pXbm->m_uiY, pXbm->m_uiW, pXbm->m_uiH,
               pXbm->m_pBuffer);
     }
@@ -228,7 +227,7 @@ public:
     m_pDisplay->drawXBM(x, y, w, h, bitmap);
   }
 
-  U8G2 *GetU8G2() { return m_pDisplay; }
+  U8G2 *GetU8G2() override { return m_pDisplay; }
 
 protected:
   U8G2 *m_pDisplay;
