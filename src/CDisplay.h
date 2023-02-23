@@ -21,8 +21,8 @@ public:
     // m_sEmptyLine.resize(m_uiNoOfColumns, ' ');
   }
   virtual ~CDisplayBase() {
-    for (uint8_t n = 0; n < m_Lines.size(); n++) {
-      delete m_Lines[n];
+    for (auto &&line : m_Lines) {
+      delete line;
     }
     m_Lines.clear();
   }
@@ -70,8 +70,7 @@ public:
       break;
 
     case eScrollText:
-      for (uint8_t n = 0; n < m_Lines.size(); n++) {
-        CDisplayLine *pLine = m_Lines[n];
+      for (auto &&pLine : m_Lines) {
         pLine->Scroll();
         /*
         if (pLine->m_sLine.length() > pLine->m_uiNoOfColumns) {
@@ -96,9 +95,9 @@ public:
     if (nIdx >= m_Lines.size())
       return;
     CDisplayLine *pLine = m_Lines[nIdx];
-    pLine->Line(sLineContent);
     _log(I, "Line(%u, %s, %d, %s)", nIdx, sLineContent.c_str(),
          sLineContent.length(), pLine->m_sLineToDraw.c_str());
+    pLine->Line(sLineContent);
     this->m_uiScrollTime = millis() + m_uiScrollDelay;
   }
 
@@ -209,8 +208,7 @@ public:
       drawUTF8(pLine->m_uiX + pLine->m_uiXOffset, pLine->m_uiY,
                pLine->m_sLineToDraw.c_str());
     }
-    for (uint8_t n = 0; n < m_Xbms.size(); n++) {
-      CXbm *pXbm = m_Xbms[n];
+    for (auto &&pXbm : m_Xbms) {
       drawXBM(pXbm->m_uiX, pXbm->m_uiY, pXbm->m_uiW, pXbm->m_uiH,
               pXbm->m_pBuffer);
     }

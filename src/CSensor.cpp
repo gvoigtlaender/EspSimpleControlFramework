@@ -64,8 +64,7 @@ void CSensorSingle::publish() {
 }
 
 void CSensorMulti::display() {
-  for (uint8_t i = 0; i < m_Sensors.size(); i++) {
-    CSensorChannel *pChannel = m_Sensors[i];
+  for (auto &&pChannel : m_Sensors) {
     if (pChannel->m_pDisplayLine != NULL) {
       char szTmp[64];
       snprintf(szTmp, sizeof(szTmp), "%02.1fC",
@@ -77,8 +76,7 @@ void CSensorMulti::display() {
 }
 
 void CSensorMulti::publish() {
-  for (uint8_t i = 0; i < m_Sensors.size(); i++) {
-    CSensorChannel *pChannel = m_Sensors[i];
+  for (auto &&pChannel : m_Sensors) {
     pChannel->m_pMqttTemp->setValue(
         std::to_string(pChannel->m_Temperature.m_OutputValue));
   }

@@ -1,7 +1,7 @@
 /* Copyright 2021 Georg Voigtlaender gvoigtlaender@googlemail.com */
 #ifndef SRC_CCONTROL_H_
 #define SRC_CCONTROL_H_
-#include <Arduino.h>
+#include <Arduino.h> // NOLINT(clang-diagnostic-error)
 #include <string>
 #include <vector>
 
@@ -129,6 +129,8 @@ public:
       return 'W';
     case I:
       return 'I';
+    case D:
+      return 'D';
 
     default:
       return 'X';
@@ -143,6 +145,8 @@ public:
       return LOG_WARNING;
     case I:
       return LOG_INFO;
+    case D:
+      return LOG_DEBUG;
 
     default:
       return LOG_NOTICE;
@@ -158,9 +162,9 @@ public:
                                       unsigned int length);
 
   template <typename T>
-  CConfigKey<T> *CreateConfigKey(const char *pszSection, const char *pszKey,
-                                 T def);
-  CConfigKeyTimeString *CreateConfigKeyTimeString(
+  static CConfigKey<T> *CreateConfigKey(const char *pszSection,
+                                        const char *pszKey, T def);
+  static CConfigKeyTimeString *CreateConfigKeyTimeString(
       const char *pszSection, const char *pszKey, std::string def,
       CConfigKeyTimeString::E_Type type = CConfigKeyTimeString::HHMM);
 

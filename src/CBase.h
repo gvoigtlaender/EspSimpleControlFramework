@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-const char FWK_VERSION_STRING[] = "0.0.23.1";
+extern char FWK_VERSION_STRING[];
 
 //! defines return codes of state machines.
 /*!
@@ -25,7 +25,7 @@ enum _E_STMRESULT {
   \param out_max maximum output value.
   \return mapped value
 */
-double dmap(double x, double in_min, double in_max, double out_min,
+double dmap(double in_act, double in_min, double in_max, double out_min,
             double out_max);
 
 // https://stackoverflow.com/questions/16605967/set-precision-of-stdto-string-when-converting-floating-point-values
@@ -51,12 +51,12 @@ std::string to_string_with_precision(const T a_value,
 */
 std::string TimeToTimeString(int32_t nTimeSeconds);
 
-extern char szInputType_Text[];
-extern char szInputType_Password[];
-extern char szInputType_Range[];
+extern const char szInputType_Text[];
+extern const char szInputType_Password[];
+extern const char szInputType_Range[];
 
-extern char szInputPattern_HHMM[];
-extern char szInputPattern_MMSS[];
+extern const char szInputPattern_HHMM[];
+extern const char szInputPattern_MMSS[];
 
 extern uint32_t g_uiHeapMin;
 extern uint32_t g_uiHeap;

@@ -46,11 +46,11 @@ template <> std::string CConfigValue<std::string>::GetFormEntry() {
     sContent += "/>\n<p>\n";
   } else {
     sContent += "<select name=\"" + sSection_Key + "\">\n";
-    for (unsigned int n = 0; n < m_Choice.size(); n++) {
-      sContent += "<option value=\"" + m_Choice[n] + "\"";
-      if (m_Value == m_Choice[n])
+    for (auto &&choice : m_Choice) {
+      sContent += "<option value=\"" + choice + "\"";
+      if (m_Value == choice)
         sContent += " selected";
-      sContent += ">" + m_Choice[n] + "</option>\n";
+      sContent += ">" + choice + "</option>\n";
     }
     sContent += "</select>\n<p>\n";
   }
@@ -93,11 +93,11 @@ template <> std::string CConfigValue<int>::GetFormEntry() {
     sContent += " />\n<p>\n";
   } else {
     sContent += "<select name=\"" + sSection_Key + "\">\n";
-    for (unsigned int n = 0; n < m_Choice.size(); n++) {
-      sContent += "<option value=\"" + to_string(m_Choice[n]) + "\"";
-      if (m_Value == m_Choice[n])
+    for (auto &&choice : m_Choice) {
+      sContent += "<option value=\"" + to_string(choice) + "\"";
+      if (m_Value == choice)
         sContent += " selected";
-      sContent += ">" + to_string(m_Choice[n]) + "</option>\n";
+      sContent += ">" + to_string(choice) + "</option>\n";
     }
     sContent += "</select>\n<p>\n";
   }
@@ -131,11 +131,11 @@ template <> std::string CConfigValue<int16_t>::GetFormEntry() {
                "\" value=\"" + to_string(m_Value) + "\" />\n<p>\n";
   } else {
     sContent += "<select name=\"" + sSection_Key + "\">\n";
-    for (unsigned int n = 0; n < m_Choice.size(); n++) {
-      sContent += "<option value=\"" + to_string(m_Choice[n]) + "\"";
-      if (m_Value == m_Choice[n])
+    for (auto &&choice : m_Choice) {
+      sContent += "<option value=\"" + to_string(choice) + "\"";
+      if (m_Value == choice)
         sContent += " selected";
-      sContent += ">" + to_string(m_Choice[n]) + "</option>\n";
+      sContent += ">" + to_string(choice) + "</option>\n";
     }
     sContent += "</select>\n<p>\n";
   }
@@ -173,9 +173,8 @@ template <> std::string CConfigValue<bool>::GetFormEntry() {
 }
 
 void CConfigSection::Reset() {
-  CConfigSection::KeyMap::iterator keys;
-  for (keys = begin(); keys != end(); ++keys) {
-    keys->second->Reset();
+  for (auto &&key : *this) {
+    key.second->Reset();
   }
 }
 

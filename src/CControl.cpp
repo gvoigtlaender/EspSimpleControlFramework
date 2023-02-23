@@ -20,7 +20,7 @@ uint64_t CControl::ms_uiLastLogMs = 0;
 
 CMqttValue *CControl::CreateMqttValue(const std::string &sName,
                                       const std::string &sValue /*= ""*/) {
-  CMqttValue *pValue =
+  auto *pValue =
       new CMqttValue(std::string(m_pszInstanceName) + "/" + sName, sValue);
   pValue->m_pControl = this;
   _log(I, "CreateMqttValue(%s, %s)",
@@ -30,15 +30,16 @@ CMqttValue *CControl::CreateMqttValue(const std::string &sName,
 
 CMqttCmd *CControl::CreateMqttCmd(const char *szTopic) {
   string sCmd = std::string(m_pszInstanceName) + "/" + std::string(szTopic);
-  CMqttCmd *pCmd = new CMqttCmd(sCmd, this, CControl::MqttCmdCallback);
+  auto *pCmd = new CMqttCmd(sCmd, this, CControl::MqttCmdCallback);
   return pCmd;
 }
 
 // static
 void CControl::MqttCmdCallback(CMqttCmd *pCmd, byte *payload,
                                unsigned int length) {
-  if (pCmd != NULL && pCmd->m_pControl != NULL)
+  if (pCmd != NULL && pCmd->m_pControl != NULL) {
     pCmd->m_pControl->ControlMqttCmdCallback(pCmd, payload, length);
+  }
 }
 void CControl::ControlMqttCmdCallback(CMqttCmd *pCmd, byte *payload,
                                       unsigned int length) {
@@ -48,50 +49,54 @@ void CControl::ControlMqttCmdCallback(CMqttCmd *pCmd, byte *payload,
   _log(I, "ControlMqttCmdCallback(%s, %s)", pCmd->m_szTopic, szPayLoad);
 }
 
+// static
 template <typename T>
 CConfigKey<T> *CControl::CreateConfigKey(const char *pszSection,
                                          const char *pszKey, T def) {
-  CConfigKey<T> *pKey = new CConfigKey<T>(pszSection, pszKey, def);
+  auto *pKey = new CConfigKey<T>(pszSection, pszKey, def);
   return pKey;
 }
 
+// static
 template <>
 CConfigKey<std::string> *
 CControl::CreateConfigKey<std::string>(const char *pszSection,
                                        const char *pszKey, std::string def) {
-  CConfigKey<std::string> *pKey =
-      new CConfigKey<std::string>(pszSection, pszKey, def);
+  auto *pKey = new CConfigKey<std::string>(pszSection, pszKey, def);
   return pKey;
 }
 
+// static
 template <>
 CConfigKey<int> *CControl::CreateConfigKey<int>(const char *pszSection,
                                                 const char *pszKey, int def) {
-  CConfigKey<int> *pKey = new CConfigKey<int>(pszSection, pszKey, def);
+  auto *pKey = new CConfigKey<int>(pszSection, pszKey, def);
   return pKey;
 }
 
+// static
 template <>
 CConfigKey<int16_t> *CControl::CreateConfigKey<int16_t>(const char *pszSection,
                                                         const char *pszKey,
                                                         int16_t def) {
-  CConfigKey<int16_t> *pKey = new CConfigKey<int16_t>(pszSection, pszKey, def);
+  auto *pKey = new CConfigKey<int16_t>(pszSection, pszKey, def);
   return pKey;
 }
 
+// static
 template <>
 CConfigKey<bool> *CControl::CreateConfigKey<bool>(const char *pszSection,
                                                   const char *pszKey,
                                                   bool def) {
-  CConfigKey<bool> *pKey = new CConfigKey<bool>(pszSection, pszKey, def);
+  auto *pKey = new CConfigKey<bool>(pszSection, pszKey, def);
   return pKey;
 }
 
+// static
 CConfigKeyTimeString *CControl::CreateConfigKeyTimeString(
     const char *pszSection, const char *pszKey, std::string def,
     CConfigKeyTimeString::E_Type type /*= CConfigKeyTimeString::HHMM*/) {
-  CConfigKeyTimeString *pKey =
-      new CConfigKeyTimeString(pszSection, pszKey, def, type);
+  auto *pKey = new CConfigKeyTimeString(pszSection, pszKey, def, type);
   return pKey;
 }
 
@@ -99,8 +104,7 @@ CConfigKeyIntSlider *CControl::CreateConfigKeyIntSlider(const char *pszSection,
                                                         const char *pszKey,
                                                         int def, int nMin,
                                                         int nMax) {
-  CConfigKeyIntSlider *pKey =
-      new CConfigKeyIntSlider(pszSection, pszKey, def, nMin, nMax);
+  auto *pKey = new CConfigKeyIntSlider(pszSection, pszKey, def, nMin, nMax);
   return pKey;
 }
 
@@ -112,13 +116,15 @@ bool CControl::Setup() {
   new CMqttValue("SYSTEM/APPNAME", APPNAME);
 
   bool bSuccess = true;
-  for (unsigned int n = 0; n < ms_Instances.size(); n++)
-    bSuccess &= ms_Instances[n]->setup();
+  for (auto &&instance : ms_Instances) {
+    bSuccess &= instance->setup();
+  }
   return bSuccess;
 }
 
 // static
 void CControl::Control() {
-  for (unsigned int n = 0; n < ms_Instances.size(); n++)
-    ms_Instances[n]->control(false);
+  for (auto &&instance : ms_Instances) {
+    instance->control(false);
+  }
 }

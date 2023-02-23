@@ -81,9 +81,7 @@ void CConfiguration::_handleHttpGetContent() {
   std::string sContent = "";
   CheckFreeHeap();
 
-  for (unsigned int i = 0; i < CConfigKeyBase::ms_SectionList.size(); i++) {
-    std::string sSection = CConfigKeyBase::ms_SectionList[i];
-
+  for (auto &&sSection : CConfigKeyBase::ms_SectionList) {
     if (sSection == std::string("0"))
       continue;
     CheckFreeHeap();
@@ -91,9 +89,7 @@ void CConfiguration::_handleHttpGetContent() {
     sContent += "<legend>" + sSection + "</legend>\n";
 
     CheckFreeHeap();
-    for (unsigned int n = 0; n < CConfigKeyBase::ms_VarEntries[sSection].size();
-         n++) {
-      CConfigKeyBase *pEntry = CConfigKeyBase::ms_VarEntries[sSection][n];
+    for (auto &&pEntry : CConfigKeyBase::ms_VarEntries[sSection]) {
       sContent += std::string(pEntry->GetKey()) + ": " +
                   pEntry->m_pValue->GetFormEntry();
     }
@@ -150,12 +146,9 @@ void CConfiguration::_handleHttpPost() {
 
       CheckFreeHeap();
 
-      for (unsigned int i = 0; i < CConfigKeyBase::ms_SectionList.size(); i++) {
+      for (auto &&sSection : CConfigKeyBase::ms_SectionList) {
         CheckFreeHeap();
-        std::string sSection = CConfigKeyBase::ms_SectionList[i];
-        for (unsigned int n = 0;
-             n < CConfigKeyBase::ms_VarEntries[sSection].size(); n++) {
-          CConfigKeyBase *pEntry = CConfigKeyBase::ms_VarEntries[sSection][n];
+        for (auto &&pEntry : CConfigKeyBase::ms_VarEntries[sSection]) {
           CheckFreeHeap();
           String sSection_Key = pEntry->m_pValue->m_pszSection_Key;
           if (m_pServer->hasArg(sSection_Key)) {
@@ -189,12 +182,9 @@ void CConfiguration::_handleHttpPost() {
 
 void CConfiguration::reset() {
   CControl::Log(CControl::I, "CConfiguration::reset()");
-  CConfigKeyBase::SectionsMap::iterator sections;
-
   CheckFreeHeap();
-  for (sections = CConfigKeyBase::ms_Vars.begin();
-       sections != CConfigKeyBase::ms_Vars.end(); ++sections) {
-    sections->second.Reset();
+  for (auto &&sections : CConfigKeyBase::ms_Vars) {
+    sections.second.Reset();
     CheckFreeHeap();
   }
 }
@@ -243,17 +233,13 @@ void CConfiguration::load() {
 #endif
         CControl::Log(CControl::I, "json.success() success, parsed json");
 
-        CConfigKeyBase::SectionsMap::iterator sections;
-        CConfigKeyBase::KeyMap::iterator keys;
-
         const char *pszSec = NULL;
         const char *pszKey = NULL;
         const char *pszVal = NULL;
 
         CheckFreeHeap();
-        for (sections = CConfigKeyBase::ms_Vars.begin();
-             sections != CConfigKeyBase::ms_Vars.end(); ++sections) {
-          pszSec = sections->first.c_str();
+        for (auto &&sections : CConfigKeyBase::ms_Vars) {
+          pszSec = sections.first.c_str();
 
           if (!json.containsKey(pszSec)) {
             CControl::Log(CControl::I, "loading Section %s not found", pszSec);
@@ -266,9 +252,8 @@ void CConfiguration::load() {
           JsonObject sec = json[pszSec];
 #endif
           CheckFreeHeap();
-          for (keys = sections->second.begin(); keys != sections->second.end();
-               ++keys) {
-            pszKey = keys->first.c_str();
+          for (auto &&keys : sections.second) {
+            pszKey = keys.first.c_str();
 
             if (!sec.containsKey(pszKey)) {
               CControl::Log(CControl::I,
@@ -278,9 +263,9 @@ void CConfiguration::load() {
             }
             CheckFreeHeap();
             pszVal = sec[pszKey];
-            keys->second->FromString(pszVal);
+            keys.second->FromString(pszVal);
             CControl::Log(CControl::I, "loading section %s key %s value %s",
-                          sections->first.c_str(), keys->first.c_str(), pszVal);
+                          sections.first.c_str(), keys.first.c_str(), pszVal);
             CheckFreeHeap();
           }
         }
@@ -309,14 +294,11 @@ void CConfiguration::save() {
 #endif
 
   CheckFreeHeap();
-
-  for (CConfigKeyBase::SectionsMap::iterator sections =
-           CConfigKeyBase::ms_Vars.begin();
-       sections != CConfigKeyBase::ms_Vars.end(); ++sections) {
-    std::string sSection = sections->first;
+  for (auto &&sections : CConfigKeyBase::ms_Vars) {
+    std::string sSection = sections.first;
     CheckFreeHeap();
 #if ARDUINOJSON_VERSION_MAJOR == 5
-    JsonObject &sec = json.createNestedObject(sections->first.c_str());
+    JsonObject &sec = json.createNestedObject(sections.first.c_str());
 #else
     JsonObject sec = doc.createNestedObject(sections->first.c_str());
     if (sec.isNull()) {
@@ -326,14 +308,13 @@ void CConfiguration::save() {
     }
     CheckFreeHeap();
 #endif
-    for (CConfigKeyBase::KeyMap::iterator keys = sections->second.begin();
-         keys != sections->second.end(); ++keys) {
-      std::string sKey = keys->first;
-      std::string &sVal = keys->second->ToString();
+    for (auto &&keys : sections.second) {
+      std::string sKey = keys.first;
+      std::string &sVal = keys.second->ToString();
       CControl::Log(CControl::I, "saving section %s key %s value %s",
                     sSection.c_str(), sKey.c_str(), sVal.c_str());
 #if ARDUINOJSON_VERSION_MAJOR == 5
-      sec[keys->first.c_str()] = sVal.c_str();
+      sec[keys.first.c_str()] = sVal.c_str();
 #else
       sec[sKey] = sVal;
 #endif

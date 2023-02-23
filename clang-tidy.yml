@@ -1,0 +1,140 @@
+#
+# vim: set tabstop=2 shiftwidth=2 expandtab:
+#
+# File:
+#   clang-tidy.yml
+#
+# Author(s):
+#   (c) 2023 Mario Schwalbe (mario.schwalbe@silistra-systems.com)
+#
+# DOCS: https://clang.llvm.org/extra/clang-tidy/index.html
+# DOCS: https://clang.llvm.org/extra/clang-tidy/checks/list.html
+#
+---
+HeaderFilterRegex: >-
+  (include|src|test)/.*\.hpp
+
+#
+# ========================================================================================
+# ================================= Disabled Core Checks =================================
+# ========================================================================================
+#
+# - modernize-use-trailing-return-type:
+#   Usage of standard notation is permitted.
+#
+# - misc-non-private-member-variables-in-classes:
+#   Permitted. Misuse checked via review.
+#
+# - readability-avoid-const-params-in-decls:
+#   Keeps declaration and definition consistent.
+#
+# - readability-else-after-return:
+#   Permitted. Misuse checked via review.
+#
+# - readability-identifier-length:
+#   Short identifiers are permitted in tight code blocks. Misuse checked via review.
+#
+# - readability-redundant-access-specifiers:
+#   Permitted. Misuse checked via review.
+#
+# - readability-uppercase-literal-suffix:
+#   Lower-case literal suffixes are permitted.
+#
+# ========================================================================================
+# =============================== Disabled Standard Checks ===============================
+# ========================================================================================
+#
+# - google-build-using-namespace:
+#   Usage of namespace imports is permitted in modules (not headers). Checked via review.
+#
+# - google-readability-casting:
+#   False positives for function-style casts. Usage of C-style casts rejected via compiler flag.
+#
+# ========================================================================================
+# =============================== Disabled Check Synonyms ================================
+# ========================================================================================
+#
+# - cert-dcl16-c                                              => readability-uppercase-literal-suffix
+# - cert-dcl37-c,cert-dcl51-cpp                               => bugprone-reserved-identifier
+# - cppcoreguidelines-avoid-c-arrays                          => modernize-avoid-c-arrays
+# - cppcoreguidelines-avoid-magic-numbers                     => readability-magic-numbers
+# - cppcoreguidelines-non-private-member-variables-in-classes => misc-non-private-member-variables-in-classes
+# - google-readability-function-size                          => readability-function-size
+# - hicpp-avoid-c-arrays                                      => modernize-avoid-c-arrays
+# - hicpp-avoid-goto                                          => cppcoreguidelines-avoid-goto
+# - hicpp-explicit-conversions                                => google-explicit-constructor
+# - hicpp-function-size                                       => readability-function-size
+# - hicpp-member-init                                         => cppcoreguidelines-pro-type-member-init
+# - hicpp-no-array-decay                                      => cppcoreguidelines-pro-bounds-array-to-pointer-decay
+# - hicpp-uppercase-literal-suffix                            => readability-uppercase-literal-suffix
+# - hicpp-vararg                                              => cppcoreguidelines-pro-type-vararg
+#
+Checks: >-
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  bugprone-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-avoid-const-params-in-decls,
+  -readability-else-after-return,
+  -readability-identifier-length,
+  -readability-redundant-access-specifiers,
+  -readability-uppercase-literal-suffix,
+  ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+  cert-*,
+  cppcoreguidelines-*,
+  google-*,
+  -google-build-using-namespace,
+  -google-readability-casting,
+  hicpp-*,
+  ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+  -cert-dcl16-c,
+  -cert-dcl37-c,
+  -cert-dcl51-cpp,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -google-readability-function-size,
+  -hicpp-avoid-c-arrays,
+  -hicpp-avoid-goto,
+  -hicpp-explicit-conversions,
+  -hicpp-function-size,
+  -hicpp-member-init,
+  -hicpp-no-array-decay,
+  -hicpp-uppercase-literal-suffix,
+  -hicpp-vararg,
+
+CheckOptions:
+  #
+  # Enforce global thresholds for functions (including blank lines and comments).
+  # DOCS: https://clang.llvm.org/extra/clang-tidy/checks/readability/function-size.html
+  #
+  - key:   readability-function-size.ParameterThreshold
+    value: 5
+  - key:   readability-function-size.VariableThreshold
+    value: 20
+  - key:   readability-function-size.BranchThreshold
+    value: 20
+  - key:   readability-function-size.NestingThreshold
+    value: 10
+  - key:   readability-function-size.LineThreshold
+    value: 100
+  - key:   readability-function-size.StatementThreshold
+    value: 500
+
+  #
+  # Allow `_CRT_SECURE_NO_WARNINGS` for MSVC.
+  #
+  - key:   bugprone-reserved-identifier.AllowedIdentifiers
+    value: _CRT_SECURE_NO_WARNINGS
+
+  #
+  # Allow usage of trivial literals. Does not cover all valid cases.
+  #
+  - key:   hicpp-signed-bitwise.IgnorePositiveIntegerLiterals
+    value: true

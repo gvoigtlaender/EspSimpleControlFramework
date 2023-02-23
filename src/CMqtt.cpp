@@ -254,9 +254,7 @@ void CMqtt::control(bool bForce /*= false*/) {
 }
 
 void CMqtt::publish() {
-  list<CMqttValue *>::iterator it;
-  for (it = ms_Values.begin(); it != ms_Values.end(); ++it) {
-    CMqttValue *pValue = *it;
+  for (auto &&pValue : ms_Values) {
     publish_value(pValue);
   }
 #if defined(USE_DISPLAY)
@@ -293,8 +291,7 @@ void CMqtt::publish_value(CMqttValue *pValue) {
 }
 
 void CMqtt::subscribe() {
-  for (unsigned int n = 0; n < CMqttCmd::ms_MqttCommands.size(); n++) {
-    CMqttCmd *pCmd = CMqttCmd::ms_MqttCommands[n];
+  for (auto &&pCmd : CMqttCmd::ms_MqttCommands) {
     if (pCmd->m_bSubscribed)
       continue;
     subscribe_cmd(pCmd);
@@ -321,8 +318,7 @@ void CMqtt::callback(char *topic, byte *payload, unsigned int length) {
            length);
   _log2(I, szLog);
 #endif
-  for (unsigned int n = 0; n < CMqttCmd::ms_MqttCommands.size(); n++) {
-    CMqttCmd *pCmd = CMqttCmd::ms_MqttCommands[n];
+  for (auto &&pCmd : CMqttCmd::ms_MqttCommands) {
     if (strcmp(pCmd->m_szTopic, topic) != 0)
       continue;
     if (pCmd->m_Callback != NULL)
