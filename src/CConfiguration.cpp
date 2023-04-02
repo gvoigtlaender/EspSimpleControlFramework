@@ -300,7 +300,7 @@ void CConfiguration::save() {
 #if ARDUINOJSON_VERSION_MAJOR == 5
     JsonObject &sec = json.createNestedObject(sections.first.c_str());
 #else
-    JsonObject sec = doc.createNestedObject(sections->first.c_str());
+    JsonObject sec = doc.createNestedObject(sections.first.c_str());
     if (sec.isNull()) {
       CControl::Log(CControl::E, "Create section %s failed", sSection.c_str());
       doc.clear();
