@@ -2,16 +2,21 @@
 #include "CConfigValue.h"
 #include "CBase.h"
 #include <Arduino.h>
-
+#include <iomanip>
 // static
 uint8_t CConfigValueBase::ms_uiUniqeId = 0;
 
 template <> std::string to_string<int>(const int &n) {
-  char buffer[33];
-  itoa(n, buffer, 10);
-  return std::string(buffer);
+  std::ostringstream stm;
+  stm << n;
+  return stm.str();
 }
 
+template <> std::string to_string<double>(const double &d) {
+  std::ostringstream stm;
+  stm << std::setprecision(6) << d;
+  return stm.str();
+}
 // static
 std::vector<std::string> CConfigKeyBase::ms_SectionList;
 // static
@@ -289,4 +294,51 @@ CConfigKeyIntSlider::CConfigKeyIntSlider(const char *pszSection,
   strncpy(m_pValue->m_pszInputHtmlCode, sInputHtmlCode.c_str(),
           sInputHtmlCode.length());
   m_pValue->m_pszInputHtmlCode[sInputHtmlCode.length()] = 0x00;
+}
+
+template <> std::string &CConfigKey<double>::ToString() {
+  m_sValue = to_string(static_cast<CConfigValue<double> *>(m_pValue)->m_Value);
+#if defined DEBUG
+  Serial.printf("\t\t%s->ToString(%.6f) => %s\n", this->GetKey(),
+                m_pTValue->m_Value, m_sValue.c_str());
+#endif
+  return m_sValue;
+}
+
+template <> void CConfigKey<double>::FromString(const char *pszVal) {
+  float fVal = std::atof(pszVal);
+  if (fVal != static_cast<CConfigValue<double> *>(m_pValue)->m_Value) {
+    static_cast<CConfigValue<double> *>(m_pValue)->m_Value = fVal;
+    if (m_pOnChangedCb != NULL)
+      (m_pOnChangedCb)(m_pOnChangedObject, this);
+  }
+#if defined DEBUG
+  Serial.printf("\t\t%s->FromString(%s) => %.6f\n", this->GetKey(), pszVal,
+                static_cast<CConfigValue<double> *>(m_pValue)->m_Value);
+#endif
+}
+
+template <> std::string CConfigValue<double>::GetFormEntry() {
+  std::string sContent;
+  std::string sSection_Key(m_pszSection_Key);
+  std::string sInputType(m_pcsInputType);
+  if (m_Choice.empty()) {
+    sContent = "<input type=\"" + sInputType + "\" name=\"" + sSection_Key +
+               "\" value=\"" + to_string(m_Value) + "\"";
+    /* if (!m_sInputHtmlCode.empty())
+      sContent += m_sInputHtmlCode; */
+    if (m_pszInputHtmlCode != NULL)
+      sContent += m_pszInputHtmlCode;
+    sContent += " />\n<p>\n";
+  } else {
+    sContent += "<select name=\"" + sSection_Key + "\">\n";
+    for (auto &&choice : m_Choice) {
+      sContent += "<option value=\"" + to_string(choice) + "\"";
+      if (m_Value == choice)
+        sContent += " selected";
+      sContent += ">" + to_string(choice) + "</option>\n";
+    }
+    sContent += "</select>\n<p>\n";
+  }
+  return sContent;
 }
