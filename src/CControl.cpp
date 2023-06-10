@@ -85,6 +85,15 @@ CConfigKey<int16_t> *CControl::CreateConfigKey<int16_t>(const char *pszSection,
 
 // static
 template <>
+CConfigKey<double> *CControl::CreateConfigKey<double>(const char *pszSection,
+                                                      const char *pszKey,
+                                                      double def) {
+  auto *pKey = new CConfigKey<double>(pszSection, pszKey, def);
+  return pKey;
+}
+
+// static
+template <>
 CConfigKey<bool> *CControl::CreateConfigKey<bool>(const char *pszSection,
                                                   const char *pszKey,
                                                   bool def) {
