@@ -66,11 +66,11 @@ void CSensorSingle::publish() {
 void CSensorMulti::display() {
   for (auto &&pChannel : m_Sensors) {
     if (pChannel->m_pDisplayLine != NULL) {
-      char szTmp[64];
+      char szTmp[32];
       snprintf(szTmp, sizeof(szTmp), "%02.1fC",
                pChannel->m_Temperature.m_OutputValue);
       pChannel->m_pDisplayLine->Line(szTmp);
-      this->_log(I, szTmp);
+      // this->_log(I, szTmp);
     }
   }
 }

@@ -176,9 +176,12 @@ public:
     return 0.0;
   }
 };
+
 class CSensorDS18B20 : public CSensorMulti {
 public:
-  CSensorDS18B20(int nPin, OneWire *pOneWire = NULL) : CSensorMulti("DS18B20") {
+  CSensorDS18B20(int nPin, OneWire *pOneWire = NULL, double tempMin = 20.0,
+                 double tempMax = 100.0)
+      : CSensorMulti("DS18B20"), tempMin_(tempMin), tempMax_(tempMax) {
     if (pOneWire) {
       m_pOneWire = pOneWire;
     } else {
@@ -200,28 +203,34 @@ public:
   }
 
   bool setup() override {
+    m_pDallas->setResolution(12);
     m_pDallas->requestTemperatures();
     this->m_uiTime = millis();
     return CSensorBase::setup();
   }
   bool ReadValues() override {
+#ifdef _DEBUG
     start = millis();
-
+#endif
     for (uint8_t nCnt = 0; nCnt < m_Sensors.size(); nCnt++) {
       CSensorChannelDS18B20 *pSensor =
           static_cast<CSensorChannelDS18B20 *>(m_Sensors[nCnt]);
       float t = m_pDallas->getTempC(pSensor->m_Addr);
-      pSensor->m_Temperature.Filter(t);
-      _log(I, "%u Temp: %.1f %s %.1f", nCnt, t, pSensor->m_szAddr,
-           pSensor->m_Temperature.m_OutputValue);
+#ifdef _DEBUG
+      _log(D, "%u Temp: %.1f", nCnt, t);
+#endif
+      if (tempMin_ < t && t < tempMax_) {
+        pSensor->m_Temperature.Filter(t);
+      } else {
+        pSensor->m_Temperature.Filter((tempMin_ + tempMax_) / 2.0);
+      }
     }
 
     m_pDallas->requestTemperatures();
+#ifdef _DEBUG
     stop = millis();
-
-    // if ((stop - start) > 100)
-    _log(W, "ReadValues() took %lums", stop - start);
-
+    _log(D, "ReadValues() took %lums", stop - start);
+#endif
     return true; //(m_Sensors[0]->m_Temperature.m_nSize > 2);
   }
 
@@ -249,6 +258,8 @@ protected:
     return s;
   }
 
+  double tempMin_;
+  double tempMax_;
   uint32_t start = 0, stop = 0;
   uint8_t res = 12;
 };
