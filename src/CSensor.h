@@ -172,7 +172,7 @@ public:
   vector<CSensorChannel *> m_Sensors;
   double GetTemperature(uint8_t n) {
     if (n < m_Sensors.size()) {
-      return m_Sensors[n]->m_Temperature.getOuptuValue();
+      return m_Sensors[n]->m_Temperature.getOutputValue();
     }
     return 0.0;
   }
@@ -222,8 +222,6 @@ public:
 #endif
       if (tempMin_ < t && t < tempMax_) {
         pSensor->m_Temperature.Filter(t);
-      } else {
-        pSensor->m_Temperature.Filter((tempMin_ + tempMax_) / 2.0);
       }
     }
 

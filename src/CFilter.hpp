@@ -23,12 +23,12 @@ public:
     m_OutputValue = m_Sum / m_nSize;
     return m_OutputValue;
   }
-
-  T getOuptuValue() { return m_OutputValue; }
+  unsigned int getSize() { return m_nSize; }
+  T getOutputValue() { return m_OutputValue; }
 
 private:
-  const unsigned int m_nSizeMax = 0;
-  unsigned int m_nSize = 0;
+  unsigned int m_nSizeMax;
+  unsigned int m_nSize;
   T m_OutputValue;
   T m_Sum;
   std::vector<T> m_Values;
