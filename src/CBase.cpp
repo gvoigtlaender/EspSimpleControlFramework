@@ -73,7 +73,9 @@ void CheckFreeHeap() {
     }
     char szTmp[64];
     (void)snprintf(szTmp, sizeof(szTmp), "Heap:%u (%u)", g_uiHeap, g_uiHeapMin);
+#if defined _DEBUG
     CControl::Log(CControl::D, szTmp);
+#endif
 #if defined(USE_DISPLAY)
     if (g_HeapDisplayLine != NULL)
       g_HeapDisplayLine->Line(szTmp);
