@@ -1,6 +1,6 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#ifndef SRC_CCONFIGVALUE_H_
-#define SRC_CCONFIGVALUE_H_
+#ifndef SRC_CCONFIGVALUE_H
+#define SRC_CCONFIGVALUE_H
 #include <CBase.h>
 #include <cstring>
 #include <map>
@@ -20,8 +20,8 @@ template <typename T> std::string to_string(const T &n) {
 class CConfigValueBase : public CNonCopyable {
 public:
   CConfigValueBase()
-      : m_pszSection_Key(NULL), m_pcsInputType(szInputType_Text),
-        m_pszInputHtmlCode(NULL) {
+      : m_pszSection_Key(nullptr), m_pcsInputType(szInputType_Text.c_str()),
+        m_pszInputHtmlCode(nullptr) {
     m_pszSection_Key = new char[5];
     snprintf(m_pszSection_Key, 5, "%d", (int)ms_uiUniqeId++);
   }
@@ -60,8 +60,9 @@ class CConfigKeyBase : public CNonCopyable {
 
 public:
   CConfigKeyBase(const char *pszSection, const char *pszKey)
-      : m_pszSection(NULL), m_pszKey(NULL), m_pValue(NULL),
-        m_sValue("undefined"), m_pOnChangedCb(NULL), m_pOnChangedObject(NULL) {
+      : m_pszSection(nullptr), m_pszKey(nullptr), m_pValue(nullptr),
+        m_sValue("undefined"), m_pOnChangedCb(nullptr),
+        m_pOnChangedObject(nullptr) {
     m_pszSection = new char[strlen(pszSection) + 1];
     strncpy(m_pszSection, pszSection, strlen(pszSection));
     m_pszSection[strlen(pszSection)] = 0x00;
@@ -115,7 +116,7 @@ protected:
 template <typename T> class CConfigKey : public CConfigKeyBase {
 public:
   CConfigKey(const char *pszSection, const char *pszKey, T def)
-      : CConfigKeyBase(pszSection, pszKey), m_pTValue(NULL) {
+      : CConfigKeyBase(pszSection, pszKey), m_pTValue(nullptr) {
     m_pTValue = new CConfigValue<T>(def);
     m_pValue = m_pTValue;
   }
@@ -155,4 +156,4 @@ public:
                       int nMin, int nMax);
 };
 
-#endif // SRC_CCONFIGVALUE_H_
+#endif // SRC_CCONFIGVALUE_H

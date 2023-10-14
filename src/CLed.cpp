@@ -1,6 +1,6 @@
 #include "CLed.h"
 
-CLed *CLed::ms_pInstance = NULL;
+CLed *CLed::ms_pInstance = nullptr;
 
 bool CLed::setup() {
   CControl::setup();
@@ -27,8 +27,9 @@ void CLed::control(bool bForce /*= false*/) {
 
   case eCheck:
     m_pMqtt_CurrentTask->setValue("-");
-    if (m_eBlinkTask == NONE)
+    if (m_eBlinkTask == NONE) {
       break;
+    }
 
     m_pMqtt_CurrentTask->setValue(to_string(m_eBlinkTask));
 
@@ -70,18 +71,21 @@ void CLed::control(bool bForce /*= false*/) {
     break;
 
   case eB1:
-    if (LedBlink(ciShortBlink, ciOffTime, 1) == STM_BUSY)
+    if (LedBlink(ciShortBlink, ciOffTime, 1) == STM_BUSY) {
       break;
+    }
     m_eControlState = eCheck;
     break;
   case eB2:
-    if (LedBlink(ciShortBlink, ciOffTime, 2) == STM_BUSY)
+    if (LedBlink(ciShortBlink, ciOffTime, 2) == STM_BUSY) {
       break;
+    }
     m_eControlState = eCheck;
     break;
   case eB3:
-    if (LedBlink(ciShortBlink, ciOffTime, 3) == STM_BUSY)
+    if (LedBlink(ciShortBlink, ciOffTime, 3) == STM_BUSY) {
       break;
+    }
     m_eControlState = eCheck;
     break;
 
@@ -90,7 +94,7 @@ void CLed::control(bool bForce /*= false*/) {
   }
 }
 
-_E_STMRESULT CLed::LedBlink(int nOnTimeMs, int nOffTimeMs, uint8_t uiCnt) {
+E_STMRESULT CLed::LedBlink(int nOnTimeMs, int nOffTimeMs, uint8_t uiCnt) {
 
   switch (m_eBlinkState) {
   case eBlinkStart:
@@ -109,16 +113,18 @@ _E_STMRESULT CLed::LedBlink(int nOnTimeMs, int nOffTimeMs, uint8_t uiCnt) {
     break;
 
   case eBlinkOn:
-    if (m_uiBlinkMillis > millis())
+    if (m_uiBlinkMillis > millis()) {
       break;
+    }
     digitalWrite(false);
     m_uiBlinkMillis = millis() + nOffTimeMs;
     m_eBlinkState = eBlinkOff;
     break;
 
   case eBlinkOff:
-    if (m_uiBlinkMillis > millis())
+    if (m_uiBlinkMillis > millis()) {
       break;
+    }
     m_eBlinkState = eBlinkCheck;
     break;
 
@@ -134,10 +140,11 @@ void CLed::ControlMqttCmdCallback(CMqttCmd *pCmd, byte *payload,
                                   unsigned int length) {
   CControl::ControlMqttCmdCallback(pCmd, payload, length);
   if (length == 1) {
-    if ((char)payload[0] == '0')
+    if (static_cast<char>(payload[0]) == '0') {
       digitalWrite(false);
-    else if ((char)payload[0] == '1')
+    } else if (static_cast<char>(payload[0]) == '1') {
       digitalWrite(true);
+    }
     // pCmd->setValue("", true);
   }
 }

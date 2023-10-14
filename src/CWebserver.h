@@ -1,5 +1,6 @@
-#if !defined _SRC_CWEBSERVER_H_
-#define _SRC_CWEBSERVER_H_
+#if !defined SRC_CWEBSERVER_H
+#define SRC_CWEBSERVER_H
+// NOLINTNEXTLINE(clang-diagnostic-error)
 #include <Arduino.h>
 #if defined(ESP8266)
 #include <ESP8266WebServer.h>
@@ -21,7 +22,7 @@ public:
   CWebServer(int port = 80) : ESP8266WebServer(port) {}
 
   void serveStatic(const char *uri, const char *path,
-                   const char *cache_header = NULL) {
+                   const char *cache_header = nullptr) {
 #if defined(USE_LITTLEFS)
     ESP8266WebServer::serveStatic(uri, LittleFS, path, cache_header);
 #else
@@ -36,7 +37,7 @@ public:
   CWebServer(int port = 80) : WebServer(port) {}
 
   void serveStatic(const char *uri, const char *path,
-                   const char *cache_header = NULL) {
+                   const char *cache_header = nullptr) {
 #if defined(USE_LITTLEFS)
     WebServer::serveStatic(uri, LittleFS, path, cache_header);
 #else
@@ -53,4 +54,4 @@ public:
             */
 };
 #endif
-#endif // _SRC_CWEBSERVER_H_
+#endif // SRC_CWEBSERVER_H

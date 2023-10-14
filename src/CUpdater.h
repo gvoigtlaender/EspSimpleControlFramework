@@ -1,5 +1,5 @@
-#if !defined _SRC_CUPDATER_H_
-#define _SRC_CUPDATER_H_
+#if !defined SRC_CUPDATER_H
+#define SRC_CUPDATER_H
 #include <CBase.h>
 #include <CWebserver.h>
 #include <string>
@@ -7,8 +7,7 @@ using std::string;
 
 class CUpdater {
 public:
-  CUpdater(CWebServer *pServer, const char *szPath, const char *szTitle = NULL,
-           const char *szHtmlHeader = NULL);
+  CUpdater(CWebServer *pServer, const char *szPath);
   void _setUpdaterError();
 
   void OnGet_filelist();
@@ -18,19 +17,15 @@ public:
   void OnUpload2();
   void OnDelete();
 
-  CWebServer *m_pServer;
+  CWebServer *m_pServer = nullptr;
   // string m_sPath;
-  const char *m_pcsPath;
-  // string m_sTitle;
-  const char *m_pcsTitle;
-  // string m_sHtmlHeader;
-  const char *m_pcsHtmlHeader;
+  const char *m_pcsPath = nullptr;
   // string sIndexPage;
-  String _updaterError;
+  String _updaterError = "";
 
   // char *m_szhtml_content_buffer;
   // size_t m_szhtml_content_buffer_size;
 
   static CUpdater *ms_pInstance;
 };
-#endif // _SRC_CUPDATER_H_
+#endif // SRC_CUPDATER_H

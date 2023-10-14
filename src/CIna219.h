@@ -1,3 +1,5 @@
+#if !defined SRC_CINA219_H
+#define SRC_CINA219_H
 #include "CControl.h"
 #include <Adafruit_INA219.h>
 #include <Arduino.h>
@@ -99,7 +101,7 @@ private:
   CMqttValue *m_pMqtt_Current;
   CMqttValue *m_pMqtt_Power;
   vector<uint8_t> m_Values;
-  CXbm *m_pXbm = NULL;
+  CXbm *m_pXbm = nullptr;
   uint8_t nCnt = 0;
 
 public:
@@ -110,3 +112,5 @@ public:
   float loadvoltage_V = 0.0;
   CFilter<double> *m_pFilterCurrent;
 };
+
+#endif // SRC_CINA219_H

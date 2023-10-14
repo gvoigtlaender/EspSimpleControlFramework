@@ -34,8 +34,8 @@ public:
     }
     */
   }
-  uint8_t m_uiX;
-  uint8_t m_uiY;
+  const uint8_t m_uiX;
+  const uint8_t m_uiY;
   uint8_t m_uiNoOfColumns;
   std::string m_sLineToDraw;
   std::string m_sLineDrawn;

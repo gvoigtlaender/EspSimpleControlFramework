@@ -107,3 +107,10 @@ a{
 legend { 
     font-size:2em;
 }
+table {
+	width: 100%;
+	text-align: left;
+}
+th {
+	width:50%;
+}

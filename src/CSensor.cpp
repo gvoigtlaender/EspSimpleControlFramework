@@ -12,6 +12,7 @@ bool CSensorBase::setup() {
 }
 
 void CSensorBase::control(bool bForce) {
+  (void)bForce;
   enum { eStart = 0, eWaitForDelay, eUpdate, eEnd };
 
   switch (m_nState) {
@@ -20,8 +21,9 @@ void CSensorBase::control(bool bForce) {
     m_nState = eWaitForDelay;
 
   case eWaitForDelay:
-    if (millis() < this->CControl::m_uiTime)
+    if (millis() < this->CControl::m_uiTime) {
       break;
+    }
     _log(D, "eUpdate");
     m_nState = eUpdate;
 
@@ -46,12 +48,17 @@ void CSensorBase::control(bool bForce) {
 }
 
 void CSensorSingle::display() {
+  /*
   char szTmp[64];
-  snprintf(szTmp, sizeof(szTmp), "T: %02.1f°C", m_Temperature.m_OutputValue);
+  snprintf(szTmp, sizeof(szTmp), );
   this->_log(I, szTmp);
+  */
+  std::string sTmp =
+      FormatString<64>("T: %02.1f°C", m_Temperature.getOuptuValue());
+  this->_log(I, sTmp.c_str());
 #if defined(USE_DISPLAY)
-  if (m_pDisplayLine != NULL) {
-    m_pDisplayLine->Line(szTmp);
+  if (m_pDisplayLine != nullptr) {
+    m_pDisplayLine->Line(sTmp);
   }
 #endif
 }
@@ -59,8 +66,8 @@ void CSensorSingle::display() {
 void CSensorSingle::publish() {
 
   // _log(I, "publish()");
-  m_pMqttTemp->setValue(std::to_string(m_Temperature.m_OutputValue));
-  m_pMqttHum->setValue(std::to_string(m_Humidity.m_OutputValue));
+  m_pMqttTemp->setValue(std::to_string(m_Temperature.getOuptuValue()));
+  m_pMqttHum->setValue(std::to_string(m_Humidity.getOuptuValue()));
 }
 
 void CSensorMulti::display() {
@@ -68,7 +75,7 @@ void CSensorMulti::display() {
     if (pChannel->m_pDisplayLine != NULL) {
       char szTmp[32];
       snprintf(szTmp, sizeof(szTmp), "%02.1fC",
-               pChannel->m_Temperature.m_OutputValue);
+               pChannel->m_Temperature.getOuptuValue());
       pChannel->m_pDisplayLine->Line(szTmp);
       // this->_log(I, szTmp);
     }
@@ -78,13 +85,14 @@ void CSensorMulti::display() {
 void CSensorMulti::publish() {
   for (auto &&pChannel : m_Sensors) {
     pChannel->m_pMqttTemp->setValue(
-        std::to_string(pChannel->m_Temperature.m_OutputValue));
+        std::to_string(pChannel->m_Temperature.getOuptuValue()));
   }
 }
 
 bool CSensorMulti::IsPublished() {
-  if (m_Sensors.empty())
+  if (m_Sensors.empty()) {
     return true;
+  }
 
   return m_Sensors[0]->m_pMqttTemp->IsPublished();
 }

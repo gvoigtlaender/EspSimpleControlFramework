@@ -6,16 +6,16 @@
 
 #include <CMqtt.h>
 
-CWifi::CWifi(const char *szAppName, string sSsid /*= ""*/,
-             string sPassword /*= ""*/, string sStaticIp /*= ""*/)
-    : CControl("CWifi"), /*m_sAppName(szAppName)*/ m_pszAppName(szAppName) {
-  m_pWifiSsid = CreateConfigKey<std::string>("Wifi", "Ssid", sSsid);
+CWifi::CWifi(const char *szAppName, const string &sSsid /*= ""*/,
+             const string &sPassword /*= ""*/, const string &sStaticIp /*= ""*/)
+    : CControl("CWifi"), m_pszAppName(szAppName),
+      m_pWifiSsid(CreateConfigKey<std::string>("Wifi", "Ssid", sSsid)),
+      m_pMqttIP(CreateMqttValue("IP", "")) {
+
   m_pWifiPassword = new CConfigKey<std::string>("Wifi", "Password", sPassword);
   // m_pWifiPassword->m_pValue->m_sInputType = "password";
-  m_pWifiPassword->m_pValue->m_pcsInputType = szInputType_Password;
+  m_pWifiPassword->m_pValue->m_pcsInputType = szInputType_Password.c_str();
   m_pWifiStaticIp = new CConfigKey<std::string>("Wifi", "StaticIp", sStaticIp);
-
-  m_pMqttIP = CControl::CreateMqttValue("IP", "");
 }
 
 bool CWifi::setup() {
@@ -35,30 +35,30 @@ bool CWifi::setup() {
 
     delay(100);
 
-    int n = WiFi.scanNetworks();
+    int nets(WiFi.scanNetworks());
     _log2(CControl::I, "scan done");
-    if (n == 0) {
+    if (nets == 0) {
       _log2(CControl::I, "no networks found");
     } else {
-      Serial.print(n);
+      Serial.print(nets);
       _log2(CControl::I, " networks found");
-      for (int i = 0; i < n; ++i) {
+      for (int net = 0; net < nets; ++net) {
         // Print SSID and RSSI for each network found
-        Serial.print(i + 1);
+        Serial.print(net + 1);
         Serial.print(": ");
-        Serial.print(WiFi.SSID(i));
+        Serial.print(WiFi.SSID(net));
         Serial.print(" (");
-        Serial.print(WiFi.RSSI(i));
+        Serial.print(WiFi.RSSI(net));
         Serial.print(")");
 #if defined(ESP8266)
         _log2(CControl::I,
-              (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*");
+              (WiFi.encryptionType(net) == ENC_TYPE_NONE) ? " " : "*");
 #elif defined(ESP32)
         _log2(CControl::I,
-              (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
+              (WiFi.encryptionType(net) == WIFI_AUTH_OPEN) ? " " : "*");
 #endif
 
-        std::string ssid = WiFi.SSID(i).c_str();
+        std::string ssid = WiFi.SSID(net).c_str();
         m_pWifiSsid->m_pTValue->m_Choice.push_back(ssid);
         delay(10);
       }
@@ -66,7 +66,7 @@ bool CWifi::setup() {
 
     WiFi.softAP(m_pszAppName);
 
-    IPAddress myIP = WiFi.softAPIP();
+    IPAddress myIP(WiFi.softAPIP());
     _log(I, "AP IP address: %s", myIP.toString().c_str());
     return false;
   }
@@ -87,8 +87,9 @@ bool CWifi::setup() {
   WiFi.begin(m_pWifiSsid->GetValue().c_str(),
              m_pWifiPassword->GetValue().c_str());
 #if defined(USE_DISPLAY)
-  if (m_pDisplayLine)
+  if (m_pDisplayLine != nullptr) {
     m_pDisplayLine->Line("Wifi Connecting");
+  }
 #endif
 
   _log2(I, "Connecting");
@@ -97,8 +98,9 @@ bool CWifi::setup() {
 
 void CWifi::control(bool bForce /*= false*/) {
   CControl::control(bForce);
-  if (this->m_uiTime > millis() && !bForce)
+  if (this->m_uiTime > millis() && !bForce) {
     return;
+  }
 
   this->m_uiTime += 5;
   // Serial.print(m_sInstanceName.c_str());

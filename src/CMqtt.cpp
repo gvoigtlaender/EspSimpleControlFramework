@@ -6,9 +6,9 @@
 #endif
 
 // static
-vector<CMqttCmd *> CMqttCmd::ms_MqttCommands;
+std::vector<CMqttCmd *> CMqttCmd::ms_MqttCommands;
 // static
-CMqtt *CMqtt::ms_pMqtt = NULL;
+CMqtt *CMqtt::ms_pMqtt = nullptr;
 
 void callback(char *topic, byte *payload, unsigned int length) {
 #if defined DEBUG
@@ -18,8 +18,8 @@ void callback(char *topic, byte *payload, unsigned int length) {
 }
 
 CMqttValue::CMqttValue(const string &sPath, const string &sValue /*= ""*/)
-    : m_pszPath(NULL), m_sValue(sValue), m_pControl(NULL), m_bPublished(false) {
-  m_pszPath = new char[sPath.length() + 1];
+    : m_pszPath(new char[sPath.length() + 1]), m_sValue(sValue),
+      m_pControl(nullptr), m_bPublished(false) {
   strncpy(m_pszPath, sPath.c_str(), sPath.length());
   m_pszPath[sPath.length()] = 0x00;
   CMqtt::ms_Values.push_back(this);
@@ -30,8 +30,9 @@ CMqttValue::CMqttValue(const string &sPath, const string &sValue /*= ""*/)
 
 void CMqttValue::setValue(const string &sValue, bool bForce /*= false*/) {
 
-  if (m_sValue == sValue && !bForce)
+  if (m_sValue == sValue && !bForce) {
     return;
+  }
 
   m_sValue = sValue;
   m_bPublished = false;
@@ -39,7 +40,7 @@ void CMqttValue::setValue(const string &sValue, bool bForce /*= false*/) {
 
 #if defined DEBUG
 /*
-  if (m_pControl != NULL) {
+  if (m_pControl != nullptr) {
     static char szLog[1024];
     snprintf(szLog, sizeof(szLog), "Mqtt: %s = %s", m_sPath.c_str(),
              m_sValue.c_str());
@@ -50,13 +51,15 @@ void CMqttValue::setValue(const string &sValue, bool bForce /*= false*/) {
   }
 */
 #endif
-  if (CMqtt::ms_pMqtt != NULL && CMqtt::ms_pMqtt->m_bConnected)
+  if (CMqtt::ms_pMqtt != nullptr && CMqtt::ms_pMqtt->m_bConnected) {
     CMqtt::ms_pMqtt->publish_value(this);
+  }
 }
 
-CMqttCmd::CMqttCmd(const string &sPath, CControl *pControl, CMqttCmd_cb cb)
-    : /*CMqttValue(sPath, ""),*/ m_szTopic(NULL), m_pControl(pControl),
-      m_Callback(cb), m_bSubscribed(false) {
+CMqttCmd::CMqttCmd(const string &sPath, CControl *pControl,
+                   CMqttCmd_cb callback)
+    : /*CMqttValue(sPath, ""),*/ m_szTopic(nullptr), m_pControl(pControl),
+      m_Callback(callback), m_bSubscribed(false) {
   // m_pControl = pControl;
   std::string sTopic = CMqtt::ms_pMqtt->m_sClientName + "/" + sPath;
   m_szTopic = new char[sTopic.length() + 1];
@@ -69,27 +72,28 @@ CMqttCmd::CMqttCmd(const string &sPath, CControl *pControl, CMqttCmd_cb cb)
 String macToStr(const uint8_t *mac) {
   String result;
   for (int i = 0; i < 6; ++i) {
-    result += String(mac[i], 16);
-    if (i < 5)
+    result += String(static_cast<unsigned char>(mac[i]), 16);
+    if (i < 5) {
       result += ':';
+    }
   }
   return result;
 }
 
 // static
-list<CMqttValue *> CMqtt::ms_Values;
+std::list<CMqttValue *> CMqtt::ms_Values;
 
 CMqtt::CMqtt(const string &sServerIp /* = "" */,
              const string &sClientName /* = "" */)
     : CControl("CMqtt"), m_sClientName(sClientName), m_WifiClient(),
-      m_pMqttClient(NULL), m_bConnected(false), m_bConfigValid(false) {
+      m_pMqttClient(nullptr), m_bConnected(false), m_bConfigValid(false) {
   ms_pMqtt = this;
   m_pMqttClient = new PubSubClient(m_WifiClient);
 
   m_pCfgMqttServer = new CConfigKey<string>("Mqtt", "ServerIp", "");
   m_pCfgMqttUser = new CConfigKey<string>("Mqtt", "User", "");
   m_pCfgMqttPasswd = new CConfigKey<string>("Mqtt", "Passwd", "");
-  m_pCfgMqttPasswd->m_pValue->m_pcsInputType = szInputType_Password;
+  m_pCfgMqttPasswd->m_pValue->m_pcsInputType = szInputType_Password.c_str();
   m_pCfgMqttPublishIntervalS =
       new CConfigKey<int>("Mqtt", "PublishInterval", 0);
 }
@@ -105,6 +109,7 @@ bool CMqtt::setup() {
   if (this->m_sClientName.empty()) {
     this->m_sClientName = "";
     this->m_sClientName += "esp8266-";
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
     uint8_t mac[6];
     WiFi.macAddress(mac);
     this->m_sClientName += macToStr(mac).c_str();
@@ -113,10 +118,13 @@ bool CMqtt::setup() {
   }
   return true;
 }
+
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void CMqtt::control(bool bForce /*= false*/) {
   CControl::control(bForce);
-  if (this->m_uiTime > millis() && !bForce)
+  if ((this->m_uiTime > millis()) && !bForce) {
     return;
+  }
 
   this->m_uiTime += 5;
 
@@ -141,8 +149,9 @@ void CMqtt::control(bool bForce /*= false*/) {
     }
     _log2(I, "W4Wifi");
 #if defined(USE_DISPLAY)
-    if (m_pDisplayLine)
+    if (m_pDisplayLine != nullptr) {
       m_pDisplayLine->Line("Mqtt w4wifi");
+    }
 #endif
     this->m_nState = eWaitForWifi;
 
@@ -157,8 +166,9 @@ void CMqtt::control(bool bForce /*= false*/) {
          m_pCfgMqttServer->m_pTValue->m_Value.c_str(),
          this->m_sClientName.c_str());
 #if defined(USE_DISPLAY)
-    if (m_pDisplayLine)
+    if (m_pDisplayLine != nullptr) {
       m_pDisplayLine->Line("Mqtt connecting");
+    }
 #endif
 
     this->m_nState = eSetup;
@@ -170,13 +180,16 @@ void CMqtt::control(bool bForce /*= false*/) {
                                m_pCfgMqttPasswd->m_pTValue->m_Value.c_str())) {
       _log(I, "W4Connected");
       this->m_nState = eConnect;
-    } else {
-      _log(E, "Connect failed, rc=%d", m_pMqttClient->state());
-      if (++m_uiFailCnt < 5)
-        this->m_nState = eFailDelay;
-      else
-        this->m_nState = eError;
+      break;
     }
+
+    _log(E, "Connect failed, rc=%d", m_pMqttClient->state());
+    if (++m_uiFailCnt < 5) {
+      this->m_nState = eFailDelay;
+      break;
+    }
+
+    this->m_nState = eError;
     break;
 
   case eFailDelay:
@@ -192,8 +205,9 @@ void CMqtt::control(bool bForce /*= false*/) {
       _log2(I, "connected");
       m_bConnected = true;
 #if defined(USE_DISPLAY)
-      if (m_pDisplayLine)
+      if (m_pDisplayLine != nullptr) {
         m_pDisplayLine->Line("Mqtt " + m_sClientName);
+      }
 #endif
       this->m_nState = ePublish;
       _log2(I, "Publish");
@@ -216,10 +230,11 @@ void CMqtt::control(bool bForce /*= false*/) {
         _log(W, "Trying to reconnect");
         disconnect();
         this->m_nState = eSetup;
-      } else {
-        _log(E, "give up, restarting");
-        ESP.restart();
+        break;
       }
+
+      _log(E, "give up, restarting");
+      ESP.restart();
       break;
     }
 
@@ -230,18 +245,20 @@ void CMqtt::control(bool bForce /*= false*/) {
         _log(W, "Trying to reconnect");
         disconnect();
         this->m_nState = eSetup;
-      } else {
-        _log(E, "give up, restarting");
-        ESP.restart();
+        break;
       }
+
+      _log(E, "give up, restarting");
+      ESP.restart();
       break;
     }
 
-    if (m_uiFailCnt > 0)
+    if (m_uiFailCnt > 0) {
       m_uiFailCnt = 0;
+    }
 
-    if (millis() > m_uiPublishTime &&
-        m_pCfgMqttPublishIntervalS->GetValue() > 0) {
+    if ((millis() > m_uiPublishTime) &&
+        (m_pCfgMqttPublishIntervalS->GetValue() > 0)) {
       publish();
       m_uiPublishTime += m_pCfgMqttPublishIntervalS->GetValue() * 1000;
     }
@@ -258,29 +275,29 @@ void CMqtt::publish() {
     publish_value(pValue);
   }
 #if defined(USE_DISPLAY)
-  if (m_pDisplayLine)
+  if (m_pDisplayLine != nullptr) {
     m_pDisplayLine->Line("Mqtt published");
+  }
 #endif
 }
 void CMqtt::publish_value(CMqttValue *pValue) {
-  if (!m_bConnected || !m_bConfigValid)
+  if (!m_bConnected || !m_bConfigValid) {
     return;
+  }
   // return;
-  pValue->m_bPublished = true;
-  char szKey[128];
-  snprintf(szKey, sizeof(szKey), "%s/%s", m_sClientName.c_str(),
-           /*pValue->m_sPath.c_str()*/ pValue->m_pszPath);
-  char szValue[64];
-  snprintf(szValue, sizeof(szValue), "%s", pValue->m_sValue.c_str());
 
+  std::string sKey =
+      FormatString<128>("%s/%s", m_sClientName.c_str(), pValue->m_pszPath);
+  std::string sValue = pValue->m_sValue;
   try {
-    if (m_pMqttClient->publish(szKey, szValue, true)) {
-      _log(D, "publish %s = %s", szKey, szValue);
+    if (m_pMqttClient->publish(sKey.c_str(), sValue.c_str(), true)) {
+      _log(D, "publish %s = %s", sKey.c_str(), sValue.c_str());
+      pValue->m_bPublished = true;
     } else {
       _log(E,
            "publish %s = %s FAILED, WiFi.status()=%d, MQTT.connected()=%s, "
            "rc=%d",
-           szKey, szValue, (int)WiFi.status(),
+           sKey.c_str(), sValue.c_str(), (int)WiFi.status(),
            m_pMqttClient->connected() ? "true" : "false",
            m_pMqttClient->state());
     }
@@ -292,36 +309,41 @@ void CMqtt::publish_value(CMqttValue *pValue) {
 
 void CMqtt::subscribe() {
   for (auto &&pCmd : CMqttCmd::ms_MqttCommands) {
-    if (pCmd->m_bSubscribed)
+    if (pCmd->m_bSubscribed) {
       continue;
+    }
     subscribe_cmd(pCmd);
   }
 }
 void CMqtt::subscribe_cmd(CMqttCmd *pCmd) {
   if (m_pMqttClient->connected() && !pCmd->m_bSubscribed) {
-    static char szLog[220];
-    snprintf(szLog, sizeof(szLog), "subscribe_cmd %s", pCmd->m_szTopic);
-    _log2(I, szLog);
+    _log(I, "subscribe_cmd %s", pCmd->m_szTopic);
     m_pMqttClient->subscribe(pCmd->m_szTopic);
     pCmd->m_bSubscribed = true;
   }
 }
 
-void CMqtt::callback(char *topic, byte *payload, unsigned int length) {
+void CMqtt::callback(const char *topic, byte *payload, unsigned int length) {
 #if defined DEBUG
   _log2(I, "callback");
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
   char szPayLoad[length + 1];
   memcpy(szPayLoad, payload, length);
   szPayLoad[length] = 0x00;
+  /*
   char szLog[200];
   snprintf(szLog, sizeof(szLog), "callback(%s, %s, %u)", topic, szPayLoad,
            length);
   _log2(I, szLog);
+  */
+  _log(I, "callback(%s, %s, %u)", topic, szPayLoad, length);
 #endif
   for (auto &&pCmd : CMqttCmd::ms_MqttCommands) {
-    if (strcmp(pCmd->m_szTopic, topic) != 0)
+    if (strcmp(pCmd->m_szTopic, topic) != 0) {
       continue;
-    if (pCmd->m_Callback != NULL)
+    }
+    if (pCmd->m_Callback != nullptr) {
       (*pCmd->m_Callback)(pCmd, payload, length);
+    }
   }
 }

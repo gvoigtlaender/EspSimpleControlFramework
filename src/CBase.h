@@ -1,16 +1,16 @@
-#if !defined _SRC__CBASE_H_
-#define _SRC__CBASE_H_
+#if !defined SRC_CBASE_H
+#define SRC_CBASE_H
 #include <Arduino.h>
 #include <config.h>
 #include <sstream>
 #include <string>
 
-extern char FWK_VERSION_STRING[];
+extern const std::string FWK_VERSION_STRING;
 
 //! defines return codes of state machines.
 /*!
  */
-enum _E_STMRESULT {
+enum E_STMRESULT {
   STM_BUSY = 0, /*!< statemachine still busy. */
   STM_DONE,     /*!< statemachine finished. */
   STM_ERROR,    /*!< statemachine failed. */
@@ -51,12 +51,23 @@ std::string to_string_with_precision(const T a_value,
 */
 std::string TimeToTimeString(int32_t nTimeSeconds);
 
-extern const char szInputType_Text[];
-extern const char szInputType_Password[];
-extern const char szInputType_Range[];
+template <uint32_t size> std::string FormatString(const char *pcMessage, ...) {
+  char czDebBuf[size] = {0};
+  va_list arg_ptr;
 
-extern const char szInputPattern_HHMM[];
-extern const char szInputPattern_MMSS[];
+  va_start(arg_ptr, pcMessage);
+  vsnprintf(czDebBuf, sizeof(czDebBuf), pcMessage, arg_ptr);
+  va_end(arg_ptr);
+
+  return std::string(czDebBuf);
+}
+
+extern const std::string szInputType_Text;
+extern const std::string szInputType_Password;
+extern const std::string szInputType_Range;
+
+extern const std::string szInputPattern_HHMM;
+extern const std::string szInputPattern_MMSS;
 
 extern uint32_t g_uiHeapMin;
 extern uint32_t g_uiHeap;
@@ -92,4 +103,6 @@ private:
 class CMqttCmd;
 typedef void (*CMqttCmd_cb)(CMqttCmd *pCmd, byte *payload, unsigned int length);
 
-#endif // _SRC__CBASE_H_
+void check_if_exist_I2C();
+
+#endif // SRC_CBASE_H

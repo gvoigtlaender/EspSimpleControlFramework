@@ -6,22 +6,23 @@
 WiFiUDP udpClient;
 
 void OnServerIpChanged(void *pObject, CConfigKeyBase *pKey) {
+  (void)pKey;
   static_cast<CSyslog *>(pObject)->OnServerIpChanged();
 }
 
-CSyslog::CSyslog(const char *szAppName, const char *szShortName)
+CSyslog::CSyslog(const std::string &sAppName, const std::string &sShortName)
     : CControl("CSyslog"),
-      /*m_sDeviceName(szAppName)*/ m_pcsDeviceName(szAppName),
-      /*m_sShortName(szShortName)*/ m_pcsShortName(szShortName),
-      m_bConfigValid(false) {
-  m_pCfgServer = CreateConfigKey<string>("Syslog", "ServerIp", "");
+      m_pCfgServer(CreateConfigKey<string>("Syslog", "ServerIp", "")),
+      m_pcsDeviceName(sAppName.c_str()), m_pcsShortName(sShortName.c_str()) {
+
   m_pCfgServer->SetOnChangedCallback(::OnServerIpChanged, this);
 }
 
 void CSyslog::control(bool bForce /*= false*/) {
   CControl::control(bForce);
-  if (this->m_uiTime > millis() && !bForce)
+  if (this->m_uiTime > millis() && !bForce) {
     return;
+  }
 
   this->m_uiTime += 5;
   // Serial.print(m_sInstanceName.c_str());
@@ -46,11 +47,10 @@ void CSyslog::control(bool bForce /*= false*/) {
            m_pcsDeviceName);
       IPAddress oIP;
       if (oIP.fromString(m_pCfgServer->m_pTValue->m_Value.c_str())) {
-        m_bConfigValid = true;
         CControl::ms_pSyslog = new Syslog(udpClient, oIP, 514, m_pcsShortName,
                                           m_pcsDeviceName, LOG_KERN);
       } else {
-        m_bConfigValid = false;
+        CControl::ms_pSyslog = nullptr;
       }
     }
     this->m_nState = eDone;
@@ -62,19 +62,18 @@ void CSyslog::control(bool bForce /*= false*/) {
 }
 
 void CSyslog::OnServerIpChanged() {
-  if (!CControl::ms_bNetworkConnected)
+  if (!CControl::ms_bNetworkConnected) {
     return;
+  }
   _log2(I, "OnServerIpChanged");
-  if (CControl::ms_pSyslog) {
+  if (CControl::ms_pSyslog != nullptr) {
     _log2(I, "Disconnect");
     delete CControl::ms_pSyslog;
+    CControl::ms_pSyslog = nullptr;
   }
   IPAddress oIP;
   if (oIP.fromString(m_pCfgServer->m_pTValue->m_Value.c_str())) {
-    m_bConfigValid = true;
     CControl::ms_pSyslog = new Syslog(udpClient, oIP, 514, m_pcsShortName,
                                       m_pcsDeviceName, LOG_KERN);
-  } else {
-    m_bConfigValid = false;
   }
 }

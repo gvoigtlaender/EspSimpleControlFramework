@@ -1,6 +1,6 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#ifndef SRC_CDISPLAY_H_
-#define SRC_CDISPLAY_H_
+#ifndef SRC_CDISPLAY_H
+#define SRC_CDISPLAY_H
 #include <SPI.h>
 #include <U8g2lib.h>
 #include <U8x8lib.h>
@@ -104,16 +104,16 @@ public:
   CDisplayLine *GetLine(uint8_t n) {
     if (n < m_Lines.size())
       return m_Lines[n];
-    return NULL;
+    return nullptr;
   }
   CXbm *GetXbm(uint8_t n) {
     if (n < m_Xbms.size())
       return m_Xbms[n];
-    return NULL;
+    return nullptr;
   }
   size_t GetNoOfLines() { return m_Lines.size(); }
 
-  virtual U8G2 *GetU8G2() { return NULL; }
+  virtual U8G2 *GetU8G2() { return nullptr; }
 
 protected:
   // uint8 m_uiNoOfLines;
@@ -230,4 +230,4 @@ public:
 protected:
   U8G2 *m_pDisplay;
 };
-#endif // SRC_CDISPLAY_H_
+#endif // SRC_CDISPLAY_H

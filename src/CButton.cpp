@@ -28,8 +28,9 @@ void CButton::control(bool bForce /*= false*/) {
     break;
 
   case eWaitForHigh:
-    if (!bPressed)
+    if (!bPressed) {
       break;
+    }
 
     _log2(CControl::D, "BUTTON H");
     setButtonState(ePressed);
@@ -38,9 +39,9 @@ void CButton::control(bool bForce /*= false*/) {
     break;
 
   case eWaitForLow:
-    if (bPressed)
+    if (bPressed) {
       break;
-
+    }
     m_uiMillisClick = millis() - m_uiMillisButtonControl;
     _log(CControl::D, "BUTTON L %lu", m_uiMillisClick);
     if (m_uiMillisClick < cnFilterMs) {
@@ -85,9 +86,9 @@ void CButton::control(bool bForce /*= false*/) {
     break;
 
   case eWaitForLow2:
-    if (bPressed)
+    if (bPressed) {
       break;
-
+    }
     setButtonState(eNone);
     m_uiMillisClick = millis() - m_uiMillisButtonControl;
     _log(CControl::D, "BUTTON L2 %lu", m_uiMillisClick);
@@ -107,6 +108,7 @@ void CButton::setButtonState(_E_BUTTONSTATE eState) {
   m_pMqtt_ButtonState->setValue(getButtonStateString(eState));
 }
 
+// static
 const char *CButton::getButtonStateString(_E_BUTTONSTATE eState) {
   switch (eState) {
   case eNone:

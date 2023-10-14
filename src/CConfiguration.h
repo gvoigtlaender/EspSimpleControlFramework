@@ -1,6 +1,6 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#ifndef SRC_CCONFIGURATION_H_
-#define SRC_CCONFIGURATION_H_
+#ifndef SRC_CCONFIGURATION_H
+#define SRC_CCONFIGURATION_H
 
 #include "CConfigValue.h"
 #include <Arduino.h>
@@ -19,32 +19,21 @@
 
 class CConfiguration {
 public:
-  CConfiguration(const char *szConfigFile, const char *szTitle,
-                 const char *szHtmlHead);
+  CConfiguration(const char *szConfigFile);
 
   void SetupServer(CWebServer *server, bool bAsRoot);
 
-  CWebServer *m_pServer = NULL;
+  CWebServer *m_pServer = nullptr;
 
   void _handleHttpGetContent();
   void _handleHttpPost();
 
-  void reset();
+  static void reset();
 
   void load();
   void save();
   std::string m_sConfigFile;
 
-  // char *m_szhtml_content_buffer;
-  // size_t m_szhtml_content_buffer_size;
-
-#if defined _OLD_CODE
-  bool GetHtmlForm(const char *pszHtmlHead, const char *pszHtmlTitle);
-  bool GetHtmlReboot(const char *pszHtmlHead, const char *pszHtmlTitle);
-  void handleArgs(CWebServer *server, const char *pszHtmlHead,
-                  const char *pszHtmlTitle);
-#endif
-
   static CConfiguration *ms_Instance;
 };
-#endif // SRC_CCONFIGURATION_H_
+#endif // SRC_CCONFIGURATION_H

@@ -1,6 +1,6 @@
 /* Copyright 2021 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#ifndef SRC_CBUTTON_H_
-#define SRC_CBUTTON_H_
+#ifndef SRC_CBUTTON_H
+#define SRC_CBUTTON_H
 
 #include "CControl.h"
 #include <Arduino.h>
@@ -8,6 +8,8 @@
 //! CButton. Handle digital input as button, check state, calculate
 //! click state
 class CButton : public CControl {
+  CButton() = delete;
+
 public:
   //! Constructor.
   /*!
@@ -19,7 +21,7 @@ public:
         m_nDigitalReadRef((nMode == INPUT_PULLUP) ? 0 : 1),
         m_eButtonState(eNone), m_eStateButtonControl(eInit),
         m_uiMillisButtonControl(0), m_uiMillisClick(0),
-        m_pMqtt_ButtonState(NULL) {}
+        m_pMqtt_ButtonState(nullptr) {}
   //! Sets pinMode, creates MQTT variable ButtonState.
   /*!
     \return bool if passed successfull
@@ -68,12 +70,12 @@ public:
     \return string
     \sa _E_BUTTONSTATE
   */
-  const char *getButtonStateString(_E_BUTTONSTATE eState);
+  static const char *getButtonStateString(_E_BUTTONSTATE eState);
 
 protected:
-  uint8_t m_nPin;                   //! ESP digital pin
-  uint8_t m_nMode;                  //! pin mode, default: INPUT_PULLUP
-  int8_t m_nDigitalReadRef;         //! compare reference according to pin mode
+  const uint8_t m_nPin;             //! ESP digital pin
+  const uint8_t m_nMode;            //! pin mode, default: INPUT_PULLUP
+  const int8_t m_nDigitalReadRef;   //! compare reference according to pin mode
   _E_BUTTONSTATE m_eButtonState;    //! button (click) state
   _E_STATE m_eStateButtonControl;   //! control state
   uint64_t m_uiMillisButtonControl; //! control timer
@@ -81,4 +83,4 @@ protected:
   CMqttValue *m_pMqtt_ButtonState;  //! MQTT variable ButtonState
 };
 
-#endif // SRC_CCONTROLBUTTON_H_
+#endif // SRC_CBUTTON_H

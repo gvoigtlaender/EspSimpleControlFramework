@@ -1,12 +1,9 @@
 /* Copyright 2021 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#ifndef SRC_CCONTROL_H_
-#define SRC_CCONTROL_H_
+#ifndef SRC_CCONTROL_H
+#define SRC_CCONTROL_H
 #include <Arduino.h> // NOLINT(clang-diagnostic-error)
 #include <string>
 #include <vector>
-
-extern char VERSION_STRING[];
-extern char APPNAME[];
 
 #if defined(USE_DISPLAY)
 class CDisplayLine;
@@ -30,7 +27,7 @@ public:
 private:
   CControl()
       : m_nState(0), m_uiTime(millis()),
-        /*m_sInstanceName("")*/ m_pszInstanceName(NULL) {}
+        /*m_sInstanceName("")*/ m_pszInstanceName(nullptr) {}
 
 public:
   explicit CControl(const char *pszInstance)
@@ -38,7 +35,7 @@ public:
         /*m_sInstanceName(pszInstance)*/ m_pszInstanceName(pszInstance)
 #if defined(USE_DISPLAY)
         ,
-        m_pDisplayLine(NULL)
+        m_pDisplayLine(nullptr)
 #endif
   {
     // CControl::Log("Instance %s", sInstance.c_str());
@@ -70,7 +67,7 @@ public:
 
     Serial.printf("%08lu: \tSYSTEM\t%c: %s\n", millis(), GetLogTypeChar(type),
                   czDebBuf);
-    if (ms_pSyslog != NULL) {
+    if (ms_pSyslog != nullptr) {
       char szTmp[255];
       snprintf(szTmp, sizeof(szTmp), "SYSTEM %s", czDebBuf);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
@@ -95,7 +92,7 @@ public:
 
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_pszInstanceName,
                   GetLogTypeChar(type), czDebBuf);
-    if (ms_pSyslog != NULL) {
+    if (ms_pSyslog != nullptr) {
       char szTmp[255];
       snprintf(szTmp, sizeof(szTmp), "%s %s", m_pszInstanceName, czDebBuf);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
@@ -113,7 +110,7 @@ public:
 
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_pszInstanceName,
                   GetLogTypeChar(type), pcMessage);
-    if (ms_pSyslog != NULL) {
+    if (ms_pSyslog != nullptr) {
       char szTmp[255];
       snprintf(szTmp, sizeof(szTmp), "%s %s", m_pszInstanceName, pcMessage);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
@@ -168,9 +165,10 @@ public:
       const char *pszSection, const char *pszKey, std::string def,
       CConfigKeyTimeString::E_Type type = CConfigKeyTimeString::HHMM);
 
-  CConfigKeyIntSlider *CreateConfigKeyIntSlider(const char *pszSection,
-                                                const char *pszKey, int def,
-                                                int nMin, int nMax);
+  static CConfigKeyIntSlider *CreateConfigKeyIntSlider(const char *pszSection,
+                                                       const char *pszKey,
+                                                       int def, int nMin,
+                                                       int nMax);
 
 #if defined(USE_DISPLAY)
   void SetDisplayLine(CDisplayLine *pLine) { m_pDisplayLine = pLine; }
@@ -183,7 +181,7 @@ protected:
   // std::string m_sInstanceName;
   const char *m_pszInstanceName;
 #if defined(USE_DISPLAY)
-  CDisplayLine *m_pDisplayLine = NULL;
+  CDisplayLine *m_pDisplayLine = nullptr;
 #endif
   static bool ms_bNetworkConnected;
   static bool ms_bTimeUpdated;
@@ -199,4 +197,4 @@ public:
 
   static uint64_t ms_uiLastLogMs;
 };
-#endif // SRC_CCONTROL_H_
+#endif // SRC_CCONTROL_H

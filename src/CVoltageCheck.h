@@ -1,5 +1,6 @@
-#if !defined _SRC_CVOLTAGECHECK_H_
-#define _SRC_CVOLTAGECHECK_H_
+#if !defined SRC_CVOLTAGECHECK_H
+#define SRC_CVOLTAGECHECK_H
+// NOLINTNEXTLINE(clang-diagnostic-error)
 #include <Arduino.h>
 #include <CBase.h>
 #include <CControl.h>
@@ -12,7 +13,7 @@ using std::vector;
 class CVoltageCheck : public CControl {
 public:
   CVoltageCheck(uint8_t nPin)
-      : CControl("CVoltageCheck"), m_nPin(nPin), m_pMqtt_Voltage(NULL) {
+      : CControl("CVoltageCheck"), m_nPin(nPin), m_pMqtt_Voltage(nullptr) {
     m_pMqtt_Voltage = CreateMqttValue("Voltage");
 
     m_nVal = analogRead(m_nPin);
@@ -63,12 +64,12 @@ public:
   void SetFactor(double dFactor) { m_dFactor = dFactor; }
 
 protected:
-  uint8_t m_nPin;
+  const uint8_t m_nPin;
   double m_dFactor = 4.96 / 945;
   uint16_t m_nVal = 0;
-  CMqttValue *m_pMqtt_Voltage = NULL;
+  CMqttValue *m_pMqtt_Voltage = nullptr;
   vector<uint8_t> m_Values;
-  CXbm *m_pXbm = NULL;
+  CXbm *m_pXbm = nullptr;
 };
 
-#endif // _SRC_CVOLTAGECHECK_H_
+#endif // SRC_CVOLTAGECHECK_H

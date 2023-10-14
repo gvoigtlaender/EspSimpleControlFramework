@@ -1,15 +1,10 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#ifndef SRC_CMQTT_H_
-#define SRC_CMQTT_H_
-
-#include <string>
-using std::string;
+#ifndef SRC_CMQTT_H
+#define SRC_CMQTT_H
 
 #include <list>
-using std::list;
-
+#include <string>
 #include <vector>
-using std::vector;
 
 #include "CConfigValue.h"
 #include <Arduino.h>
@@ -53,7 +48,7 @@ class CMqttCmd : public CNonCopyable {
 
 public:
 public:
-  CMqttCmd(const string &sPath, CControl *pControl, CMqttCmd_cb cb);
+  CMqttCmd(const string &sPath, CControl *pControl, CMqttCmd_cb callback);
   ~CMqttCmd() { delete[] m_szTopic; }
 
 protected:
@@ -61,7 +56,7 @@ protected:
   CControl *m_pControl;
   CMqttCmd_cb m_Callback;
   bool m_bSubscribed;
-  static vector<CMqttCmd *> ms_MqttCommands;
+  static std::vector<CMqttCmd *> ms_MqttCommands;
 };
 
 class CMqtt : public CControl {
@@ -107,7 +102,7 @@ protected:
   string m_sClientName;
   WiFiClient m_WifiClient;
   PubSubClient *m_pMqttClient;
-  static list<CMqttValue *> ms_Values;
+  static std::list<CMqttValue *> ms_Values;
   bool m_bConnected;
   bool m_bConfigValid;
   bool m_bAllowRestartOnFailure = true;
@@ -121,11 +116,11 @@ protected:
 
 public:
   static CMqtt *ms_pMqtt;
-  void callback(char *topic, byte *payload, unsigned int length);
+  void callback(const char *topic, byte *payload, unsigned int length);
 
 private:
   CMqtt(const CMqtt &src);
   CMqtt &operator=(const CMqtt &src);
 };
 
-#endif // SRC_CMQTT_H_
+#endif // SRC_CMQTT_H

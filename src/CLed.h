@@ -1,6 +1,6 @@
 /* Copyright 2021 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#ifndef SRC_CLED_H_
-#define SRC_CLED_H_
+#ifndef SRC_CLED_H
+#define SRC_CLED_H
 
 #include "CBase.h"
 #include "CConfigValue.h"
@@ -13,17 +13,20 @@ using std::list;
 using std::string;
 
 class CLed : public CControl {
+  CLed() = delete;
+
 public:
   explicit CLed(uint8_t nLedPin)
       : CControl("CLed"), m_nLedPin(nLedPin), m_eControlState(eStart),
         m_eBlinkState(eBlinkStart), m_uiBlinkCnt(0), m_uiBlinkMillis(0),
-        m_eBlinkTask(NONE), m_bCurrentState(false), m_pMqtt_CurrentTask(NULL),
-        m_pMqtt_LedState(NULL), m_pIntensity(NULL) {
-    assert(ms_pInstance == NULL);
+        m_eBlinkTask(NONE), m_bCurrentState(false),
+        m_pMqtt_CurrentTask(nullptr), m_pMqtt_LedState(nullptr),
+        m_pIntensity(nullptr) {
+    assert(ms_pInstance == nullptr);
     m_pIntensity = CreateConfigKeyIntSlider("Led", "Intensity", 100, 0, 100);
     ms_pInstance = this;
   }
-  uint8_t m_nLedPin;
+  const uint8_t m_nLedPin;
 
   bool setup() override;
 
@@ -33,7 +36,7 @@ public:
   E_LEDSTATES m_eControlState = eStart;
 
   //! blink cycle
-  _E_STMRESULT LedBlink(int nOnTimeMs, int nOffTimeMs, uint8_t uiCnt);
+  E_STMRESULT LedBlink(int nOnTimeMs, int nOffTimeMs, uint8_t uiCnt);
   enum E_BLINKSTATE {
     eBlinkStart = 0,
     eBlinkCheck,
@@ -53,20 +56,21 @@ public:
     m_bCurrentState = bOn;
     //::digitalWrite(m_nLedPin, (bOn == true) ? HIGH : LOW);
     analogWrite(m_nLedPin, bOn ? m_pIntensity->m_pTValue->m_Value : 0);
-    if (m_pMqtt_LedState != NULL)
+    if (m_pMqtt_LedState != nullptr) {
       m_pMqtt_LedState->setValue(to_string(bOn));
+    }
   }
   bool m_bCurrentState;
 
-  CMqttValue *m_pMqtt_CurrentTask = NULL;
-  CMqttValue *m_pMqtt_LedState = NULL;
-  CMqttCmd *m_pMqtt_CmdOnOff = NULL;
+  CMqttValue *m_pMqtt_CurrentTask = nullptr;
+  CMqttValue *m_pMqtt_LedState = nullptr;
+  CMqttCmd *m_pMqtt_CmdOnOff = nullptr;
 
   CConfigKeyIntSlider *m_pIntensity;
 
   static CLed *ms_pInstance;
   static void AddBlinkTask(E_BLINKTASK eTask) {
-    if (ms_pInstance != NULL) {
+    if (ms_pInstance != nullptr) {
       ms_pInstance->m_eBlinkTask = eTask;
     }
   }
@@ -79,4 +83,4 @@ private:
   CLed &operator=(const CLed &src);
 };
 
-#endif // SRC_CLED_H_
+#endif // SRC_CLED_H

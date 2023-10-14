@@ -9,14 +9,10 @@ void handleHttpGetContent() {
 void handleHttpPost() { CConfiguration::ms_Instance->_handleHttpPost(); }
 
 // static
-CConfiguration *CConfiguration::ms_Instance = NULL;
+CConfiguration *CConfiguration::ms_Instance = nullptr;
 
-CConfiguration::CConfiguration(const char *szConfigFile, const char *szTitle,
-                               const char *szHtmlHead)
-    : m_sConfigFile(szConfigFile) /*,
-       m_szhtml_content_buffer(szhtml_content_buffer),
-       m_szhtml_content_buffer_size(szhtml_content_buffer_size)*/
-{
+CConfiguration::CConfiguration(const char *szConfigFile)
+    : m_sConfigFile(szConfigFile) {
   ms_Instance = this;
 }
 
@@ -32,52 +28,6 @@ void CConfiguration::SetupServer(CWebServer *server, bool bAsRoot) {
 void CConfiguration::_handleHttpGetContent() {
   CControl::Log(CControl::I, "CConfiguration::_handleHttpGetContent");
 
-#if 0
-  size_t m_szhtml_content_buffer_size = 4000;
-  char *m_szhtml_content_buffer = new char[m_szhtml_content_buffer_size];
-  memset(m_szhtml_content_buffer, 0, m_szhtml_content_buffer_size);
-  CheckFreeHeap();
-  CConfigKeyBase::SectionsMap::iterator sections;
-  CConfigKeyBase::KeyMap::iterator keys;
-
-  CConfigKeyBase::SectionsList::iterator sec_list;
-
-  for (unsigned int i = 0; i < CConfigKeyBase::ms_SectionList.size(); i++) {
-    std::string sSection = CConfigKeyBase::ms_SectionList[i];
-
-    if (sSection == std::string("0"))
-      continue;
-    CheckFreeHeap();
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<fieldset>\n");
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<legend>%s</legend>\n", sSection.c_str());
-
-    CheckFreeHeap();
-    for (unsigned int n = 0; n < CConfigKeyBase::ms_VarEntries[sSection].size();
-         n++) {
-      CConfigKeyBase *pEntry = CConfigKeyBase::ms_VarEntries[sSection][n];
-      snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-               m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-               "%s: %s", pEntry->GetKey(),
-               pEntry->m_pValue->GetFormEntry().c_str());
-    }
-    CheckFreeHeap();
-
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "</fieldset>\n");
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<p>\n");
-  }
-  m_pServer->send(200, "text/html", m_szhtml_content_buffer);
-  CControl::Log(CControl::I, "_handleHttpGetContent done, buffersize=%u",
-                strlen(m_szhtml_content_buffer));
-  delete[] m_szhtml_content_buffer;
-#else
   std::string sContent = "";
   CheckFreeHeap();
 
@@ -105,7 +55,6 @@ void CConfiguration::_handleHttpGetContent() {
   CheckFreeHeap();
   sContent.clear();
   CheckFreeHeap();
-#endif
 }
 
 void CConfiguration::_handleHttpPost() {
@@ -116,9 +65,10 @@ void CConfiguration::_handleHttpPost() {
   CControl::Log(CControl::I, "handleSubmit Args %d", args);
 
   CheckFreeHeap();
-  for (int n = 0; n < args; n++) {
-    CControl::Log(CControl::I, "Arg %d: %s = %s", n,
-                  m_pServer->argName(n).c_str(), m_pServer->arg(n).c_str());
+  for (int argc = 0; argc < args; argc++) {
+    CControl::Log(CControl::I, "Arg %d: %s = %s", argc,
+                  m_pServer->argName(argc).c_str(),
+                  m_pServer->arg(argc).c_str());
   }
   CheckFreeHeap();
 
@@ -132,7 +82,7 @@ void CConfiguration::_handleHttpPost() {
     if (sAction == "reset") {
       CheckFreeHeap();
       CControl::Log(CControl::I, "Reset & Restart");
-      this->reset();
+      CConfiguration::reset();
       CheckFreeHeap();
       this->save();
       CheckFreeHeap();
@@ -180,6 +130,7 @@ void CConfiguration::_handleHttpPost() {
                   "<META http-equiv=\"refresh\" content=\"1;URL=/configure\">");
 }
 
+// static
 void CConfiguration::reset() {
   CControl::Log(CControl::I, "CConfiguration::reset()");
   CheckFreeHeap();
@@ -233,9 +184,9 @@ void CConfiguration::load() {
 #endif
         CControl::Log(CControl::I, "json.success() success, parsed json");
 
-        const char *pszSec = NULL;
-        const char *pszKey = NULL;
-        const char *pszVal = NULL;
+        const char *pszSec = nullptr;
+        const char *pszKey = nullptr;
+        const char *pszVal = nullptr;
 
         CheckFreeHeap();
         for (auto &&sections : CConfigKeyBase::ms_Vars) {
@@ -329,9 +280,9 @@ void CConfiguration::save() {
   json.printTo(Serial);
   Serial.println("");
 #if defined(USE_LITTLEFS)
-  File configFile = LittleFS.open("/config.json", "w");
+  File configFile = LittleFS.open(m_sConfigFile.c_str(), "w");
 #else
-  File configFile = SPIFFS.open("/config.json", "w");
+  File configFile = SPIFFS.open(m_sConfigFile.c_str(), "w");
 #endif
   if (!configFile) {
     CControl::Log(CControl::I, "failed to open config file for writing");
@@ -344,9 +295,9 @@ void CConfiguration::save() {
   Serial.println("");
   CheckFreeHeap();
 #if defined(USE_LITTLEFS)
-  File configFile = LittleFS.open("/config.json", "w");
+  File configFile = LittleFS.open(m_sConfigFile.c_str(), "w");
 #else
-  File configFile = SPIFFS.open("/config.json", "w");
+  File configFile = SPIFFS.open(m_sConfigFile.c_str(), "w");
 #endif
   if (!configFile) {
     CControl::Log(CControl::I, "failed to open config file for writing");
@@ -359,258 +310,3 @@ void CConfiguration::save() {
 #endif
   CheckFreeHeap();
 }
-
-#if defined _OLD_CODE
-bool CConfiguration::GetHtmlForm(const char *pszHtmlHead,
-                                 const char *pszHtmlTitle) {
-
-  CheckFreeHeap();
-  memset(m_szhtml_content_buffer, 0, m_szhtml_content_buffer_size);
-  snprintf(m_szhtml_content_buffer, m_szhtml_content_buffer_size,
-           "<!DOCTYPE HTML>\n");
-
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<html>\n<head>\n");
-  if (pszHtmlHead != NULL)
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             pszHtmlHead);
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<title>%s</title>\n", pszHtmlTitle);
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</head>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<body>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<div "
-           "style='text-align:left;display:inline-block;color:#eaeaea;min-"
-           "width:340px;'>\n<div style='text-align:center;color:#eaeaea;'>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<h1>%s</h1>\n", pszHtmlTitle);
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<div id=but3d style=\"display: block;\"></div><p><form id=but3 "
-           "style=\"display: block;\" action='../' "
-           "method='get'><button>Main</button></form>");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<FORM action =\"/configure\" method=\"post\">\n");
-
-  CheckFreeHeap();
-  CConfigKeyBase::SectionsMap::iterator sections;
-  CConfigKeyBase::KeyMap::iterator keys;
-
-  CConfigKeyBase::SectionsList::iterator sec_list;
-
-  // for ( sec_list=CConfigKeyBase::ms_VarEntries.begin();
-  // sec_list!=CConfigKeyBase::ms_VarEntries.end(); sec_list++ ) {
-  for (unsigned int i = 0; i < CConfigKeyBase::ms_SectionList.size(); i++) {
-    // string sSection = sec_list->first;
-    std::string sSection = CConfigKeyBase::ms_SectionList[i];
-    // sContent += "<h2>" + sSection + "</h2>\n";
-
-    if (sSection == std::string("0"))
-      continue;
-    CheckFreeHeap();
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<fieldset>\n");
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<legend>%s</legend>\n", sSection.c_str());
-
-    CheckFreeHeap();
-    for (unsigned int n = 0; n < CConfigKeyBase::ms_VarEntries[sSection].size();
-         n++) {
-      CConfigKeyBase *pEntry = CConfigKeyBase::ms_VarEntries[sSection][n];
-      // CControl::Log(CControl::I, "1 add %s.%s ",
-      // pEntry->m_sSection.c_str(), pEntry->m_sKey.c_str());
-      snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-               m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-               "%s: %s", pEntry->GetKey(),
-               pEntry->m_pValue->GetFormEntry().c_str());
-      // CControl::Log(CControl::I, "done\n");
-    }
-    CheckFreeHeap();
-    /*
-    sContent += "<input type=\"submit\" name=\"action\" value=\"reset " +
-                sSection +
-                "\" class='button "
-                "bred' onsubmit='return "
-                "confirm(\"Confirm Reset " +
-                sSection + "\");'>\n";
-    */
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "</fieldset>\n");
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             "<p>\n");
-  }
-  CheckFreeHeap();
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<P>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<INPUT type=\"submit\" name=\"action\" value=\"save\">\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<input type=\"submit\" name=\"action\" value=\"reset\">\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<input type=\"submit\" name=\"action\" value=\"reboot\">\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<input type=\"submit\" name=\"action\" value=\"reload\">\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</FORM>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</div></div>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</body>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</html>\n");
-
-  CheckFreeHeap();
-  return true;
-}
-
-bool CConfiguration::GetHtmlReboot(const char *pszHtmlHead,
-                                   const char *pszHtmlTitle) {
-  snprintf(m_szhtml_content_buffer, m_szhtml_content_buffer_size,
-           "<!DOCTYPE HTML>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<html>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<head>\n");
-  if (pszHtmlHead != NULL)
-    snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-             m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-             pszHtmlHead);
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<title>%s</title>\n", pszHtmlTitle);
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<style>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "\"body { background-color: #808080; font-family: Arial, "
-           "Helvetica, Sans-Serif; Color: #000000; }\"\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</style>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</head>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<body>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "<h1>ESP8266 Rebooting....</h1>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</body>\n");
-  snprintf(m_szhtml_content_buffer + strlen(m_szhtml_content_buffer),
-           m_szhtml_content_buffer_size - strlen(m_szhtml_content_buffer),
-           "</html>\n");
-  return true;
-}
-
-void CConfiguration::handleArgs(ESP8266WebServer *server,
-                                const char *pszHtmlHead,
-                                const char *pszHtmlTitle) {
-  CheckFreeHeap();
-  int args = server->args();
-
-  CControl::Log(CControl::I, "handleSubmit Args %d", args);
-
-  CheckFreeHeap();
-  for (int n = 0; n < args; n++) {
-    CControl::Log(CControl::I, "Arg %d: %s = %s", n, server->argName(n).c_str(),
-                  server->arg(n).c_str());
-  }
-  CheckFreeHeap();
-
-  if (server->hasArg("action")) {
-    std::string sAction = server->arg("action").c_str();
-    CControl::Log(CControl::I, "action=%s", sAction.c_str());
-    bool bRebooting = false;
-
-    CheckFreeHeap();
-
-    if (sAction == "reset") {
-      CheckFreeHeap();
-      CControl::Log(CControl::I, "Reset & Restart");
-      this->reset();
-      CheckFreeHeap();
-      this->save();
-      CheckFreeHeap();
-      bRebooting = true;
-    } else if (sAction == "reboot") {
-      CControl::Log(CControl::I, "Restart");
-      bRebooting = true;
-    } else if (sAction == "reload") {
-      this->load();
-    } else if (sAction == "save") {
-
-      CheckFreeHeap();
-      CConfigKeyBase::SectionsMap::iterator sections;
-      CConfigKeyBase::KeyMap::iterator keys;
-
-      CConfigKeyBase::SectionsList::iterator sec_list;
-
-      for (unsigned int i = 0; i < CConfigKeyBase::ms_SectionList.size(); i++) {
-        CheckFreeHeap();
-        std::string sSection = CConfigKeyBase::ms_SectionList[i];
-        for (unsigned int n = 0;
-             n < CConfigKeyBase::ms_VarEntries[sSection].size(); n++) {
-          CConfigKeyBase *pEntry = CConfigKeyBase::ms_VarEntries[sSection][n];
-          CheckFreeHeap();
-          String sSection_Key = pEntry->m_pValue->m_pszSection_Key;
-          if (server->hasArg(sSection_Key)) {
-            std::string s = server->arg(sSection_Key).c_str();
-            pEntry->FromString(s.c_str());
-          } else {
-            pEntry->FromString("");
-          }
-          CheckFreeHeap();
-        }
-      }
-      CheckFreeHeap();
-      this->save();
-      CheckFreeHeap();
-    }
-    // ActionDone:
-    if (bRebooting) {
-      this->GetHtmlReboot(pszHtmlHead, pszHtmlTitle);
-      server->send(200, "text/html", m_szhtml_content_buffer);
-
-      delay(1000);
-      ESP.restart();
-
-      return;
-    }
-  }
-  CheckFreeHeap();
-  this->GetHtmlForm(pszHtmlHead, pszHtmlTitle);
-  CheckFreeHeap();
-  server->send(200, "text/html", m_szhtml_content_buffer);
-  CheckFreeHeap();
-}
-
-#endif // _OLD_CODE

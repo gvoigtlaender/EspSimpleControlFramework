@@ -5,20 +5,20 @@
 using std::vector;
 class CXbm : CNonCopyable {
 private:
-  CXbm() {}
+  CXbm() = delete;
 
 public:
   CXbm(uint8_t x, uint8_t y, uint8_t w, uint8_t h,
        uint16_t uiUpdateIntervalS = 0)
-      : m_uiX(x), m_uiY(y), m_uiW(w), m_uiH(h), m_uiB(0), m_uiS(0),
-        m_uiUpdateIntervalS(uiUpdateIntervalS), m_uiTimer(0), m_pBuffer(NULL) {
-    m_uiB = w / 8;
-    m_uiS = m_uiB * h;
+      : m_uiX(x), m_uiY(y), m_uiW(w), m_uiH(h), m_uiB(w / 8), m_uiS(w / 8 * h),
+        m_uiUpdateIntervalS(uiUpdateIntervalS), m_uiTimer(0),
+        m_pBuffer(nullptr) {
     m_pBuffer = new unsigned char[m_uiS];
   }
   ~CXbm() {
-    if (m_pBuffer != NULL)
+    if (m_pBuffer != nullptr) {
       delete[] m_pBuffer;
+    }
   }
 
   void SetPixel(uint8_t x, uint8_t y) {
@@ -57,11 +57,11 @@ public:
     }
   }
 
-  uint8_t m_uiX;
-  uint8_t m_uiY;
-  uint8_t m_uiW;
-  uint8_t m_uiH;
-  uint8_t m_uiB;
+  const uint8_t m_uiX;
+  const uint8_t m_uiY;
+  const uint8_t m_uiW;
+  const uint8_t m_uiH;
+  const uint8_t m_uiB;
   uint16_t m_uiS;
   uint16_t m_uiUpdateIntervalS;
   uint32_t m_uiTimer;

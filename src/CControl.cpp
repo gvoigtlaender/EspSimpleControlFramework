@@ -13,7 +13,7 @@ bool CControl::ms_bTimeUpdated = false;
 bool CControl::ms_bUsbChargingActive = false;
 
 // static
-Syslog *CControl::ms_pSyslog = NULL;
+Syslog *CControl::ms_pSyslog = nullptr;
 
 // static
 uint64_t CControl::ms_uiLastLogMs = 0;
@@ -29,7 +29,8 @@ CMqttValue *CControl::CreateMqttValue(const std::string &sName,
 }
 
 CMqttCmd *CControl::CreateMqttCmd(const char *szTopic) {
-  string sCmd = std::string(m_pszInstanceName) + "/" + std::string(szTopic);
+  string sCmd =
+      std::string(m_pszInstanceName) + string("/") + std::string(szTopic);
   auto *pCmd = new CMqttCmd(sCmd, this, CControl::MqttCmdCallback);
   return pCmd;
 }
@@ -37,16 +38,18 @@ CMqttCmd *CControl::CreateMqttCmd(const char *szTopic) {
 // static
 void CControl::MqttCmdCallback(CMqttCmd *pCmd, byte *payload,
                                unsigned int length) {
-  if (pCmd != NULL && pCmd->m_pControl != NULL) {
+  if (pCmd != nullptr && pCmd->m_pControl != nullptr) {
     pCmd->m_pControl->ControlMqttCmdCallback(pCmd, payload, length);
   }
 }
 void CControl::ControlMqttCmdCallback(CMqttCmd *pCmd, byte *payload,
                                       unsigned int length) {
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
   char szPayLoad[length + 1];
   memcpy(szPayLoad, payload, length);
   szPayLoad[length] = 0x00;
-  _log(I, "ControlMqttCmdCallback(%s, %s)", pCmd->m_szTopic, szPayLoad);
+  _log(I, "ControlMqttCmdCallback(%s, %s)", pCmd->m_szTopic,
+       static_cast<const char *>(szPayLoad));
 }
 
 // static
@@ -109,6 +112,7 @@ CConfigKeyTimeString *CControl::CreateConfigKeyTimeString(
   return pKey;
 }
 
+// static
 CConfigKeyIntSlider *CControl::CreateConfigKeyIntSlider(const char *pszSection,
                                                         const char *pszKey,
                                                         int def, int nMin,
@@ -121,8 +125,6 @@ CConfigKeyIntSlider *CControl::CreateConfigKeyIntSlider(const char *pszSection,
 bool CControl::Setup() {
 
   new CMqttValue("SYSTEM/FwkVersion", FWK_VERSION_STRING);
-  new CMqttValue("SYSTEM/Version", VERSION_STRING);
-  new CMqttValue("SYSTEM/APPNAME", APPNAME);
 
   bool bSuccess = true;
   for (auto &&instance : ms_Instances) {

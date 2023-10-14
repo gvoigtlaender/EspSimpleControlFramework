@@ -1,7 +1,8 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#ifndef SRC_CSENSOR_H_
-#define SRC_CSENSOR_H_
+#ifndef SRC_CSENSOR_H
+#define SRC_CSENSOR_H
 
+// NOLINTNEXTLINE(clang-diagnostic-error)
 #include <Arduino.h>
 #include <string>
 using std::string;
@@ -44,8 +45,8 @@ public:
       : CSensorBase(szType), m_Temperature(10), m_Humidity(10) {}
   CFilter<float> m_Temperature;
   CFilter<float> m_Humidity;
-  CMqttValue *m_pMqttTemp = NULL;
-  CMqttValue *m_pMqttHum = NULL;
+  CMqttValue *m_pMqttTemp = nullptr;
+  CMqttValue *m_pMqttHum = nullptr;
 
   void CreateMqttValues() override {
     m_pMqttTemp = CreateMqttValue("Temperature");
@@ -83,7 +84,7 @@ public:
 class CSensorDHT : public CSensorSingle {
 private:
   explicit CSensorDHT(const char *szType)
-      : CSensorSingle(szType), m_pDht(NULL) {}
+      : CSensorSingle(szType), m_pDht(nullptr) {}
 
 public:
   CSensorDHT(const char *szType, uint8_t nPin, uint8_t nType)
@@ -141,9 +142,9 @@ public:
   class CSensorChannel {
   public:
     CSensorChannel() : m_Temperature(10) /*, m_Humidity(10)*/ {}
-    CMqttValue *m_pMqttTemp = NULL;
-    CDisplayLine *m_pDisplayLine = NULL;
-    // CMqttValue *m_pMqttHum = NULL;
+    CMqttValue *m_pMqttTemp = nullptr;
+    CDisplayLine *m_pDisplayLine = nullptr;
+    // CMqttValue *m_pMqttHum = nullptr;
     CFilter<float> m_Temperature;
     // CFilter<double> m_Humidity;
   };
@@ -163,7 +164,7 @@ public:
 
   void SetDisplayLine(uint8_t n, CDisplayLine *pDL) {
     _log(I, "SetDisplayLine(%u, %x)", n, pDL);
-    if (n < m_Sensors.size() && pDL != NULL) {
+    if (n < m_Sensors.size() && pDL != nullptr) {
       m_Sensors[n]->m_pDisplayLine = pDL;
     }
   }
@@ -171,7 +172,7 @@ public:
   vector<CSensorChannel *> m_Sensors;
   double GetTemperature(uint8_t n) {
     if (n < m_Sensors.size()) {
-      return m_Sensors[n]->m_Temperature.m_OutputValue;
+      return m_Sensors[n]->m_Temperature.getOuptuValue();
     }
     return 0.0;
   }
@@ -179,7 +180,7 @@ public:
 
 class CSensorDS18B20 : public CSensorMulti {
 public:
-  CSensorDS18B20(int nPin, OneWire *pOneWire = NULL, double tempMin = 20.0,
+  CSensorDS18B20(int nPin, OneWire *pOneWire = nullptr, double tempMin = 20.0,
                  double tempMax = 100.0)
       : CSensorMulti("DS18B20"), tempMin_(tempMin), tempMax_(tempMax) {
     if (pOneWire) {
@@ -236,7 +237,7 @@ public:
 
 protected:
   OneWire *m_pOneWire;
-  DallasTemperature *m_pDallas = NULL;
+  DallasTemperature *m_pDallas = nullptr;
   class CSensorChannelDS18B20 : public CSensorChannel {
   public:
     CSensorChannelDS18B20(DeviceAddress addr, const string &sAddr)
@@ -264,4 +265,4 @@ protected:
   uint8_t res = 12;
 };
 
-#endif // SRC_CSENSOR_H_
+#endif // SRC_CSENSOR_H

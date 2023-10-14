@@ -1,8 +1,8 @@
 #if !defined SRC_CDS18B20_H_
 #define SRC_CDS18B20_H_
 
-#define _MODE_DS18B20 0
-#define _MODE_DALLAS 1
+#define MODE_DS18B20 0
+#define MODE_DALLAS 1
 
 #include <Arduino.h>
 #include <CBase.h>
@@ -10,11 +10,11 @@
 #include <CControl.h>
 #include <OneWire.h>
 
-#if _MODE_DS18B20 == 1
+#if MODE_DS18B20 == 1
 #include <DS18B20.h>
 #endif
 
-#if _MODE_DALLAS == 1
+#if MODE_DALLAS == 1
 #include <DallasTemperature.h>
 #include <vector>
 using std::vector;
@@ -22,24 +22,24 @@ using std::vector;
 
 class CDS18B20 : public CControl {
 public:
-  CDS18B20(int nPin, OneWire *pOneWire = NULL) : CControl("CTemp") {
+  CDS18B20(int nPin, OneWire *pOneWire = nullptr) : CControl("CTemp") {
     if (pOneWire) {
       m_pOneWire = pOneWire;
     } else {
       m_pOneWire = new OneWire(nPin);
     }
-#if _MODE_DS18B20 == 1
+#if MODE_DS18B20 == 1
     m_pDS18B20 = new DS18B20(m_pOneWire);
 #endif
 
-#if _MODE_DALLAS == 1
+#if MODE_DALLAS == 1
     m_pDallas = new DallasTemperature(m_pOneWire);
 #endif
   }
   bool setup() override {
     CControl::setup();
 
-#if _MODE_DS18B20 == 1
+#if MODE_DS18B20 == 1
     if (m_pDS18B20->begin() == false) {
       _log2(E, "ERROR: No device found");
       while (!m_pDS18B20->begin())
@@ -51,7 +51,7 @@ public:
     m_pDS18B20->requestTemperatures();
 #endif
 
-#if _MODE_DALLAS == 1
+#if MODE_DALLAS == 1
     m_pDallas->begin();
     m_pDallas->setWaitForConversion(false);
     uint8_t uiCnt = m_pDallas->getDeviceCount();
@@ -76,7 +76,7 @@ public:
 
     this->m_uiTime += 1000;
 
-#if _MODE_DS18B20 == 1
+#if MODE_DS18B20 == 1
     start = millis();
 
     // wait for data AND detect disconnect
@@ -107,7 +107,7 @@ public:
     m_pDS18B20->requestTemperatures();
 #endif
 
-#if _MODE_DALLAS == 1
+#if MODE_DALLAS == 1
     start = millis();
 
     for (uint8_t nCnt = 0; nCnt < m_Sensors.size(); nCnt++) {
@@ -138,12 +138,12 @@ public:
 protected:
   OneWire *m_pOneWire;
 
-#if _MODE_DS18B20 == 1
+#if MODE_DS18B20 == 1
   DS18B20 *m_pDS18B20;
 #endif
 
-#if _MODE_DALLAS == 1
-  DallasTemperature *m_pDallas = NULL;
+#if MODE_DALLAS == 1
+  DallasTemperature *m_pDallas = nullptr;
   class CSensor {
   public:
     CSensor(DeviceAddress addr, const string &sAddr) {

@@ -13,6 +13,7 @@
 #include <flash_hal.h>
 #else
 #endif
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
 static const char successResponse1[] PROGMEM =
     "<META http-equiv=\"refresh\" content=\"15;URL=/\">Update Success! "
     "Rebooting...";
@@ -20,7 +21,7 @@ static const char successResponse1[] PROGMEM =
 File fsUploadFile;
 
 // static
-CUpdater *CUpdater::ms_pInstance = NULL;
+CUpdater *CUpdater::ms_pInstance = nullptr;
 
 void OnGet_filelist() { CUpdater::ms_pInstance->OnGet_filelist(); }
 void OnPost() { CUpdater::ms_pInstance->OnPost(); }
@@ -29,11 +30,8 @@ void OnUpload() { CUpdater::ms_pInstance->OnUpload(); }
 void OnUpload2() { CUpdater::ms_pInstance->OnUpload2(); }
 void OnDelete() { CUpdater::ms_pInstance->OnDelete(); }
 
-CUpdater::CUpdater(CWebServer *pServer, const char *szPath,
-                   const char *szTitle /*= NULL*/,
-                   const char *szHtmlHeader /* = NULL*/)
-    : m_pServer(pServer), m_pcsPath(szPath), m_pcsTitle(szTitle),
-      m_pcsHtmlHeader(szHtmlHeader), _updaterError("") {
+CUpdater::CUpdater(CWebServer *pServer, const char *szPath)
+    : m_pServer(pServer), m_pcsPath(szPath), _updaterError("") {
   CUpdater::ms_pInstance = this;
   // handler for the /update form page
   // m_pServer->on(m_pcsPath, HTTP_GET, ::OnGet);
@@ -53,14 +51,11 @@ CUpdater::CUpdater(CWebServer *pServer, const char *szPath,
 }
 
 void CUpdater::_setUpdaterError() {
-#if defined(ESP8266) || defined(ESP32)
   Update.printError(Serial);
   StreamString str;
   Update.printError(str);
   _updaterError = str.c_str();
   CControl::Log(CControl::E, "UpdaterError %s", str.c_str());
-#elif defined(ESP32)
-#endif
 }
 
 void CUpdater::OnGet_filelist() {
@@ -77,28 +72,32 @@ void CUpdater::OnGet_filelist() {
   while (file) {
     string sFile = string(file.name());
     double dSize = file.size();
-    char szSize[32];
-    if (dSize < 1024.0)
-      snprintf(szSize, sizeof(szSize), "%.0f B", dSize);
-    else if (dSize / 1024.0 < 1024.0)
-      snprintf(szSize, sizeof(szSize), "%.3f kB", dSize / 1024);
-    else
-      snprintf(szSize, sizeof(szSize), "%.3f MB", dSize / 1024 / 1024);
+    string sSize;
+    if (dSize < 1024.0) {
+      // snprintf(szSize, sizeof(szSize), "%.0f B", dSize);
+      sSize = FormatString<32>("%.0f B", dSize);
+    } else if (dSize / 1024.0 < 1024.0) {
+      // snprintf(szSize, sizeof(szSize), "%.3f kB", dSize / 1024);
+      sSize = FormatString<32>("%.3f kB", dSize / 1024);
+    } else {
+      // snprintf(szSize, sizeof(szSize), "%.3f MB", dSize / 1024 / 1024);
+      sSize = FormatString<32>("%.3f MB", dSize / 1024 / 1024);
+    }
 
-    sContent += "<tr>\n";
-    sContent += "<td>" + sFile + "</td>\n";
-    sContent += "<td>" + string(szSize) + "</td>\n";
-    sContent += "<td><input type = 'submit' name=\"" + sFile +
-                "\" value=\"delete\"></td>\n";
-    sContent += "</tr>\n";
+    sContent += string("<tr>\n");
+    sContent += string("<td>") + sFile + string("</td>\n");
+    sContent += string("<td>") + sSize + string("</td>\n");
+    sContent += string("<td><input type = 'submit' name=\"") + sFile +
+                string("\" value=\"delete\"></td>\n");
+    sContent += string("</tr>\n");
 
     file = root.openNextFile();
   }
   root.close();
-  sContent += "<tr><td></td><td></td><td></td></tr>\n";
-  sContent += "<tr><td>Free Space</td><td>" +
+  sContent += string("<tr><td></td><td></td><td></td></tr>\n");
+  sContent += string("<tr><td>Free Space</td><td>") +
               std::to_string(LittleFS_GetFreeSpaceKb()) +
-              " kB</td><td></td></tr>\n";
+              string(" kB</td><td></td></tr>\n");
   CControl::Log(CControl::I, "CUpdater::getHtmlPage, size=%u",
                 sContent.length());
   m_pServer->send(200, "text/html", sContent.c_str());
@@ -214,9 +213,10 @@ void CUpdater::OnUpload() { m_pServer->send(200); }
 void CUpdater::OnUpload2() {
   HTTPUpload &upload = m_pServer->upload();
   if (upload.status == UPLOAD_FILE_START) {
-    String filename = upload.filename;
-    if (!filename.startsWith("/"))
+    String filename(upload.filename);
+    if (!filename.startsWith("/")) {
       filename = "/" + filename;
+    }
     CControl::Log(CControl::I, "handleFileUpload Name: %s", filename.c_str());
 #if defined(USE_LITTLEFS)
     fsUploadFile =
@@ -228,10 +228,11 @@ void CUpdater::OnUpload2() {
                                       // (create if it doesn't exist)
     filename = String();
   } else if (upload.status == UPLOAD_FILE_WRITE) {
-    if (fsUploadFile)
+    if (fsUploadFile) {
       fsUploadFile.write(
           upload.buf,
           upload.currentSize); // Write the received bytes to the file
+    }
   } else if (upload.status == UPLOAD_FILE_END) {
     if (fsUploadFile) {     // If the file was successfully created
       fsUploadFile.close(); // Close the file again
@@ -245,9 +246,10 @@ void CUpdater::OnUpload2() {
   }
 }
 void CUpdater::OnDelete() {
-  for (int n = 0; n < m_pServer->args(); n++) {
-    CControl::Log(CControl::I, "delete %s: %s", m_pServer->argName(n).c_str(),
-                  m_pServer->arg(n).c_str());
+  for (int argc = 0; argc < m_pServer->args(); argc++) {
+    CControl::Log(CControl::I, "delete %s: %s",
+                  m_pServer->argName(argc).c_str(),
+                  m_pServer->arg(argc).c_str());
   }
 
 #if defined(USE_LITTLEFS)

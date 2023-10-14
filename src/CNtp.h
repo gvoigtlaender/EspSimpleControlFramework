@@ -1,6 +1,6 @@
 /* Copyright 2021 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#ifndef SRC_CNTP_H_
-#define SRC_CNTP_H_
+#ifndef SRC_CNTP_H
+#define SRC_CNTP_H
 
 #include "CConfigValue.h"
 #include "CControl.h"
@@ -23,15 +23,15 @@ public:
 
   void printLocalTime();
 
-  CConfigKey<string> *m_pCfgServer;
-  CConfigKey<string> *m_pCfgTimeZone;
+  CConfigKey<string> *m_pCfgServer = nullptr;
+  CConfigKey<string> *m_pCfgTimeZone = nullptr;
 
-  CMqttValue *m_pMqtt_Time;
+  CMqttValue *m_pMqtt_Time = nullptr;
   time_t m_RawTime;
-  struct tm *m_pTimeInfo;
+  struct tm *m_pTimeInfo = nullptr;
 
 private:
   CNtp(const CNtp &src);
   CNtp &operator=(const CNtp &src);
 };
-#endif // SRC_CNTP_H_
+#endif // SRC_CNTP_H
