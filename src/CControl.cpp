@@ -136,6 +136,8 @@ bool CControl::Setup() {
 // static
 void CControl::Control() {
   for (auto &&instance : ms_Instances) {
+    yield();
     instance->control(false);
+    yield();
   }
 }

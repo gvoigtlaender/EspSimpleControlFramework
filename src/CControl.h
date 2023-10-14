@@ -62,8 +62,8 @@ public:
     vsnprintf(czDebBuf, sizeof(czDebBuf), pcMessage, arg_ptr);
     va_end(arg_ptr);
 
-    if (millis() - CControl::ms_uiLastLogMs < 5)
-      delay(2);
+    // if (millis() - CControl::ms_uiLastLogMs < 5)
+    //    delay(2);
 
     Serial.printf("%08lu: \tSYSTEM\t%c: %s\n", millis(), GetLogTypeChar(type),
                   czDebBuf);
@@ -87,8 +87,8 @@ public:
     vsnprintf(czDebBuf, sizeof(czDebBuf), pcMessage, arg_ptr);
     va_end(arg_ptr);
 
-    if (millis() - CControl::ms_uiLastLogMs < 5)
-      delay(2);
+    // if (millis() - CControl::ms_uiLastLogMs < 5)
+    //   delay(2);
 
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_pszInstanceName,
                   GetLogTypeChar(type), czDebBuf);
@@ -97,7 +97,7 @@ public:
       snprintf(szTmp, sizeof(szTmp), "%s %s", m_pszInstanceName, czDebBuf);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
     }
-    delay(0);
+    // delay(0);
   }
   void _log2(E_LOGTYPE type, const char *pcMessage) {
 #if !defined DEBUG
@@ -105,8 +105,8 @@ public:
       return;
 #endif
 
-    if (millis() - CControl::ms_uiLastLogMs < 5)
-      delay(2);
+    // if (millis() - CControl::ms_uiLastLogMs < 5)
+    //   delay(2);
 
     Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_pszInstanceName,
                   GetLogTypeChar(type), pcMessage);
@@ -115,7 +115,7 @@ public:
       snprintf(szTmp, sizeof(szTmp), "%s %s", m_pszInstanceName, pcMessage);
       ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
     }
-    delay(0);
+    // delay(0);
   }
 
   static char GetLogTypeChar(E_LOGTYPE type) {
