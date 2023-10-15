@@ -1,8 +1,7 @@
 # test files
 /platformio.ini
 include
-main.cpp
-config.h
+*config.h
 data/config.json
 doxygen/*
 /cppcheck.xml
