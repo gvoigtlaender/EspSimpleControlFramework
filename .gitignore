@@ -1,5 +1,4 @@
 # test files
-/platformio.ini
 include
 *config.h
 data/config.json
