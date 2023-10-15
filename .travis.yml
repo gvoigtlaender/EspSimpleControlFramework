@@ -11,6 +11,7 @@ sudo: false
 
 install:
     - pip install -U platformio
+    - pip install urllib3==1.26.6
     - pio update
 
 script:
