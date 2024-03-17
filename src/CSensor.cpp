@@ -75,7 +75,7 @@ void CSensorMulti::display() {
     if (pChannel->m_pDisplayLine != NULL) {
       char szTmp[32];
       snprintf(szTmp, sizeof(szTmp), "%02.1fC",
-               pChannel->m_Temperature.getOutputValue());
+               pChannel->m_TemperatureRaw.getOutputValue());
       pChannel->m_pDisplayLine->Line(szTmp);
       // this->_log(I, szTmp);
     }

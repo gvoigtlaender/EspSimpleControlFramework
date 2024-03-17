@@ -141,11 +141,12 @@ public:
   explicit CSensorMulti(const char *szType) : CSensorBase(szType) {}
   class CSensorChannel {
   public:
-    CSensorChannel() : m_Temperature(10) /*, m_Humidity(10)*/ {}
+    CSensorChannel() : m_Temperature(10), m_TemperatureRaw(10) /*, m_Humidity(10)*/ {}
     CMqttValue *m_pMqttTemp = nullptr;
     CDisplayLine *m_pDisplayLine = nullptr;
     // CMqttValue *m_pMqttHum = nullptr;
     CFilter<float> m_Temperature;
+    CFilter<float> m_TemperatureRaw;
     // CFilter<double> m_Humidity;
   };
 
@@ -173,6 +174,12 @@ public:
   double GetTemperature(uint8_t n) {
     if (n < m_Sensors.size()) {
       return m_Sensors[n]->m_Temperature.getOutputValue();
+    }
+    return 0.0;
+  }
+  double GetTemperatureRaw(uint8_t n) {
+    if (n < m_Sensors.size()) {
+      return m_Sensors[n]->m_TemperatureRaw.getOutputValue();
     }
     return 0.0;
   }
@@ -217,12 +224,15 @@ public:
       CSensorChannelDS18B20 *pSensor =
           static_cast<CSensorChannelDS18B20 *>(m_Sensors[nCnt]);
       float t = m_pDallas->getTempC(pSensor->m_Addr);
+      if ( t != DEVICE_DISCONNECTED_C ) {
 #ifdef _DEBUG
       _log(D, "%u Temp: %.1f", nCnt, t);
 #endif
       if (tempMin_ < t && t < tempMax_) {
         pSensor->m_Temperature.Filter(t);
       }
+      pSensor->m_TemperatureRaw.Filter(t);
+    }
     }
 
     m_pDallas->requestTemperatures();
