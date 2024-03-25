@@ -20,8 +20,8 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-      - name: Build PlatformIO Project
+      - name: Build ESP12E
         run: pio run -e esp12e
 
-      - name: Build PlatformIO Project
+      - name: Build ESP32
         run: pio run -e esp32dev
