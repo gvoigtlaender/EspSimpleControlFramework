@@ -1,6 +1,6 @@
 #if !defined SRC_CXBM_H
 #define SRC_CXBM_H
-#include <CBase.h>
+#include "CBase.h"
 #include <vector>
 using std::vector;
 class CXbm : CNonCopyable {
@@ -15,7 +15,7 @@ public:
         m_pBuffer(nullptr) {
     m_pBuffer = new unsigned char[m_uiS];
   }
-  ~CXbm() {
+  ~CXbm() override {
     if (m_pBuffer != nullptr) {
       delete[] m_pBuffer;
     }
@@ -50,9 +50,10 @@ public:
     Clear();
     for (uint8_t n = 0; n < vec.size(); n++) {
       uint8_t x = n;
-      uint8_t y = vec[n];
-      if (y >= m_uiH)
-        y = m_uiH - 1;
+      // uint8_t y = vec[n];
+      // if (y >= m_uiH)
+      //   y = m_uiH - 1;
+      // SetPixel(x, y);
       SetPixel(x, vec[n]);
     }
   }

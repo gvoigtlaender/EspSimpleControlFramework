@@ -1,16 +1,28 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
 #include "CMqtt.h"
 
-#if defined(USE_DISPLAY)
-#include <CDisplay.h>
+#if defined(ESP8266)
+#include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#else
+#error EspSimpleControlFramework requires ESP8266 or ESP32 platform
 #endif
+
+#if defined(USE_DISPLAY)
+#include "CDisplay.h"
+#endif
+
+#include "CConfigValue.h"
+#include "CWifi.h"
+#include <PubSubClient.h>
 
 // static
 std::vector<CMqttCmd *> CMqttCmd::ms_MqttCommands;
 // static
 CMqtt *CMqtt::ms_pMqtt = nullptr;
 
-void callback(char *topic, byte *payload, unsigned int length) {
+void callback(const char *topic, byte *payload, unsigned int length) {
 #if defined DEBUG
   CControl::Log(CControl::I, "callback");
 #endif
@@ -85,17 +97,25 @@ std::list<CMqttValue *> CMqtt::ms_Values;
 
 CMqtt::CMqtt(const string &sServerIp /* = "" */,
              const string &sClientName /* = "" */)
-    : CControl("CMqtt"), m_sClientName(sClientName), m_WifiClient(),
-      m_pMqttClient(nullptr), m_bConnected(false), m_bConfigValid(false) {
+    : CControl("CMqtt"), m_sClientName(sClientName),
+      m_pWifiClient(new WiFiClient()), m_pMqttClient(nullptr),
+      m_bConnected(false), m_bConfigValid(false) {
   ms_pMqtt = this;
-  m_pMqttClient = new PubSubClient(m_WifiClient);
+  m_pMqttClient = new PubSubClient(*m_pWifiClient);
 
   m_pCfgMqttServer = new CConfigKey<string>("Mqtt", "ServerIp", "");
   m_pCfgMqttUser = new CConfigKey<string>("Mqtt", "User", "");
   m_pCfgMqttPasswd = new CConfigKey<string>("Mqtt", "Passwd", "");
   m_pCfgMqttPasswd->m_pValue->m_pcsInputType = szInputType_Password.c_str();
   m_pCfgMqttPublishIntervalS =
-      new CConfigKey<int>("Mqtt", "PublishInterval", 0);
+      new CConfigKey<int>("Mqtt", "PublishInterval", (int)0);
+}
+
+CMqtt::~CMqtt() {
+  delete m_pCfgMqttServer;
+  delete m_pCfgMqttUser;
+  delete m_pCfgMqttPasswd;
+  delete m_pCfgMqttPublishIntervalS;
 }
 
 bool CMqtt::setup() {
@@ -286,9 +306,9 @@ void CMqtt::publish_value(CMqttValue *pValue) {
   }
   // return;
 
-  std::string sKey =
+  const std::string sKey =
       FormatString<128>("%s/%s", m_sClientName.c_str(), pValue->m_pszPath);
-  std::string sValue = pValue->m_sValue;
+  const std::string sValue = pValue->m_sValue;
   try {
     if (m_pMqttClient->publish(sKey.c_str(), sValue.c_str(), true)) {
       _log(D, "publish %s = %s", sKey.c_str(), sValue.c_str());
@@ -321,6 +341,12 @@ void CMqtt::subscribe_cmd(CMqttCmd *pCmd) {
     m_pMqttClient->subscribe(pCmd->m_szTopic);
     pCmd->m_bSubscribed = true;
   }
+}
+
+void CMqtt::disconnect() {
+  _log(I, "disconnect()");
+  m_bConnected = false;
+  m_pMqttClient->disconnect();
 }
 
 void CMqtt::callback(const char *topic, byte *payload, unsigned int length) {

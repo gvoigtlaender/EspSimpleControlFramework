@@ -9,12 +9,15 @@
 class CDisplayLine;
 #endif
 
-#include <CBase.h>
-#include <CConfigValue.h>
-#include <Syslog.h>
+#include "CBase.h"
+class Syslog;
 
 class CMqttValue;
 class CMqttCmd;
+template <typename T> class CConfigKey;
+class CConfigKeyTimeString;
+class CConfigKeyIntSlider;
+
 class CControl : public CNonCopyable {
 public:
   enum E_LOGTYPE {
@@ -50,73 +53,10 @@ public:
     // CControl::Log("%s->control(), time=%du\n",
     //  m_sInstanceName.c_str(), m_uiTime);
   }
-  static void Log(E_LOGTYPE type, const char *pcMessage, ...) {
-#if !defined DEBUG
-    if (type == D)
-      return;
-#endif
-    char czDebBuf[200] = {0};
-    va_list arg_ptr;
 
-    va_start(arg_ptr, pcMessage);
-    vsnprintf(czDebBuf, sizeof(czDebBuf), pcMessage, arg_ptr);
-    va_end(arg_ptr);
-
-    // if (millis() - CControl::ms_uiLastLogMs < 5)
-    //    delay(2);
-
-    Serial.printf("%08lu: \tSYSTEM\t%c: %s\n", millis(), GetLogTypeChar(type),
-                  czDebBuf);
-    if (ms_pSyslog != nullptr) {
-      char szTmp[255];
-      snprintf(szTmp, sizeof(szTmp), "SYSTEM %s", czDebBuf);
-      ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
-    }
-    // delay(0);
-  }
-
-  void _log(E_LOGTYPE type, const char *pcMessage, ...) {
-#if !defined DEBUG
-    if (type == D)
-      return;
-#endif
-    char czDebBuf[200] = {0};
-    va_list arg_ptr;
-
-    va_start(arg_ptr, pcMessage);
-    vsnprintf(czDebBuf, sizeof(czDebBuf), pcMessage, arg_ptr);
-    va_end(arg_ptr);
-
-    // if (millis() - CControl::ms_uiLastLogMs < 5)
-    //   delay(2);
-
-    Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_pszInstanceName,
-                  GetLogTypeChar(type), czDebBuf);
-    if (ms_pSyslog != nullptr) {
-      char szTmp[255];
-      snprintf(szTmp, sizeof(szTmp), "%s %s", m_pszInstanceName, czDebBuf);
-      ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
-    }
-    // delay(0);
-  }
-  void _log2(E_LOGTYPE type, const char *pcMessage) {
-#if !defined DEBUG
-    if (type == D)
-      return;
-#endif
-
-    // if (millis() - CControl::ms_uiLastLogMs < 5)
-    //   delay(2);
-
-    Serial.printf("%08lu: \t%s\t%c: %s\n", millis(), m_pszInstanceName,
-                  GetLogTypeChar(type), pcMessage);
-    if (ms_pSyslog != nullptr) {
-      char szTmp[255];
-      snprintf(szTmp, sizeof(szTmp), "%s %s", m_pszInstanceName, pcMessage);
-      ms_pSyslog->log(GetLogTypeMsk(type), szTmp);
-    }
-    // delay(0);
-  }
+  static void Log(E_LOGTYPE type, const char *pcMessage, ...);
+  void _log(E_LOGTYPE type, const char *pcMessage, ...);
+  void _log2(E_LOGTYPE type, const char *pcMessage);
 
   static char GetLogTypeChar(E_LOGTYPE type) {
     switch (type) {
@@ -134,21 +74,7 @@ public:
     }
   }
 
-  static uint16_t GetLogTypeMsk(E_LOGTYPE type) {
-    switch (type) {
-    case E:
-      return LOG_ERR;
-    case W:
-      return LOG_WARNING;
-    case I:
-      return LOG_INFO;
-    case D:
-      return LOG_DEBUG;
-
-    default:
-      return LOG_NOTICE;
-    }
-  }
+  static uint16_t GetLogTypeMsk(E_LOGTYPE type);
 
   CMqttValue *CreateMqttValue(const std::string &sName,
                               const std::string &sValue = "");
@@ -161,9 +87,10 @@ public:
   template <typename T>
   static CConfigKey<T> *CreateConfigKey(const char *pszSection,
                                         const char *pszKey, T def);
-  static CConfigKeyTimeString *CreateConfigKeyTimeString(
-      const char *pszSection, const char *pszKey, std::string def,
-      CConfigKeyTimeString::E_Type type = CConfigKeyTimeString::HHMM);
+  static CConfigKeyTimeString *
+  CreateConfigKeyTimeString(const char *pszSection, const char *pszKey,
+                            const std::string &def,
+                            E_Time_Type type = E_Time_Type::HHMM);
 
   static CConfigKeyIntSlider *CreateConfigKeyIntSlider(const char *pszSection,
                                                        const char *pszKey,

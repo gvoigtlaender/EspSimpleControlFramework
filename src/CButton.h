@@ -5,6 +5,8 @@
 #include "CControl.h"
 #include <Arduino.h>
 
+class CMqttValue;
+
 //! CButton. Handle digital input as button, check state, calculate
 //! click state
 class CButton : public CControl {

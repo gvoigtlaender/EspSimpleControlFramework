@@ -2,15 +2,16 @@
 #ifndef SRC_CLED_H
 #define SRC_CLED_H
 
-#include "CBase.h"
-#include "CConfigValue.h"
 #include "CControl.h"
-#include "CMqtt.h"
 #include <Arduino.h>
 #include <list>
 #include <string>
 using std::list;
 using std::string;
+
+class CMqttValue;
+class CMqttCmd;
+class CConfigKeyIntSlider;
 
 class CLed : public CControl {
   CLed() = delete;
@@ -52,14 +53,7 @@ public:
   // list<E_BLINKTASK> lBlinkTasks;
   E_BLINKTASK m_eBlinkTask;
 
-  void digitalWrite(bool bOn) {
-    m_bCurrentState = bOn;
-    //::digitalWrite(m_nLedPin, (bOn == true) ? HIGH : LOW);
-    analogWrite(m_nLedPin, bOn ? m_pIntensity->m_pTValue->m_Value : 0);
-    if (m_pMqtt_LedState != nullptr) {
-      m_pMqtt_LedState->setValue(to_string(bOn));
-    }
-  }
+  void digitalWrite(bool bOn);
   bool m_bCurrentState;
 
   CMqttValue *m_pMqtt_CurrentTask = nullptr;

@@ -1,4 +1,7 @@
 #include "CNtp.h"
+#include "CBase.h"
+#include "CConfigValue.h"
+#include "CMqtt.h"
 #include "CWifi.h"
 #include <Arduino.h>
 #include <ctime>

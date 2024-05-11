@@ -2,14 +2,13 @@
 #ifndef SRC_CNTP_H
 #define SRC_CNTP_H
 
-#include "CConfigValue.h"
 #include "CControl.h"
 #include <Arduino.h>
-#include <CBase.h>
-#include <CMqtt.h>
 #include <list>
 #include <string>
 using std::string;
+
+template <typename T> class CConfigKey;
 
 class CNtp : public CControl {
 public:

@@ -190,7 +190,7 @@ void CConfigSection::Reset() {
 CConfigKeyTimeString::CConfigKeyTimeString(const char *pszSection,
                                            const char *pszKey,
                                            const std::string &def,
-                                           E_Type type /*= HHMM*/)
+                                           E_Time_Type type /*= HHMM*/)
     : CConfigKey<std::string>(pszSection, pszKey, def), m_lSeconds(0),
       m_Type(type) {
   std::string sPattern = "";
@@ -248,14 +248,14 @@ long CConfigKeyTimeString::StringHhMmToSeconds(const char *sString) {
   String sTargetTime = sString;
   int8_t index = sTargetTime.indexOf(':');
   if (index != -1) {
-    int8_t hour = sTargetTime.substring(0, index).toInt();
+    long hour = sTargetTime.substring(0, index).toInt();
     lVal = (60 * 60 * hour);
 
     String s1 = sTargetTime.substring(index + 1);
     index = s1.indexOf(':');
     if (index != -1) {
-      int8_t minutes = s1.substring(0, index).toInt();
-      int8_t seconds = s1.substring(index + 1).toInt();
+      long minutes = s1.substring(0, index).toInt();
+      long seconds = s1.substring(index + 1).toInt();
       lVal += minutes * 60 + seconds;
     } else {
       lVal += 60 * s1.toInt();
@@ -273,8 +273,8 @@ long CConfigKeyTimeString::StringMmSsToSeconds(const char *sString) {
   String sTargetTime = sString;
   int8_t index = sTargetTime.indexOf(':');
   if (index != -1) {
-    int8_t minutes = sTargetTime.substring(0, index).toInt();
-    lVal = (60 * minutes);
+    long minutes = sTargetTime.substring(0, index).toInt();
+    lVal = 60 * minutes;
 
     String s1 = sTargetTime.substring(index + 1);
     lVal += s1.toInt();

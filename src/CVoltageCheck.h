@@ -1,12 +1,12 @@
 #if !defined SRC_CVOLTAGECHECK_H
 #define SRC_CVOLTAGECHECK_H
 // NOLINTNEXTLINE(clang-diagnostic-error)
+#include "CBase.h"
+#include "CControl.h"
+#include "CDisplayLine.h"
 #include <Arduino.h>
-#include <CBase.h>
-#include <CControl.h>
-#include <CDisplayLine.h>
 
-#include <CXbm.h>
+#include "CXbm.h"
 #include <vector>
 using std::vector;
 

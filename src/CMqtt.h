@@ -6,19 +6,16 @@
 #include <string>
 #include <vector>
 
-#include "CConfigValue.h"
 #include <Arduino.h>
-#if defined(ESP8266)
-#include <ESP8266WiFi.h>
-#elif defined(ESP32)
-#include <WiFi.h>
-#else
-#error EspSimpleControlFramework requires ESP8266 or ESP32 platform
-#endif
-#include <PubSubClient.h>
 
 #include "CControl.h"
-#include "CWifi.h"
+
+class WiFiClient;
+template <typename T> class CConfigKey;
+
+class PubSubClient;
+
+using std::string;
 
 class CMqttValue : CNonCopyable {
   friend class CMqtt;
@@ -26,9 +23,9 @@ class CMqttValue : CNonCopyable {
 
 public:
   explicit CMqttValue(const string &sPath, const string &sValue = "");
-  virtual ~CMqttValue() { delete[] m_pszPath; }
+  virtual ~CMqttValue() override { delete[] m_pszPath; }
   void setValue(const string &sValue, bool bForce = false);
-  string getValue() const { return m_sValue; }
+  const string &getValue() const { return m_sValue; }
   bool IsPublished() { return m_bPublished; }
 
 protected:
@@ -49,7 +46,7 @@ class CMqttCmd : public CNonCopyable {
 public:
 public:
   CMqttCmd(const string &sPath, CControl *pControl, CMqttCmd_cb callback);
-  ~CMqttCmd() { delete[] m_szTopic; }
+  ~CMqttCmd() override { delete[] m_szTopic; }
 
 protected:
   char *m_szTopic;
@@ -65,12 +62,7 @@ class CMqtt : public CControl {
 
 public:
   CMqtt(const string &sServerIp = "", const string &sClientName = "");
-  virtual ~CMqtt() {
-    delete m_pCfgMqttServer;
-    delete m_pCfgMqttUser;
-    delete m_pCfgMqttPasswd;
-    delete m_pCfgMqttPublishIntervalS;
-  }
+  virtual ~CMqtt() override;
 
   void setClientName(const char *szClientName) { m_sClientName = szClientName; }
 
@@ -87,11 +79,7 @@ public:
   bool isConnected() { return m_bConnected; }
   bool isRetryConnect() { return !m_bConnected && m_uiFailCnt < 5; }
 
-  void disconnect() {
-    _log(I, "disconnect()");
-    m_bConnected = false;
-    m_pMqttClient->disconnect();
-  }
+  void disconnect();
 
   void AllowRestartOnFailure(bool bAllowRestartOnFailure) {
     m_bAllowRestartOnFailure = bAllowRestartOnFailure;
@@ -100,19 +88,19 @@ public:
 protected:
   // string m_sServerIp;
   string m_sClientName;
-  WiFiClient m_WifiClient;
-  PubSubClient *m_pMqttClient;
+  WiFiClient *m_pWifiClient = nullptr;
+  PubSubClient *m_pMqttClient = nullptr;
   static std::list<CMqttValue *> ms_Values;
   bool m_bConnected;
   bool m_bConfigValid;
   bool m_bAllowRestartOnFailure = true;
 
-  CConfigKey<int> *m_pCfgMqttPublishIntervalS;
+  CConfigKey<int> *m_pCfgMqttPublishIntervalS = nullptr;
   uint32_t m_uiPublishTime = 0;
 
-  CConfigKey<std::string> *m_pCfgMqttServer;
-  CConfigKey<std::string> *m_pCfgMqttUser;
-  CConfigKey<std::string> *m_pCfgMqttPasswd;
+  CConfigKey<std::string> *m_pCfgMqttServer = nullptr;
+  CConfigKey<std::string> *m_pCfgMqttUser = nullptr;
+  CConfigKey<std::string> *m_pCfgMqttPasswd = nullptr;
 
 public:
   static CMqtt *ms_pMqtt;

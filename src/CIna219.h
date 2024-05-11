@@ -1,9 +1,9 @@
 #if !defined SRC_CINA219_H
 #define SRC_CINA219_H
 #include "CControl.h"
+#include "CFilter.hpp"
 #include <Adafruit_INA219.h>
 #include <Arduino.h>
-#include <CFilter.hpp>
 
 class CIna219 : public CControl {
 public:

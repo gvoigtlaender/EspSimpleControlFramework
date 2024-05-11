@@ -13,6 +13,8 @@
 #include <flash_hal.h>
 #else
 #endif
+#include "CWebserver.h"
+
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
 static const char successResponse1[] PROGMEM =
     "<META http-equiv=\"refresh\" content=\"15;URL=/\">Update Success! "

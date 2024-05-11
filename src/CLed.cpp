@@ -1,4 +1,7 @@
 #include "CLed.h"
+#include "CBase.h"
+#include "CConfigValue.h"
+#include "CMqtt.h"
 
 CLed *CLed::ms_pInstance = nullptr;
 
@@ -146,5 +149,14 @@ void CLed::ControlMqttCmdCallback(CMqttCmd *pCmd, byte *payload,
       digitalWrite(true);
     }
     // pCmd->setValue("", true);
+  }
+}
+
+void CLed::digitalWrite(bool bOn) {
+  m_bCurrentState = bOn;
+  //::digitalWrite(m_nLedPin, (bOn == true) ? HIGH : LOW);
+  analogWrite(m_nLedPin, bOn ? m_pIntensity->m_pTValue->m_Value : 0);
+  if (m_pMqtt_LedState != nullptr) {
+    m_pMqtt_LedState->setValue(to_string(bOn));
   }
 }

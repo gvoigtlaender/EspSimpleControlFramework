@@ -1,7 +1,7 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
 #ifndef SRC_CCONFIGVALUE_H
 #define SRC_CCONFIGVALUE_H
-#include <CBase.h>
+#include "CBase.h"
 #include <cstring>
 #include <map>
 #include <sstream>
@@ -26,7 +26,7 @@ public:
     snprintf(m_pszSection_Key, 5, "%d", (int)ms_uiUniqeId++);
   }
 
-  virtual ~CConfigValueBase() { delete[] m_pszSection_Key; }
+  virtual ~CConfigValueBase() override { delete[] m_pszSection_Key; }
 
   virtual std::string GetFormEntry() = 0;
   virtual void Reset() = 0;
@@ -79,7 +79,7 @@ public:
     CConfigKeyBase::ms_VarEntries[sSection].push_back(this);
   }
 
-  virtual ~CConfigKeyBase() {
+  virtual ~CConfigKeyBase() override {
     delete[] m_pszSection;
     delete[] m_pszKey;
   }
@@ -121,7 +121,7 @@ public:
     m_pValue = m_pTValue;
   }
 
-  virtual ~CConfigKey() { delete m_pTValue; }
+  virtual ~CConfigKey() override { delete m_pTValue; }
   std::string &ToString() override { return m_sValue; }
   void FromString(const char *pszVal) override {}
   void Reset() override { m_pValue->Reset(); }
@@ -136,18 +136,14 @@ private:
 
 class CConfigKeyTimeString : public CConfigKey<std::string> {
 public:
-  enum E_Type {
-    HHMM = 0,
-    MMSS,
-  };
   CConfigKeyTimeString(const char *pszSection, const char *pszKey,
-                       const std::string &def, E_Type type = HHMM);
+                       const std::string &def, E_Time_Type type = HHMM);
   void FromString(const char *pszVal) override;
   long StringToSeconds(const char *sString);
   long StringHhMmToSeconds(const char *sString);
   long StringMmSsToSeconds(const char *sString);
   long m_lSeconds;
-  E_Type m_Type;
+  E_Time_Type m_Type;
 };
 
 class CConfigKeyIntSlider : public CConfigKey<int> {

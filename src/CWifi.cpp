@@ -1,10 +1,19 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#include "CWifi.h"
-#if defined(USE_DISPLAY)
-#include <CDisplay.h>
+// NOLINTNEXTLINE(clang-diagnostic-error)
+#include <Arduino.h>
+#if defined ESP8266
+#include <ESP8266WiFi.h>
+#elif defined ESP32
+#include <WiFi.h>
 #endif
 
-#include <CMqtt.h>
+#include "CWifi.h"
+#if defined(USE_DISPLAY)
+#include "CDisplay.h"
+#endif
+#include "CConfigValue.h"
+
+#include "CMqtt.h"
 
 CWifi::CWifi(const char *szAppName, const string &sSsid /*= ""*/,
              const string &sPassword /*= ""*/, const string &sStaticIp /*= ""*/)
@@ -67,8 +76,11 @@ bool CWifi::setup() {
     WiFi.softAP(m_pszAppName);
 
     IPAddress myIP(WiFi.softAPIP());
-    _log(I, "AP IP address: %s", myIP.toString().c_str());
-    return false;
+    m_IP = myIP.toString().c_str();
+    _log(I, "AP IP address: %s", m_IP.c_str());
+    m_bAPMode = true;
+    CControl::ms_bNetworkConnected = true;
+    return true;
   }
 
   if (!m_pWifiStaticIp->GetValue().empty()) {
@@ -113,20 +125,22 @@ void CWifi::control(bool bForce /*= false*/) {
 
     _log2(I, "W4Connected");
 
-    this->m_nState = 1;
+    this->m_nState = m_bAPMode ? 2 : 1;
     break;
 
   case 1:
     if (WiFi.status() == WL_CONNECTED) {
+      m_IP = WiFi.localIP().toString().c_str();
       CWifi::m_uiProcessTime = millis() - CWifi::m_uiProcessTime;
       _log(I, "Connected to %s IP address: %s, rssi: %lddb, took %ldms",
-           m_pWifiSsid->GetValue().c_str(), WiFi.localIP().toString().c_str(),
-           WiFi.RSSI(), CWifi::m_uiProcessTime);
+           m_pWifiSsid->GetValue().c_str(), m_IP.c_str(), WiFi.RSSI(),
+           CWifi::m_uiProcessTime);
 #if defined(USE_DISPLAY)
-      if (m_pDisplayLine)
-        m_pDisplayLine->Line(WiFi.localIP().toString().c_str());
+      if (static_cast<bool>(m_pDisplayLine)) {
+        m_pDisplayLine->Line(m_IP);
+      }
 #endif
-      m_pMqttIP->setValue(WiFi.localIP().toString().c_str());
+      m_pMqttIP->setValue(m_IP);
 
       this->m_nState = 2;
       break;
@@ -136,7 +150,9 @@ void CWifi::control(bool bForce /*= false*/) {
 
   case 2:
     CControl::ms_bNetworkConnected = true;
-    this->m_nState = 3;
+    if (!m_bAPMode) {
+      this->m_nState = 3;
+    }
     break;
   case 3:
     switch (WiFi.status()) {
@@ -182,3 +198,9 @@ void CWifi::control(bool bForce /*= false*/) {
     break;
   }
 }
+
+bool CWifi::isConnected() const {
+  return WiFi.status() == WL_CONNECTED || m_bAPMode;
+}
+
+const std::string &CWifi::getIP() const { return m_IP; }

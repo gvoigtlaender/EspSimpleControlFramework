@@ -5,18 +5,10 @@
 #include <string>
 using std::string;
 
-// NOLINTNEXTLINE(clang-diagnostic-error)
-#include <Arduino.h>
-#if defined ESP8266
-#include <ESP8266WiFi.h>
-#elif defined ESP32
-#include "WiFi.h"
-#endif
-
-#include "CConfigValue.h"
 #include "CControl.h"
 
 class CMqttValue;
+template <typename T> class CConfigKey;
 
 class CWifi : public CControl {
 public:
@@ -26,6 +18,9 @@ public:
   bool setup() override;
 
   void control(bool bForce /*= false*/) override;
+
+  bool isConnected() const;
+  const std::string &getIP() const;
 
   // string m_sAppName;
   const char *m_pszAppName;
@@ -42,5 +37,8 @@ public:
 private:
   CWifi(const CWifi &src);
   CWifi &operator=(const CWifi &src);
+
+  bool m_bAPMode = false;
+  std::string m_IP;
 };
 #endif // SRC_CWIFI_H

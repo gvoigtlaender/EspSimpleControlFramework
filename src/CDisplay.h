@@ -8,9 +8,10 @@
 #include <string>
 #include <vector>
 
-#include <CControl.h>
-#include <CDisplayLine.h>
-#include <CXbm.h>
+#include "CControl.h"
+
+class CDisplayLine;
+class CXbm;
 
 class CDisplayBase : public CControl {
 public:
@@ -20,7 +21,7 @@ public:
     // _log("CDisplayBase::CDisplayBase()");
     // m_sEmptyLine.resize(m_uiNoOfColumns, ' ');
   }
-  virtual ~CDisplayBase() {
+  virtual ~CDisplayBase() override {
     for (auto &&line : m_Lines) {
       delete line;
     }
@@ -30,20 +31,10 @@ public:
   bool setup() override = 0;
 
   virtual CDisplayLine *AddLine(u8g2_uint_t x, u8g2_uint_t y,
-                                uint8_t uiNoOfColumns, const uint8_t *pFont) {
-    CDisplayLine *pLine = new CDisplayLine(x, y, uiNoOfColumns, pFont);
-    m_Lines.push_back(pLine);
-    return pLine;
-  }
+                                uint8_t uiNoOfColumns, const uint8_t *pFont);
 
   CXbm *AddXbm(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h,
-               uint16_t uiUpdateIntervalS = 0) {
-    CXbm *pXbm = new CXbm(x, y, w, h, uiUpdateIntervalS);
-    m_Xbms.push_back(pXbm);
-    this->_log(I, "AddXbm(%u, %u, %u, %u) s=%u, w/8=%u", x, y, w, h,
-               pXbm->m_uiS, (uint8_t)(w / 8));
-    return pXbm;
-  }
+               uint16_t uiUpdateIntervalS = 0);
 
   void control(bool bForce) override {
     enum {
@@ -91,15 +82,7 @@ public:
 
   virtual void updateDisplay() = 0;
 
-  void Line(uint8_t nIdx, const std::string &sLineContent) {
-    if (nIdx >= m_Lines.size())
-      return;
-    CDisplayLine *pLine = m_Lines[nIdx];
-    _log(I, "Line(%u, %s, %d, %s)", nIdx, sLineContent.c_str(),
-         sLineContent.length(), pLine->m_sLineToDraw.c_str());
-    pLine->Line(sLineContent);
-    this->m_uiScrollTime = millis() + m_uiScrollDelay;
-  }
+  void Line(uint8_t nIdx, const std::string &sLineContent);
 
   CDisplayLine *GetLine(uint8_t n) {
     if (n < m_Lines.size())
@@ -171,13 +154,9 @@ public:
 protected:
   U8X8 *m_pDisplay;
 };
-template <typename T> class CDisplayU8g2 : public CDisplayBase {
-public:
-  CDisplayU8g2(int resetpin)
-      : CDisplayBase("CDisplay"), m_pDisplay(new T(U8G2_R0, U8X8_PIN_NONE)) {
-    this->CControl::m_uiTime = millis() + 150;
-  }
 
+class CDisplayU8g2Base : public CDisplayBase {
+public:
   bool setup() override {
     // _log(I, "CDisplayU8g2::setup(), %d lines", GetNoOfLines());
     m_pDisplay->begin();
@@ -200,6 +179,12 @@ public:
     return pLine;
   }
 
+protected:
+  CDisplayU8g2Base(int resetpin, U8G2 *pDisplay)
+      : CDisplayBase("CDisplay"), m_pDisplay(pDisplay) {
+    this->CControl::m_uiTime = millis() + 150;
+  }
+
   void updateDisplay() override {
     m_pDisplay->clearBuffer();
     for (uint8_t n = 0; n < m_Lines.size(); n++) {
@@ -208,9 +193,8 @@ public:
       drawUTF8(pLine->m_uiX + pLine->m_uiXOffset, pLine->m_uiY,
                pLine->m_sLineToDraw.c_str());
     }
-    for (auto &&pXbm : m_Xbms) {
-      drawXBM(pXbm->m_uiX, pXbm->m_uiY, pXbm->m_uiW, pXbm->m_uiH,
-              pXbm->m_pBuffer);
+    for (const auto *pXbm : m_Xbms) {
+      drawXBM(pXbm);
     }
     m_pDisplay->sendBuffer();
   }
@@ -226,8 +210,13 @@ public:
   }
 
   U8G2 *GetU8G2() override { return m_pDisplay; }
-
-protected:
+  void drawXBM(const CXbm *pXbm);
   U8G2 *m_pDisplay;
+};
+
+template <typename T> class CDisplayU8g2 : public CDisplayU8g2Base {
+public:
+  CDisplayU8g2(int resetpin)
+      : CDisplayU8g2Base(resetpin, new T(U8G2_R0, U8X8_PIN_NONE)) {}
 };
 #endif // SRC_CDISPLAY_H

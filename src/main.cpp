@@ -6,6 +6,7 @@
 #include <ArduinoJson.h>
 #include <string>
 using std::string;
+#include "CBase.h"
 #include <cstring>
 #include <ctime>
 #include <list>
@@ -19,70 +20,68 @@ using std::string;
 #define WLAN_PASSWD ""
 #endif // WLAN_PASSWD
 
-const std::string VERSION_STRING = "0.0.23.0";
 const std::string APPNAME = "ESP Simple Control Framework";
 const std::string SHORTNAME = "ESPSCF";
 
-const std::string APPNAMEVER = APPNAME + string(" ") + VERSION_STRING;
+const std::string APPNAMEVER = APPNAME + string(" ") + FWK_VERSION_STRING;
 
 #pragma region SysLog
-#include <CSyslog.h>
+#include "CSyslog.h"
 CSyslog *m_pSyslog = nullptr;
 #pragma endregion
 
-#include <CControl.h>
+#include "CControl.h"
 
-#include <CMqtt.h>
+#include "CMqtt.h"
 CMqtt *m_pMqtt = nullptr;
 
-#include <CWifi.h>
+#include "CWifi.h"
 CWifi *m_pWifi = nullptr;
 
 #if defined(USE_DISPLAY)
-#include <CDisplay.h>
+#include "CDisplay.h"
 CDisplayBase *m_pDisplay = nullptr;
 #endif
 
 #if USE_CBUTTON == 1
-#include <CButton.h>
+#include "CButton.h"
 CButton *m_pButton = nullptr;
 #endif
 
 #if USE_CLED == 1
-#include <CLed.h>
+#include "CLed.h"
 CLed *m_pLed = nullptr;
 #endif
 
 #if USE_SENSOR == 1
-#include <CSensor.h>
+#include "CSensor.h"
 CSensorSingle *m_pSensor = nullptr;
 CSensorSingle *m_pSensor2 = nullptr;
 CSensorMulti *m_pSensor3 = nullptr;
 #endif
 
 #if USE_INA219 == 1
-#include <CIna219.h>
+#include "CIna219.h"
 CIna219 *m_pIna219 = nullptr;
 #endif
 
-#include <CNtp.h>
+#include "CNtp.h"
 CNtp *m_pNtp = nullptr;
 
-#include <CBase.h>
-
 #pragma region configuration
+#include "CConfigValue.h"
 #include "CConfiguration.h"
 CConfiguration *m_pConfig = nullptr;
 CConfigKey<string> *m_pDeviceName = nullptr;
 #pragma endregion
 
 #pragma region WebServer
-#include <CUpdater.h>
-#include <CWebserver.h>
+#include "CUpdater.h"
+#include "CWebserver.h"
 #if defined(ESP8266)
-#include <ESP8266WiFi.h>
+// #include <ESP8266WiFi.h>
 #elif defined(ESP32)
-#include <WiFi.h>
+// #include <WiFi.h>
 #else
 #error EspSimpleControlFramework requires ESP8266 or ESP32 platform
 #endif
@@ -112,14 +111,13 @@ void handleStatusUpdate() {
   // string sUpdate = "";
   CheckFreeHeap();
   time_t m_RawTime(0);
-  struct tm *m_pTimeInfo(nullptr);
   time(&m_RawTime);
-  m_pTimeInfo = localtime(&m_RawTime);
+  const auto *pTimeInfo = localtime(&m_RawTime);
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
   char mbstr[100];
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-  std::strftime(mbstr, sizeof(mbstr), "%A %c", m_pTimeInfo);
+  std::strftime(mbstr, sizeof(mbstr), "%A %c", pTimeInfo);
   CheckFreeHeap();
 
   std::vector<std::pair<string, string>> oStates{};
@@ -222,60 +220,6 @@ void SetupServer() {
   server.on("/switch", handleSwitch);
   server.onNotFound(handleNotFound);
 }
-void wifisetupfailed() {
-  // Set WiFi to station mode and disconnect from an AP if it was previously
-  // connected
-
-#if defined(ESP8266)
-  WiFi.mode(WIFI_STA);
-#elif defined(ESP32)
-  WiFi.mode(WIFI_MODE_STA);
-#endif
-  WiFi.disconnect();
-
-  delay(100);
-
-  int nets(WiFi.scanNetworks());
-  Serial.println("scan done");
-  if (nets == 0) {
-    Serial.println("no networks found");
-  } else {
-    Serial.print(nets);
-    Serial.println(" networks found");
-    for (int net = 0; net < nets; ++net) {
-      // Print SSID and RSSI for each network found
-      Serial.print(net + 1);
-      Serial.print(": ");
-      Serial.print(WiFi.SSID(net));
-      Serial.print(" (");
-      Serial.print(WiFi.RSSI(net));
-      Serial.print(")");
-#if defined(ESP8266)
-      Serial.println((WiFi.encryptionType(net) == ENC_TYPE_NONE) ? " " : "*");
-#elif defined(ESP32)
-      Serial.println((WiFi.encryptionType(net) == WIFI_AUTH_OPEN) ? " " : "*");
-#endif
-
-      const auto ssid(WiFi.SSID(net).c_str());
-      m_pWifi->m_pWifiSsid->m_pTValue->m_Choice.push_back(ssid);
-      delay(10);
-    }
-  }
-
-  WiFi.softAP(APPNAME.c_str());
-
-  IPAddress myIP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(myIP);
-  SetupServer();
-  server.begin();
-  Serial.println("HTTP server started");
-  Serial.println("");
-
-  while (true) {
-    server.handleClient();
-  }
-}
 
 CMqttValue *pMqttDateTimeString = nullptr;
 unsigned int nMillisLast = 0;
@@ -308,12 +252,10 @@ void setup() {
 
   new CConfigKey<bool>("Device", "Checkbox", true);
 
-  new CConfigKeyTimeString("Time", "Example_HHMM", "10:30",
-                           CConfigKeyTimeString::HHMM);
-  new CConfigKeyTimeString("Time", "Example_HHMMSS", "10:30::15",
-                           CConfigKeyTimeString::HHMM);
-  new CConfigKeyTimeString("Time", "Example_MMSS", "10:30",
-                           CConfigKeyTimeString::MMSS);
+  new CConfigKeyTimeString("Time", "Example_HHMM", "10:30", E_Time_Type::HHMM);
+  new CConfigKeyTimeString("Time", "Example_HHMMSS", "10:30:15",
+                           E_Time_Type::HHMM);
+  new CConfigKeyTimeString("Time", "Example_MMSS", "10:30", E_Time_Type::MMSS);
 
   new CConfigKey<double>("Double", "DTest", 1.234);
 
@@ -328,7 +270,9 @@ void setup() {
 #if USE_SENSOR == 1
   // m_pSensor = std::make_unique<CSensorDHT>("DHT22", 12, DHT22);
   // m_pSensor2 = std::make_unique< CSensorBME280>();
-  m_pSensor3 = new CSensorDS18B20(5);
+  m_pSensor3 = new CSensorDS18B20(14);
+  m_pSensor3->CreateConfigKeyTimeString("sensor3", "time", "08:15",
+                                        E_Time_Type::HHMM);
 #endif
 #if USE_CLED == 1
   m_pLed = new CLed(PIN_LED);
@@ -354,6 +298,7 @@ void setup() {
   m_pDisplay->AddLine(0, 16, 25, u8g2_font_squeezed_b7_tr);
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
   m_pDisplay->AddLine(0, 24, 25, u8g2_font_squeezed_b7_tr);
+  m_pDisplay->AddLine(0, 32, 25, u8g2_font_squeezed_b7_tr);
   m_pDisplay->Line(0, APPNAMEVER);
   m_pDisplay->Line(1, string("Framework: ") + FWK_VERSION_STRING);
   m_pWifi->SetDisplayLine(m_pDisplay->GetLine(2));
@@ -362,6 +307,9 @@ void setup() {
   // m_pSensor2->SetDisplayLine(m_pDisplay->GetLine(3));
   // for (uint8_t n = 0; n < m_pSensor3->m_Sensors.size(); n++)
   //  m_pSensor3->SetDisplayLine(n, m_pDisplay->GetLine(4 + n));
+#if USE_SENSOR == 1
+  m_pSensor3->SetDisplayLine(0, m_pDisplay->GetLine(3));
+#endif
 #endif
 
   const auto sTime = TimeToTimeString(60 * 60 - 1);
@@ -373,7 +321,7 @@ void setup() {
                 dMap);
 
   new CMqttValue("SYSTEM/APPNAME", std::string(APPNAME));
-  new CMqttValue("SYSTEM/Version", std::string(VERSION_STRING));
+  new CMqttValue("SYSTEM/Version", std::string(FWK_VERSION_STRING));
 
   pMqttDateTimeString = new CMqttValue("DATETIME", "");
 
@@ -390,15 +338,6 @@ void setup() {
   m_pSyslog->m_pcsDeviceName = m_pDeviceName->m_pTValue->m_Value.c_str();
 
   nMillisLast = millis();
-
-  if (sSSID.empty()) {
-    CControl::Log(CControl::E, "SSID empty, wifi failed");
-    wifisetupfailed();
-  }
-  if (sWIFIPWD.empty()) {
-    CControl::Log(CControl::E, "WIFI pwd empty, wifi failed");
-    wifisetupfailed();
-  }
 
   CControl::Log(CControl::I, "creating hardware took %ldms",
                 millis() - nMillisLast);
@@ -429,15 +368,14 @@ bool bStarted = false;
 uint64_t nMillis = millis() + 1000;
 void ServerStart() {
 
-  if (WiFi.status() != WL_CONNECTED) {
+  if (!m_pWifi->isConnected()) {
     nMillis = millis() + 2000;
     return;
   }
 
   server.begin();
 
-  CControl::Log(CControl::I, "Connect to http://%s",
-                WiFi.localIP().toString().c_str());
+  CControl::Log(CControl::I, "Connect to http://%s", m_pWifi->getIP().c_str());
 
   bStarted = true;
   nMillis = millis() + 200000;
@@ -455,7 +393,7 @@ void loop() {
     // httpServer.handleClient();
 
 #if defined(ESP8266)
-    MDNS.update();
+    // MDNS.update();
 #elif defined(ESP32)
 #endif
 
@@ -507,7 +445,7 @@ void loop() {
 
   time_t rtime = 0;
   time(&rtime);
-  tm *ptm = localtime(&rtime);
+  const auto *ptm = localtime(&rtime);
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   char mbstr[100];

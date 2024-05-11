@@ -1,2 +1,2 @@
 #!/bin/sh
-cppcheck --language=c++ --std=c++20 --suppress=noExplicitConstructor --suppress=unusedFunction --xml --enable=all  -DUSE_DISPLAY=0 -DESP32 --suppress=missingIncludeSystem:* --inline-suppr -i src/* 2> cppcheck.xml
+cppcheck --check-level=exhaustive --checkers-report=cppcheck.report --language=c++ --std=c++20 --suppress=noExplicitConstructor --suppress=unusedStructMember --suppress=unusedFunction --xml --enable=all  -DUSE_DISPLAY=0 -DESP32 --suppress=missingIncludeSystem:* --inline-suppr -i src/* 2> cppcheck.xml

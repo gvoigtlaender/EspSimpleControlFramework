@@ -28,7 +28,7 @@ public:
 
 private:
   unsigned int m_nSizeMax;
-  unsigned int m_nSize;
+  unsigned int m_nSize = 0;
   T m_OutputValue;
   T m_Sum;
   std::vector<T> m_Values;

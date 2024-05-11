@@ -1,7 +1,8 @@
 /* Copyright 2019 Georg Voigtlaender gvoigtlaender@googlemail.com */
-#include <CDisplayLine.h>
-#include <CMqtt.h>
-#include <CSensor.h>
+#include "CSensor.h"
+#include "CDisplay.h"
+#include "CDisplayLine.h"
+#include "CMqtt.h"
 
 bool CSensorBase::setup() {
   // ValuePending();
@@ -68,6 +69,10 @@ void CSensorSingle::publish() {
   // _log(I, "publish()");
   m_pMqttTemp->setValue(std::to_string(m_Temperature.getOutputValue()));
   m_pMqttHum->setValue(std::to_string(m_Humidity.getOutputValue()));
+}
+
+bool CSensorSingle::IsPublished() {
+  return static_cast<bool>(m_pMqttTemp) && m_pMqttTemp->IsPublished();
 }
 
 void CSensorMulti::display() {

@@ -1,6 +1,6 @@
+#include "CBase.h"
+#include "CControl.h"
 #include <Arduino.h>
-#include <CBase.h>
-#include <CControl.h>
 #include <FS.h>
 #if defined(USE_LITTLEFS)
 #include <LittleFS.h>
@@ -9,8 +9,9 @@
 #endif
 #include <Wire.h>
 #include <cstdio>
+#include <string>
 
-const std::string FWK_VERSION_STRING = "0.0.23.1";
+const std::string FWK_VERSION_STRING = "0.0.24.0";
 
 double dmap(double in_act, double in_min, double in_max, double out_min,
             double out_max) {

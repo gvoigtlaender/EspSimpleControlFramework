@@ -7,12 +7,11 @@
 #include <string>
 using std::string;
 
+#include "CControl.h"
+#include "CFilter.hpp"
 #include <Adafruit_BME280.h>
 #include <Adafruit_BMP280.h>
 #include <Adafruit_Sensor.h>
-#include <CControl.h>
-#include <CDisplay.h>
-#include <CFilter.hpp>
 #include <DHT.h>
 #include <OneWire.h>
 #include <SPI.h>
@@ -21,6 +20,9 @@ using std::string;
 #include <DallasTemperature.h>
 #include <vector>
 using std::vector;
+
+class CMqttValue;
+class CDisplayLine;
 
 class CSensorBase : public CControl {
 public:
@@ -76,9 +78,7 @@ public:
   virtual void display() override;
   virtual void publish() override;
 
-  virtual bool IsPublished() override {
-    return m_pMqttTemp && m_pMqttTemp->IsPublished();
-  }
+  virtual bool IsPublished() override;
 };
 
 class CSensorDHT : public CSensorSingle {
@@ -91,10 +91,10 @@ public:
       : CSensorSingle(szType) {
     m_pDht = new DHT(nPin, nType);
   }
-  bool setup() override {
-    // m_pDht->begin();
-    return CSensorSingle::setup();
-  }
+  // bool setup() override {
+  //   // m_pDht->begin();
+  //   return CSensorSingle::setup();
+  // }
   float readTemperature() override { return m_pDht->readTemperature(); }
   float readHumidity() override { return m_pDht->readHumidity(); }
   void firstControlStateAction() override { m_pDht->begin(); }
@@ -141,7 +141,8 @@ public:
   explicit CSensorMulti(const char *szType) : CSensorBase(szType) {}
   class CSensorChannel {
   public:
-    CSensorChannel() : m_Temperature(10), m_TemperatureRaw(10) /*, m_Humidity(10)*/ {}
+    CSensorChannel()
+        : m_Temperature(10), m_TemperatureRaw(10) /*, m_Humidity(10)*/ {}
     CMqttValue *m_pMqttTemp = nullptr;
     CDisplayLine *m_pDisplayLine = nullptr;
     // CMqttValue *m_pMqttHum = nullptr;
@@ -224,15 +225,15 @@ public:
       CSensorChannelDS18B20 *pSensor =
           static_cast<CSensorChannelDS18B20 *>(m_Sensors[nCnt]);
       float t = m_pDallas->getTempC(pSensor->m_Addr);
-      if ( t != DEVICE_DISCONNECTED_C ) {
+      if (t != DEVICE_DISCONNECTED_C) {
 #ifdef _DEBUG
-      _log(D, "%u Temp: %.1f", nCnt, t);
+        _log(D, "%u Temp: %.1f", nCnt, t);
 #endif
-      if (tempMin_ < t && t < tempMax_) {
-        pSensor->m_Temperature.Filter(t);
+        if (tempMin_ < t && t < tempMax_) {
+          pSensor->m_Temperature.Filter(t);
+        }
+        pSensor->m_TemperatureRaw.Filter(t);
       }
-      pSensor->m_TemperatureRaw.Filter(t);
-    }
     }
 
     m_pDallas->requestTemperatures();

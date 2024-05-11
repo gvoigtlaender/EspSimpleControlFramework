@@ -1,9 +1,10 @@
 #if !defined SRC_CUPDATER_H
 #define SRC_CUPDATER_H
-#include <CBase.h>
-#include <CWebserver.h>
+#include "CBase.h"
 #include <string>
 using std::string;
+
+class CWebServer;
 
 class CUpdater {
 public:

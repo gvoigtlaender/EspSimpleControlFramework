@@ -73,7 +73,7 @@ extern uint32_t g_uiHeapMin;
 extern uint32_t g_uiHeap;
 
 #if defined(USE_DISPLAY)
-#include <CDisplayLine.h>
+#include "CDisplayLine.h"
 extern CDisplayLine *g_HeapDisplayLine;
 #endif
 
@@ -94,6 +94,7 @@ size_t LittleFS_GetFreeSpaceKb();
 class CNonCopyable {
 public:
   CNonCopyable() {}
+  virtual ~CNonCopyable() {}
 
 private:
   CNonCopyable(const CNonCopyable &src) {}
@@ -104,5 +105,10 @@ class CMqttCmd;
 typedef void (*CMqttCmd_cb)(CMqttCmd *pCmd, byte *payload, unsigned int length);
 
 void check_if_exist_I2C();
+
+enum E_Time_Type {
+  HHMM = 0,
+  MMSS,
+};
 
 #endif // SRC_CBASE_H

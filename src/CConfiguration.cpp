@@ -1,5 +1,18 @@
 #include "CConfiguration.h"
 #include "CControl.h"
+#include <Arduino.h>
+#include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
+#include <FS.h>
+#if defined(USE_LITTLEFS)
+#include <LittleFS.h>
+#elif defined(ESP32)
+#include <SPIFFS.h>
+#endif
+#include "CBase.h"
+#include "CConfigValue.h"
+#include "CWebserver.h"
+#include <WiFiClient.h>
+#include <memory>
 
 // static
 void handleHttpGetContent() {
@@ -260,8 +273,8 @@ void CConfiguration::save() {
     CheckFreeHeap();
 #endif
     for (auto &&keys : sections.second) {
-      std::string sKey = keys.first;
-      std::string &sVal = keys.second->ToString();
+      const auto sKey = keys.first;
+      const auto &sVal = keys.second->ToString();
       CControl::Log(CControl::I, "saving section %s key %s value %s",
                     sSection.c_str(), sKey.c_str(), sVal.c_str());
 #if ARDUINOJSON_VERSION_MAJOR == 5

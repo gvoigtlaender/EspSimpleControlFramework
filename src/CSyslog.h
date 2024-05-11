@@ -1,9 +1,10 @@
 #if !defined SRC_CSYSLOG_H
 #define SRC_CSYSLOG_H
-#include "CConfigValue.h"
 #include "CControl.h"
 #include <string>
 using std::string;
+
+template <typename T> class CConfigKey;
 
 class CSyslog : public CControl {
 public:

@@ -1,4 +1,5 @@
 #include "CSyslog.h"
+#include "CConfigValue.h"
 #include "CWifi.h"
 
 #include <Syslog.h>
