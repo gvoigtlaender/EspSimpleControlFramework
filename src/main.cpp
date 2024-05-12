@@ -248,16 +248,16 @@ void setup() {
 
   m_pConfig = new CConfiguration("/config.json");
   m_pDeviceName =
-      new CConfigKey<string>("Device", "Name", std::string(SHORTNAME));
+      CControl::CreateConfigKey<std::string>("Device", "Name", std::string(SHORTNAME));
 
-  new CConfigKey<bool>("Device", "Checkbox", true);
+  CControl::CreateConfigKey<bool>("Device", "Checkbox", true);
 
-  new CConfigKeyTimeString("Time", "Example_HHMM", "10:30", E_Time_Type::HHMM);
-  new CConfigKeyTimeString("Time", "Example_HHMMSS", "10:30:15",
+ CControl::CreateConfigKeyTimeString("Time", "Example_HHMM", "10:30", E_Time_Type::HHMM);
+  CControl::CreateConfigKeyTimeString("Time", "Example_HHMMSS", "10:30:15",
                            E_Time_Type::HHMM);
-  new CConfigKeyTimeString("Time", "Example_MMSS", "10:30", E_Time_Type::MMSS);
+  CControl::CreateConfigKeyTimeString("Time", "Example_MMSS", "10:30", E_Time_Type::MMSS);
 
-  new CConfigKey<double>("Double", "DTest", 1.234);
+  CControl::CreateConfigKey<double>("Double", "DTest", 1.234);
 
   m_pWifi = new CWifi(APPNAME.c_str(), WLAN_SSID, WLAN_PASSWD);
   m_pMqtt = new CMqtt();

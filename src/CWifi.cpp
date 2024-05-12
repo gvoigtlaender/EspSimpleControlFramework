@@ -21,10 +21,10 @@ CWifi::CWifi(const char *szAppName, const string &sSsid /*= ""*/,
       m_pWifiSsid(CreateConfigKey<std::string>("Wifi", "Ssid", sSsid)),
       m_pMqttIP(CreateMqttValue("IP", "")) {
 
-  m_pWifiPassword = new CConfigKey<std::string>("Wifi", "Password", sPassword);
+  m_pWifiPassword = CreateConfigKey<string>("Wifi", "Password", sPassword);
   // m_pWifiPassword->m_pValue->m_sInputType = "password";
   m_pWifiPassword->m_pValue->m_pcsInputType = szInputType_Password.c_str();
-  m_pWifiStaticIp = new CConfigKey<std::string>("Wifi", "StaticIp", sStaticIp);
+  m_pWifiStaticIp = CreateConfigKey<string>("Wifi", "StaticIp", sStaticIp);
 }
 
 bool CWifi::setup() {

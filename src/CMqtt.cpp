@@ -103,12 +103,12 @@ CMqtt::CMqtt(const string &sServerIp /* = "" */,
   ms_pMqtt = this;
   m_pMqttClient = new PubSubClient(*m_pWifiClient);
 
-  m_pCfgMqttServer = new CConfigKey<string>("Mqtt", "ServerIp", "");
-  m_pCfgMqttUser = new CConfigKey<string>("Mqtt", "User", "");
-  m_pCfgMqttPasswd = new CConfigKey<string>("Mqtt", "Passwd", "");
+  m_pCfgMqttServer = CreateConfigKey<string>("Mqtt", "ServerIp", "");
+  m_pCfgMqttUser = CreateConfigKey<string>("Mqtt", "User", "");
+  m_pCfgMqttPasswd = CreateConfigKey<string>("Mqtt", "Passwd", "");
   m_pCfgMqttPasswd->m_pValue->m_pcsInputType = szInputType_Password.c_str();
   m_pCfgMqttPublishIntervalS =
-      new CConfigKey<int>("Mqtt", "PublishInterval", (int)0);
+      CreateConfigKey<int>("Mqtt", "PublishInterval", (int)0);
 }
 
 CMqtt::~CMqtt() {

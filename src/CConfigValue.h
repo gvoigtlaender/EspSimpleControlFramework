@@ -114,12 +114,8 @@ protected:
 };
 
 template <typename T> class CConfigKey : public CConfigKeyBase {
+  friend class CControl;
 public:
-  CConfigKey(const char *pszSection, const char *pszKey, T def)
-      : CConfigKeyBase(pszSection, pszKey), m_pTValue(nullptr) {
-    m_pTValue = new CConfigValue<T>(def);
-    m_pValue = m_pTValue;
-  }
 
   virtual ~CConfigKey() override { delete m_pTValue; }
   std::string &ToString() override { return m_sValue; }
@@ -128,6 +124,13 @@ public:
 
   T &GetValue() { return m_pTValue->m_Value; }
   CConfigValue<T> *m_pTValue;
+
+protected:
+  CConfigKey(const char *pszSection, const char *pszKey, T def)
+      : CConfigKeyBase(pszSection, pszKey), m_pTValue(nullptr) {
+    m_pTValue = new CConfigValue<T>(def);
+    m_pValue = m_pTValue;
+  }
 
 private:
   CConfigKey(const CConfigKey &src);
