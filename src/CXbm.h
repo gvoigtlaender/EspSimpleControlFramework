@@ -57,6 +57,10 @@ public:
       SetPixel(x, vec[n]);
     }
   }
+  
+  const auto* getBuffer() const { return m_pBuffer; }
+
+  const auto getBufferSize() const { return m_uiS; }
 
   const uint8_t m_uiX;
   const uint8_t m_uiY;
