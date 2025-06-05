@@ -364,8 +364,8 @@ void setup() {
 #if defined(USE_DISPLAY)
   m_pDisplay->Line(0, APPNAMEVER);
 #endif
-  m_pDisplay->enablePowerSafe(CDisplayBase::PowerSafeMode::hover, 2000, 500);
-  auto* hoverLine = m_pDisplay->AddHoverLine([]() { return string("RND: ") + std::to_string(random(100)) + string("°C"); },u8g2_font_t0_17_tf);
+  m_pDisplay->enablePowerSafe(CDisplayBase::PowerSafeMode::hover, 2000, 100);
+  auto* hoverLine = m_pDisplay->AddHoverLine([]() { return string("RND: ") + std::to_string(random(100)) + string("°C"); },u8g2_font_t0_17_tf, 64, 16);
 
 }
 

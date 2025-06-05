@@ -84,8 +84,11 @@ public:
 struct CHoverLine {
   std::function<std::string()> getText;
   const uint8_t *m_pFont{nullptr};
+  float x_{0}, y_{0};
+  float dx_{1.0}, dy_{1.0};
 
-  CHoverLine(std::function<std::string()> textFunc,
-                const uint8_t* font) : getText(textFunc), m_pFont(font) {};
+  CHoverLine(std::function<std::string()> textFunc, const uint8_t *font,
+             uint16_t x, uint16_t y)
+      : getText(textFunc), m_pFont(font), x_{x}, y_{y} {};
 };
 #endif // SRC_CDISPLAYLINE_H_

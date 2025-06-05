@@ -34,7 +34,8 @@ public:
   virtual CDisplayLine *AddLine(u8g2_uint_t x, u8g2_uint_t y,
                                 uint8_t uiNoOfColumns, const uint8_t *pFont);
   virtual CHoverLine *AddHoverLine(std::function<std::string()> textFunc,
-                                   const uint8_t *font) {
+                                   const uint8_t *font, uint16_t x,
+                                   uint16_t y) {
     return nullptr;
   };
 
@@ -114,7 +115,8 @@ public:
 
   virtual U8G2 *GetU8G2() { return nullptr; }
 
-  void enablePowerSafe(PowerSafeMode mode, uint64_t idleTimeMs, uint64_t hoverTimeMs) {
+  void enablePowerSafe(PowerSafeMode mode, uint64_t idleTimeMs,
+                       uint64_t hoverTimeMs) {
     powerSafeMode_ = mode;
     powerSafeTimer_.period_ = idleTimeMs;
     powerSafeTimer_.time_ = millis() + idleTimeMs;
@@ -232,8 +234,9 @@ public:
     return pLine;
   }
   CHoverLine *AddHoverLine(std::function<std::string()> textFunc,
-                           const uint8_t *font) override {
-    CHoverLine *pLine = new CHoverLine(textFunc, font);
+                           const uint8_t *font, uint16_t x,
+                           uint16_t y) override {
+    CHoverLine *pLine = new CHoverLine(textFunc, font, x, y);
     powerSafeHoverLine_ = pLine;
     return pLine;
   }
@@ -262,25 +265,63 @@ protected:
       if (millis() > hoverTimer_.time_) {
         hoverTimer_.time_ += hoverTimer_.period_;
         m_pDisplay->setFont(powerSafeHoverLine_->m_pFont);
-        auto text = powerSafeHoverLine_->getText();
+        std::string text = powerSafeHoverLine_->getText();
         const uint8_t margin = 2;
+
         int16_t text_width = m_pDisplay->getUTF8Width(text.c_str());
         int16_t text_height =
             m_pDisplay->getAscent() - m_pDisplay->getDescent();
 
-        int16_t max_x = m_pDisplay->getDisplayWidth() - text_width - margin;
-        int16_t max_y =
-            m_pDisplay->getDisplayHeight() + m_pDisplay->getDescent() - margin;
+        // Bewegungsvektor etwas zufällig verändern (sanft!)
+        float jitter = 0.2;
+        powerSafeHoverLine_->dx_ += ((float)random(-10, 11) / 100.0) * jitter;
+        powerSafeHoverLine_->dy_ += ((float)random(-10, 11) / 100.0) * jitter;
 
+        // Geschwindigkeit begrenzen
+        float speedLimit = 2.5;
+        if (powerSafeHoverLine_->dx_ > speedLimit)
+          powerSafeHoverLine_->dx_ = speedLimit;
+        if (powerSafeHoverLine_->dx_ < -speedLimit)
+          powerSafeHoverLine_->dx_ = -speedLimit;
+        if (powerSafeHoverLine_->dy_ > speedLimit)
+          powerSafeHoverLine_->dy_ = speedLimit;
+        if (powerSafeHoverLine_->dy_ < -speedLimit)
+          powerSafeHoverLine_->dy_ = -speedLimit;
+
+        // Position aktualisieren
+        powerSafeHoverLine_->x_ += powerSafeHoverLine_->dx_;
+        powerSafeHoverLine_->y_ += powerSafeHoverLine_->dy_;
+
+        // Displaygrenzen berechnen (inkl. Text und Margin)
         int16_t min_x = margin;
+        int16_t max_x = m_pDisplay->getDisplayWidth() - text_width - margin;
         int16_t min_y = text_height + margin;
+        int16_t max_y =
+            m_pDisplay->getDisplayHeight() - m_pDisplay->getDescent() - margin;
 
-        int16_t x = random(min_x, max_x + 1);
-        int16_t y = random(min_y, max_y + 1);
+        // Kollisionsprüfung & Richtungsumkehr bei Randkontakt
+        if (powerSafeHoverLine_->x_ < min_x) {
+          powerSafeHoverLine_->x_ = min_x;
+          powerSafeHoverLine_->dx_ = -powerSafeHoverLine_->dx_;
+        }
+        if (powerSafeHoverLine_->x_ > max_x) {
+          powerSafeHoverLine_->x_ = max_x;
+          powerSafeHoverLine_->dx_ = -powerSafeHoverLine_->dx_;
+        }
+
+        if (powerSafeHoverLine_->y_ < min_y) {
+          powerSafeHoverLine_->y_ = min_y;
+          powerSafeHoverLine_->dy_ = -powerSafeHoverLine_->dy_;
+        }
+        if (powerSafeHoverLine_->y_ > max_y) {
+          powerSafeHoverLine_->y_ = max_y;
+          powerSafeHoverLine_->dy_ = -powerSafeHoverLine_->dy_;
+        }
 
         // Anzeige zeichnen
         m_pDisplay->clearBuffer();
-        m_pDisplay->drawUTF8(x, y, text.c_str());
+        m_pDisplay->drawUTF8((int)powerSafeHoverLine_->x_,
+                             (int)powerSafeHoverLine_->y_, text.c_str());
         m_pDisplay->sendBuffer();
       }
     }
