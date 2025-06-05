@@ -81,4 +81,11 @@ public:
   uint8_t m_uiXOffset = 0;
 };
 
+struct CHoverLine {
+  std::function<std::string()> getText;
+  const uint8_t *m_pFont{nullptr};
+
+  CHoverLine(std::function<std::string()> textFunc,
+                const uint8_t* font) : getText(textFunc), m_pFont(font) {};
+};
 #endif // SRC_CDISPLAYLINE_H_

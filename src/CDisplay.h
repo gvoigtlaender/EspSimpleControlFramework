@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "CControl.h"
+#include "CTimer.hpp"
 
 class CDisplayLine;
 class CXbm;
@@ -32,9 +33,15 @@ public:
 
   virtual CDisplayLine *AddLine(u8g2_uint_t x, u8g2_uint_t y,
                                 uint8_t uiNoOfColumns, const uint8_t *pFont);
+  virtual CHoverLine *AddHoverLine(std::function<std::string()> textFunc,
+                                   const uint8_t *font) {
+    return nullptr;
+  };
 
   CXbm *AddXbm(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h,
                uint16_t uiUpdateIntervalS = 0);
+
+  enum PowerSafeMode { disabled, blank, hover };
 
   void control(bool bForce) override {
     enum {
@@ -48,6 +55,15 @@ public:
       m_nState = eWaitForDelay;
 
     case eWaitForDelay:
+      if (powerSafeMode_ != PowerSafeMode::disabled) {
+        if (!powerSafeActive_ && millis() > powerSafeTimer_.time_) {
+          powerSafeActive_ = true;
+          _log(I, "CDisplayU8x8::SafeActive, Mode=%d", powerSafeMode_);
+          if (powerSafeMode_ == PowerSafeMode::blank) {
+            setPowerSafe(true);
+          }
+        }
+      }
       if (millis() < this->CControl::m_uiTime)
         break;
       m_nState = eUpdate;
@@ -98,6 +114,30 @@ public:
 
   virtual U8G2 *GetU8G2() { return nullptr; }
 
+  void enablePowerSafe(PowerSafeMode mode, uint64_t idleTimeMs, uint64_t hoverTimeMs) {
+    powerSafeMode_ = mode;
+    powerSafeTimer_.period_ = idleTimeMs;
+    powerSafeTimer_.time_ = millis() + idleTimeMs;
+    hoverTimer_.time_ = powerSafeTimer_.time_;
+    hoverTimer_.period_ = hoverTimeMs;
+    if (mode == PowerSafeMode::disabled && powerSafeActive_) {
+      setPowerSafe(0);
+      _log(I, "CDisplayU8x8::setPowerSafe(false)");
+      powerSafeActive_ = false;
+    }
+  }
+  bool isPowerSafeActive() const { return powerSafeActive_; }
+
+  void powerSafeWakeup() {
+    if (powerSafeActive_) {
+      powerSafeActive_ = false;
+      powerSafeTimer_.time_ = millis() + powerSafeTimer_.period_;
+      setPowerSafe(false);
+      updateDisplay();
+      _log(I, "CDisplayU8x8::setPowerSafe(false)");
+    }
+  }
+
 protected:
   // uint8 m_uiNoOfLines;
   // uint8 m_uiNoOfColumns;
@@ -107,6 +147,15 @@ protected:
   // std::string m_sEmptyLine;
   uint8_t m_uiScrollDelay;
   uint8_t m_uiDrawDelay;
+
+  PowerSafeMode powerSafeMode_{PowerSafeMode::disabled};
+  bool powerSafeActive_{false};
+  CTimer powerSafeTimer_;
+  CTimer hoverTimer_;
+  CHoverLine *powerSafeHoverLine_{nullptr};
+  uint64_t hoverTime_{0};
+
+  virtual void setPowerSafe(bool enable) = 0;
 };
 
 template <typename T> class CDisplayU8x8 : public CDisplayBase {
@@ -153,6 +202,10 @@ public:
 
 protected:
   U8X8 *m_pDisplay;
+
+  void setPowerSafe(bool enable) override {
+    m_pDisplay->setPowerSave(enable ? 1 : 0);
+  }
 };
 
 class CDisplayU8g2Base : public CDisplayBase {
@@ -178,6 +231,12 @@ public:
     m_Lines.push_back(pLine);
     return pLine;
   }
+  CHoverLine *AddHoverLine(std::function<std::string()> textFunc,
+                           const uint8_t *font) override {
+    CHoverLine *pLine = new CHoverLine(textFunc, font);
+    powerSafeHoverLine_ = pLine;
+    return pLine;
+  }
 
 protected:
   CDisplayU8g2Base(int resetpin, U8G2 *pDisplay)
@@ -186,17 +245,45 @@ protected:
   }
 
   void updateDisplay() override {
-    m_pDisplay->clearBuffer();
-    for (uint8_t n = 0; n < m_Lines.size(); n++) {
-      CDisplayLineU8g2 *pLine = static_cast<CDisplayLineU8g2 *>(m_Lines[n]);
-      m_pDisplay->setFont(pLine->m_pFont);
-      drawUTF8(pLine->m_uiX + pLine->m_uiXOffset, pLine->m_uiY,
-               pLine->m_sLineToDraw.c_str());
+    if (!powerSafeActive_) {
+      m_pDisplay->clearBuffer();
+      for (uint8_t n = 0; n < m_Lines.size(); n++) {
+        CDisplayLineU8g2 *pLine = static_cast<CDisplayLineU8g2 *>(m_Lines[n]);
+        m_pDisplay->setFont(pLine->m_pFont);
+        drawUTF8(pLine->m_uiX + pLine->m_uiXOffset, pLine->m_uiY,
+                 pLine->m_sLineToDraw.c_str());
+      }
+      for (const auto *pXbm : m_Xbms) {
+        drawXBM(pXbm);
+      }
+      m_pDisplay->sendBuffer();
+    } else if (powerSafeMode_ == PowerSafeMode::hover &&
+               powerSafeHoverLine_ != nullptr) {
+      if (millis() > hoverTimer_.time_) {
+        hoverTimer_.time_ += hoverTimer_.period_;
+        m_pDisplay->setFont(powerSafeHoverLine_->m_pFont);
+        auto text = powerSafeHoverLine_->getText();
+        const uint8_t margin = 2;
+        int16_t text_width = m_pDisplay->getUTF8Width(text.c_str());
+        int16_t text_height =
+            m_pDisplay->getAscent() - m_pDisplay->getDescent();
+
+        int16_t max_x = m_pDisplay->getDisplayWidth() - text_width - margin;
+        int16_t max_y =
+            m_pDisplay->getDisplayHeight() + m_pDisplay->getDescent() - margin;
+
+        int16_t min_x = margin;
+        int16_t min_y = text_height + margin;
+
+        int16_t x = random(min_x, max_x + 1);
+        int16_t y = random(min_y, max_y + 1);
+
+        // Anzeige zeichnen
+        m_pDisplay->clearBuffer();
+        m_pDisplay->drawUTF8(x, y, text.c_str());
+        m_pDisplay->sendBuffer();
+      }
     }
-    for (const auto *pXbm : m_Xbms) {
-      drawXBM(pXbm);
-    }
-    m_pDisplay->sendBuffer();
   }
 
   u8g2_uint_t drawUTF8(u8g2_uint_t x, u8g2_uint_t y, const char *s) {
@@ -218,5 +305,10 @@ template <typename T> class CDisplayU8g2 : public CDisplayU8g2Base {
 public:
   CDisplayU8g2(int resetpin)
       : CDisplayU8g2Base(resetpin, new T(U8G2_R0, U8X8_PIN_NONE)) {}
+
+protected:
+  void setPowerSafe(bool enable) override {
+    m_pDisplay->setPowerSave(enable ? 1 : 0);
+  }
 };
 #endif // SRC_CDISPLAY_H

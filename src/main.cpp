@@ -246,6 +246,8 @@ void setup() {
   nMillisLast = millis();
   check_if_exist_I2C();
 
+  randomSeed(analogRead(A0));
+
   m_pConfig = new CConfiguration("/config.json");
   m_pDeviceName =
       CControl::CreateConfigKey<std::string>("Device", "Name", std::string(SHORTNAME));
@@ -362,6 +364,9 @@ void setup() {
 #if defined(USE_DISPLAY)
   m_pDisplay->Line(0, APPNAMEVER);
 #endif
+  m_pDisplay->enablePowerSafe(CDisplayBase::PowerSafeMode::hover, 2000, 500);
+  auto* hoverLine = m_pDisplay->AddHoverLine([]() { return string("RND: ") + std::to_string(random(100)) + string("°C"); },u8g2_font_t0_17_tf);
+
 }
 
 bool bStarted = false;
@@ -411,6 +416,9 @@ void loop() {
     break;
 
   case CButton::ePressed:
+    if ( m_pDisplay->isPowerSafeActive() ) {
+      m_pDisplay->powerSafeWakeup();
+    }
     break;
 
   case CButton::eClick:
